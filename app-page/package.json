@@ -6,21 +6,21 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview"
+    "dev": "bun run astro dev --background",
+    "build": "bun run astro build",
+    "preview": "bun run astro preview"
   },
   "dependencies": {
-    "@astrojs/react": "^4",
-    "@astrojs/sitemap": "^3",
-    "@fontsource/inter": "^5",
+    "@astrojs/react": "^6.0.0",
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource/inter": "^5.2.8",
     "astro": "^7.0.3",
-    "react": "^19",
-    "react-dom": "^19",
-    "zod": "^3.24"
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/react": "^19",
-    "@types/react-dom": "^19"
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3"
   }
 }

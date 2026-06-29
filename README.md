@@ -26,13 +26,13 @@ pages/
 
 ## Commands
 
-| Command | Description |
-|---|---|
+| Command        | Description              |
+| -------------- | ------------------------ |
 | `pnpm install` | Install all dependencies |
-| `pnpm dev` | Start all dev servers |
-| `pnpm build` | Build all projects |
-| `pnpm lint` | Lint all projects |
-| `pnpm format` | Format all projects |
+| `pnpm dev`     | Start all dev servers    |
+| `pnpm build`   | Build all projects       |
+| `pnpm lint`    | Lint all projects        |
+| `pnpm format`  | Format all projects      |
 
 Single project:
 

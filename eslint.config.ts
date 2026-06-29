@@ -8,7 +8,7 @@ export default [
   ...tseslint.configs.recommended,
   ...astroPlugin.configs.recommended,
   {
-    ignores: ['dist/', '.astro/', 'node_modules/'],
+    ignores: ['**/dist/**', '**/.astro/**'],
   },
   {
     files: ['*.astro'],

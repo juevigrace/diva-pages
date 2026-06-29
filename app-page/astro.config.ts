@@ -8,9 +8,6 @@ export default defineConfig({
   site: 'https://example.com/app',
   integrations: [react(), sitemap()],
   vite: {
-    plugins: [
-      tailwindcss(),
-      visualizer({ emitFile: true }),
-    ],
+    plugins: [tailwindcss(), visualizer({ emitFile: true })],
   },
 });
