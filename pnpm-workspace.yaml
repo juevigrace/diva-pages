@@ -1,0 +1,7 @@
+packages:
+  - 'app-page'
+  - 'docs-page'
+  - 'landing-page'
+allowBuilds:
+  esbuild: true
+  sharp: true
