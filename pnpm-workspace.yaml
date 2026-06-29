@@ -2,6 +2,7 @@ packages:
   - 'app-page'
   - 'docs-page'
   - 'landing-page'
+  - 'lib/*'
 allowBuilds:
   esbuild: true
   sharp: true

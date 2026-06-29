@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@astrojs/react": "^6.0.0",
+    "diva-ui": "workspace:*",
     "@astrojs/sitemap": "^3.7.3",
     "@fontsource/inter": "^5.2.8",
     "astro": "^7.0.3",

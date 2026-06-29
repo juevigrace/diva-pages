@@ -8,6 +8,7 @@ export default defineConfig({
   site: 'https://example.com/app',
   integrations: [react(), sitemap()],
   vite: {
+    ssr: { noExternal: ['diva-ui'] },
     plugins: [tailwindcss(), visualizer({ emitFile: true })],
   },
 });
