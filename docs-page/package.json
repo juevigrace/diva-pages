@@ -8,7 +8,10 @@
   "scripts": {
     "dev": "bun run astro dev --background",
     "build": "bun run astro build",
-    "preview": "bun run astro preview"
+    "preview": "bun run astro preview",
+    "stop": "astro dev stop",
+    "status": "astro dev status",
+    "logs": "astro dev logs"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.0",

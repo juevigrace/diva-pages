@@ -10,6 +10,9 @@
   "scripts": {
     "dev": "bun run turbo dev",
     "build": "bun run turbo build",
+    "stop": "bun run turbo stop",
+    "status": "bun run turbo status",
+    "logs": "bun run turbo logs",
     "lint": "bun run eslint .",
     "format": "bun run prettier --write .",
     "format-check": "bun run prettier --check ."
