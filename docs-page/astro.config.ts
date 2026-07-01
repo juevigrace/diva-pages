@@ -9,6 +9,7 @@ export default defineConfig({
   site: 'https://example.com/docs',
   output: 'server',
   adapter: node({ mode: 'standalone' }),
+  server: { port: 4321 },
   integrations: [react(), sitemap()],
   vite: {
     ssr: { noExternal: ['diva-ui'] },

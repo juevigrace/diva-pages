@@ -9,6 +9,7 @@ export default defineConfig({
   site: 'https://example.com/app',
   output: 'server',
   adapter: node({ mode: 'standalone' }),
+  server: { port: 4323 },
   integrations: [react(), sitemap()],
   env: {
     schema: {

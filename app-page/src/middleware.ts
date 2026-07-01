@@ -1,24 +1,10 @@
 import { defineMiddleware } from 'astro:middleware';
-
-interface AuthSession {
-  userId: string;
-  accessToken: string;
-  refreshToken: string;
-  status: string;
-  type: string;
-  device: string;
-  agent: string;
-  ip: string;
-  accessExpiresAt: number;
-  refreshExpiresAt: number;
-  createdAt: number;
-  updatedAt: number;
-}
+import type { Session } from 'diva-types';
 
 declare global {
   namespace App {
     interface SessionData {
-      auth: AuthSession;
+      auth: Session;
     }
     interface Locals {
       session?: {
@@ -33,7 +19,7 @@ declare global {
 
 export const onRequest = defineMiddleware(async (context, next) => {
   if (context.session) {
-    const auth = await context.session.get<AuthSession>('auth');
+    const auth = await context.session.get<Session>('auth');
     if (auth) {
       context.locals.session = {
         userId: auth.userId,

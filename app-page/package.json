@@ -19,6 +19,7 @@
     "@astrojs/sitemap": "catalog:",
     "@fontsource/inter": "catalog:",
     "astro": "catalog:",
+    "diva-types": "workspace:*",
     "diva-ui": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
