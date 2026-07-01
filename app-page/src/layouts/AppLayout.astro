@@ -1,24 +1,25 @@
 ---
 import '../styles/global.css';
-import Layout from 'diva-ui/layouts/Layout.astro';
+import Layout from './Layout.astro';
 import AppSidebar from '../components/app/AppSidebar.astro';
 import AppHeader from '../components/app/AppHeader.astro';
 
 export interface Props {
   title?: string;
+  description?: string;
   heading?: string;
 }
 
-const { title = 'App — Diva', heading = '' } = Astro.props;
+const { title = 'App — Diva', description, heading = '' } = Astro.props;
 ---
 
-<Layout title={title}>
+<Layout title={title} description={description}>
   <AppSidebar />
   <div class="md:pl-64">
     <AppHeader>
       <Fragment slot="title">{heading}</Fragment>
     </AppHeader>
-    <main class="p-6">
+    <main class="p-6" transition:animate="slide">
       <slot />
     </main>
   </div>

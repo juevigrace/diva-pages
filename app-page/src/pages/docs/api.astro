@@ -1,0 +1,123 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import TocSidebar from '../../components/docs/TocSidebar.astro';
+import CodeBlock from '../../components/docs/CodeBlock.astro';
+---
+
+<DocsLayout title="API Reference — Diva Docs" description="Detailed Diva Pages API reference — all component props, events, and TypeScript types.">
+  <div class="flex">
+    <main class="max-w-3xl min-w-0 flex-1">
+      <h1 id="overview" class="text-4xl font-bold tracking-tight">API Reference</h1>
+      <p class="text-muted-foreground mt-4 text-lg">
+        Detailed documentation for all component props, events, and TypeScript types.
+      </p>
+
+      <h2 id="props" class="mt-12 text-2xl font-bold tracking-tight">Component Props</h2>
+      <p class="text-muted-foreground mt-4 leading-relaxed">
+        All components extend standard HTML element attributes. Here are the component-specific
+        props:
+      </p>
+
+      <div class="border-border mt-6 overflow-x-auto rounded-lg border">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-border bg-muted/50 border-b">
+              <th class="px-4 py-3 text-left font-medium">Component</th>
+              <th class="px-4 py-3 text-left font-medium">Prop</th>
+              <th class="px-4 py-3 text-left font-medium">Type</th>
+              <th class="px-4 py-3 text-left font-medium">Default</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-border border-b">
+              <td class="px-4 py-3 font-mono text-xs">Button</td>
+              <td class="px-4 py-3 font-mono text-xs">variant</td>
+              <td class="px-4 py-3 font-mono text-xs"
+                >"default" | "secondary" | "destructive" | "outline" | "ghost" | "link"</td
+              >
+              <td class="px-4 py-3 font-mono text-xs">"default"</td>
+            </tr>
+            <tr class="border-border border-b">
+              <td class="px-4 py-3 font-mono text-xs">Button</td>
+              <td class="px-4 py-3 font-mono text-xs">size</td>
+              <td class="px-4 py-3 font-mono text-xs">"default" | "sm" | "lg" | "icon"</td>
+              <td class="px-4 py-3 font-mono text-xs">"default"</td>
+            </tr>
+            <tr class="border-border border-b">
+              <td class="px-4 py-3 font-mono text-xs">Button</td>
+              <td class="px-4 py-3 font-mono text-xs">asChild</td>
+              <td class="px-4 py-3 font-mono text-xs">boolean</td>
+              <td class="px-4 py-3 font-mono text-xs">false</td>
+            </tr>
+            <tr class="border-border border-b">
+              <td class="px-4 py-3 font-mono text-xs">Card</td>
+              <td class="px-4 py-3 font-mono text-xs">className</td>
+              <td class="px-4 py-3 font-mono text-xs">string</td>
+              <td class="px-4 py-3 font-mono text-xs">—</td>
+            </tr>
+            <tr class="border-border border-b">
+              <td class="px-4 py-3 font-mono text-xs">Badge</td>
+              <td class="px-4 py-3 font-mono text-xs">variant</td>
+              <td class="px-4 py-3 font-mono text-xs"
+                >"default" | "secondary" | "destructive" | "outline"</td
+              >
+              <td class="px-4 py-3 font-mono text-xs">"default"</td>
+            </tr>
+            <tr class="border-border border-b">
+              <td class="px-4 py-3 font-mono text-xs">Input</td>
+              <td class="px-4 py-3 font-mono text-xs">type</td>
+              <td class="px-4 py-3 font-mono text-xs">HTMLInputTypeAttribute</td>
+              <td class="px-4 py-3 font-mono text-xs">"text"</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 font-mono text-xs">Switch</td>
+              <td class="px-4 py-3 font-mono text-xs">checked</td>
+              <td class="px-4 py-3 font-mono text-xs">boolean</td>
+              <td class="px-4 py-3 font-mono text-xs">false</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="events" class="mt-12 text-2xl font-bold tracking-tight">Events</h2>
+      <p class="text-muted-foreground mt-4 leading-relaxed">
+        Components use standard React event handlers (onClick, onChange, etc.). Radix-based
+        components provide additional events like onOpenChange, onCheckedChange, etc.
+      </p>
+      <div class="mt-4">
+        <CodeBlock
+          code={`import { Dialog } from 'diva-ui/components/dialog'
+import { Switch } from 'diva-ui/components/switch'
+
+<Dialog onOpenChange={(open) => console.log(open)} />
+<Switch onCheckedChange={(checked) => console.log(checked)} />`}
+          lang="tsx"
+        />
+      </div>
+
+      <h2 id="types" class="mt-12 text-2xl font-bold tracking-tight">TypeScript Types</h2>
+      <p class="text-muted-foreground mt-4 leading-relaxed">
+        Components export their prop types for use in your own components:
+      </p>
+      <div class="mt-4">
+        <CodeBlock
+          code={`import type { ButtonProps } from 'diva-ui/components/button'
+import type { CardProps } from 'diva-ui/components/card'
+
+type MyButtonProps = ButtonProps & {
+  customProp: string
+}`}
+          lang="ts"
+        />
+      </div>
+    </main>
+    <TocSidebar
+      headings={[
+        { id: 'overview', label: 'Overview', level: 1 },
+        { id: 'props', label: 'Component Props', level: 2 },
+        { id: 'events', label: 'Events', level: 2 },
+        { id: 'types', label: 'TypeScript Types', level: 2 },
+      ]}
+    />
+  </div>
+</DocsLayout>

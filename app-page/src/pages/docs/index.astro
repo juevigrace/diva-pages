@@ -1,0 +1,45 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import CodeBlock from '../../components/docs/CodeBlock.astro';
+---
+
+<DocsLayout title="Docs — Diva" description="Diva Pages documentation — everything you need to build with Diva Pages.">
+  <div class="mx-auto max-w-3xl">
+    <h1 class="text-4xl font-bold tracking-tight">Documentation</h1>
+    <p class="text-muted-foreground mt-4 text-lg">Everything you need to build with Diva Pages.</p>
+
+    <div class="mt-12 grid gap-6 sm:grid-cols-2">
+      <a
+        href="/docs/getting-started"
+        class="group border-border bg-card hover:border-primary/50 rounded-xl border p-6 shadow-sm transition-colors"
+      >
+        <h2 class="group-hover:text-primary font-semibold">Getting Started</h2>
+        <p class="text-muted-foreground mt-2 text-sm">
+          Set up your project and start building in minutes.
+        </p>
+      </a>
+      <a
+        href="/docs/components"
+        class="group border-border bg-card hover:border-primary/50 rounded-xl border p-6 shadow-sm transition-colors"
+      >
+        <h2 class="group-hover:text-primary font-semibold">Components</h2>
+        <p class="text-muted-foreground mt-2 text-sm">
+          Explore our library of 20+ shadcn/ui components.
+        </p>
+      </a>
+      <a
+        href="/docs/api"
+        class="group border-border bg-card hover:border-primary/50 rounded-xl border p-6 shadow-sm transition-colors"
+      >
+        <h2 class="group-hover:text-primary font-semibold">API Reference</h2>
+        <p class="text-muted-foreground mt-2 text-sm">Detailed prop and type documentation.</p>
+      </a>
+      <div class="border-border bg-card rounded-xl border p-6 shadow-sm">
+        <h2 class="font-semibold">Quick Install</h2>
+        <div class="mt-3">
+          <CodeBlock code="bun add diva-ui" lang="bash" />
+        </div>
+      </div>
+    </div>
+  </div>
+</DocsLayout>

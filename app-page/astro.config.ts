@@ -6,11 +6,10 @@ import node from '@astrojs/node';
 import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
-  site: 'https://example.com/app',
+  site: 'https://example.com',
   output: 'server',
   adapter: node({ mode: 'standalone' }),
-  server: { port: 4323 },
-  integrations: [react(), sitemap()],
+  integrations: [react(), sitemap({ namespaces: { news: false, image: false, video: false } })],
   env: {
     schema: {
       API_BASE_URL: {

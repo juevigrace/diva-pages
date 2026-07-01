@@ -1,6 +1,5 @@
 ---
-import '../styles/globals.css';
-import { ViewTransitions } from 'astro:transitions';
+import '../styles/global.css';
 
 export interface Props {
   title?: string;
@@ -20,7 +19,7 @@ const { title = 'Diva Pages', description = 'Beautiful, responsive page designs 
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <ViewTransitions />
+    <link rel="sitemap" href="/sitemap-index.xml" />
   </head>
   <body class="bg-background text-foreground min-h-screen font-sans antialiased">
     <slot />

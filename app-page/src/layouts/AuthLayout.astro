@@ -1,16 +1,17 @@
 ---
 import '../styles/global.css';
-import Layout from 'diva-ui/layouts/Layout.astro';
+import Layout from './Layout.astro';
 
 export interface Props {
   title?: string;
+  description?: string;
 }
 
-const { title = 'Diva' } = Astro.props;
+const { title = 'Diva', description } = Astro.props;
 ---
 
-<Layout title={title}>
-  <div class="flex min-h-screen items-center justify-center px-4 py-12">
+<Layout title={title} description={description}>
+  <div class="flex min-h-screen items-center justify-center px-4 py-12" transition:animate="slide">
     <slot />
   </div>
 </Layout>

@@ -3,7 +3,8 @@
   "type": "module",
   "version": "0.0.1",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.12.0",
+    "bun": ">=1.2"
   },
   "scripts": {
     "dev": "bun run astro dev --background",
