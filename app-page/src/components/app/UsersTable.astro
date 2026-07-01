@@ -1,0 +1,157 @@
+---
+const users = [
+  { name: 'Alex Morgan', email: 'alex@diva.dev', role: 'Admin', status: 'active', initials: 'AM' },
+  { name: 'Sarah Kim', email: 'sarah@diva.dev', role: 'Editor', status: 'active', initials: 'SK' },
+  {
+    name: 'Marcus Johnson',
+    email: 'marcus@diva.dev',
+    role: 'Editor',
+    status: 'active',
+    initials: 'MJ',
+  },
+  {
+    name: 'Priya Patel',
+    email: 'priya@diva.dev',
+    role: 'Viewer',
+    status: 'active',
+    initials: 'PP',
+  },
+  {
+    name: 'Jordan Lee',
+    email: 'jordan@diva.dev',
+    role: 'Viewer',
+    status: 'inactive',
+    initials: 'JL',
+  },
+  {
+    name: 'Taylor Reed',
+    email: 'taylor@diva.dev',
+    role: 'Editor',
+    status: 'active',
+    initials: 'TR',
+  },
+];
+---
+
+<div class="border-border bg-card rounded-xl border shadow-sm">
+  <div class="border-border flex items-center justify-between border-b px-6 py-4">
+    <h3 class="font-semibold">Users</h3>
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <svg
+          class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input
+          class="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-60 rounded-md border bg-transparent pr-3 pl-10 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+          placeholder="Search users..."
+        />
+      </div>
+      <span
+        class="border-input bg-background inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium shadow-sm"
+      >
+        <svg
+          class="mr-2 h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+          ></path>
+        </svg>
+        Filter
+      </span>
+    </div>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-border bg-muted/50 border-b">
+          <th class="text-muted-foreground px-6 py-3 text-left font-medium">Name</th>
+          <th class="text-muted-foreground px-6 py-3 text-left font-medium">Email</th>
+          <th class="text-muted-foreground px-6 py-3 text-left font-medium">Role</th>
+          <th class="text-muted-foreground px-6 py-3 text-left font-medium">Status</th>
+          <th class="text-muted-foreground px-6 py-3 text-right font-medium">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          users.map((user) => (
+            <tr class="border-border hover:bg-muted/50 border-b">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold">
+                    {user.initials}
+                  </div>
+                  <span class="font-medium">{user.name}</span>
+                </div>
+              </td>
+              <td class="text-muted-foreground px-6 py-4">{user.email}</td>
+              <td class="px-6 py-4">
+                <span class="border-border inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium">
+                  {user.role}
+                </span>
+              </td>
+              <td class="px-6 py-4">
+                <span
+                  class={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${user.status === 'active' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}
+                >
+                  <span
+                    class={`h-1.5 w-1.5 rounded-full ${user.status === 'active' ? 'bg-primary' : 'bg-muted-foreground'}`}
+                  />
+                  {user.status}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <div class="border-input bg-background inline-flex h-8 w-8 items-center justify-center rounded-md border shadow-sm">
+                  <svg
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                    />
+                  </svg>
+                </div>
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="border-border flex items-center justify-between border-t px-6 py-4">
+    <p class="text-muted-foreground text-sm">6 of 6 users</p>
+    <div class="flex items-center gap-2">
+      <span
+        class="border-input bg-background inline-flex h-8 w-8 items-center justify-center rounded-md border text-sm shadow-sm"
+        >←</span
+      >
+      <span
+        class="border-input bg-primary text-primary-foreground inline-flex h-8 w-8 items-center justify-center rounded-md border text-sm font-medium shadow-sm"
+        >1</span
+      >
+      <span
+        class="border-input bg-background inline-flex h-8 w-8 items-center justify-center rounded-md border text-sm shadow-sm"
+        >→</span
+      >
+    </div>
+  </div>
+</div>

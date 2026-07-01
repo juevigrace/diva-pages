@@ -1,0 +1,67 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+---
+
+<AppLayout title="Profile — Diva" heading="Profile">
+  <div class="mx-auto max-w-3xl space-y-8">
+    <div class="border-border bg-card rounded-xl border p-8 shadow-sm">
+      <div class="flex items-start gap-6">
+        <div
+          class="bg-primary/10 text-primary flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold"
+        >
+          AM
+        </div>
+        <div class="flex-1">
+          <h3 class="text-xl font-semibold">Alex Morgan</h3>
+          <p class="text-muted-foreground text-sm">alex@diva.dev</p>
+          <p
+            class="bg-primary/10 text-primary mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+          >
+            Admin
+          </p>
+        </div>
+        <button
+          class="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-9 items-center justify-center rounded-md border px-4 py-2 text-sm font-medium shadow-sm transition-colors"
+          >Change photo</button
+        >
+      </div>
+    </div>
+
+    <div class="border-border bg-card rounded-xl border p-8 shadow-sm">
+      <h3 class="text-lg font-semibold">Personal Information</h3>
+      <div class="mt-6 space-y-5">
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div class="space-y-2">
+            <label class="text-sm leading-none font-medium" for="first-name">First name</label>
+            <input
+              id="first-name"
+              class="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+              value="Alex"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm leading-none font-medium" for="last-name">Last name</label>
+            <input
+              id="last-name"
+              class="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+              value="Morgan"
+            />
+          </div>
+        </div>
+        <div class="space-y-2">
+          <label class="text-sm leading-none font-medium" for="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            class="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+            value="alex@diva.dev"
+          />
+        </div>
+        <button
+          class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center rounded-md px-4 py-2 text-sm font-medium shadow transition-colors"
+          >Save changes</button
+        >
+      </div>
+    </div>
+  </div>
+</AppLayout>

@@ -1,0 +1,26 @@
+---
+const stats = [
+  { label: 'Total Users', value: '2,847', change: '+12%', trend: 'up' },
+  { label: 'Active Today', value: '1,023', change: '+8%', trend: 'up' },
+  { label: 'Revenue (MTD)', value: '$48,290', change: '+23%', trend: 'up' },
+  { label: 'Bounce Rate', value: '24.1%', change: '-3%', trend: 'down' },
+];
+---
+
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  {
+    stats.map((stat) => (
+      <div class="border-border bg-card rounded-xl border p-6 shadow-sm">
+        <p class="text-muted-foreground text-sm">{stat.label}</p>
+        <div class="mt-2 flex items-baseline gap-2">
+          <p class="text-3xl font-bold">{stat.value}</p>
+          <span
+            class={`text-sm font-medium ${stat.trend === 'up' ? 'text-primary' : 'text-destructive'}`}
+          >
+            {stat.change}
+          </span>
+        </div>
+      </div>
+    ))
+  }
+</div>

@@ -1,0 +1,15 @@
+---
+export interface Props {
+  code: string;
+  lang?: string;
+}
+
+const { code, lang = 'bash' } = Astro.props;
+---
+
+<div class="border-border bg-muted relative rounded-lg border">
+  <div class="border-border flex items-center justify-between border-b px-4 py-2">
+    <span class="text-muted-foreground text-xs">{lang}</span>
+  </div>
+  <pre class="overflow-x-auto p-4 text-sm"><code class="text-foreground">{code}</code></pre>
+</div>

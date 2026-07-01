@@ -11,6 +11,11 @@ export default [
     ignores: ['**/dist/**', '**/.astro/**'],
   },
   {
+    rules: {
+      '@typescript-eslint/no-namespace': ['error', { allowDeclarations: true }],
+    },
+  },
+  {
     files: ['*.astro'],
     parser: astroParser,
     parserOptions: {

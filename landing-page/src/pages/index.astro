@@ -1,11 +1,14 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from 'diva-ui/layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import LandingLayout from '../layouts/LandingLayout.astro';
+import Hero from '../components/landing/Hero.astro';
+import Features from '../components/landing/Features.astro';
+import PricingCards from '../components/landing/PricingCards.astro';
+import CtaSection from '../components/landing/CtaSection.astro';
 ---
 
-<Layout>
-  <Welcome />
-</Layout>
+<LandingLayout title="Diva — Build pages your users will love">
+  <Hero />
+  <Features />
+  <PricingCards />
+  <CtaSection />
+</LandingLayout>

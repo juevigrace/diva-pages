@@ -1,0 +1,81 @@
+---
+import { actions } from 'astro:actions';
+import AuthLayout from '../layouts/AuthLayout.astro';
+
+const result = Astro.getActionResult(actions.auth.signUp);
+if (result?.data?.ok) {
+  return Astro.redirect('/dashboard');
+}
+
+const errorMessage = result?.error
+  ? 'fields' in result.error
+    ? Object.values(result.error.fields as Record<string, string[]>)
+        .flat()
+        .join(', ')
+    : result.error.message
+  : null;
+---
+
+<AuthLayout title="Create Account — Diva">
+  <div class="mx-auto w-full max-w-md space-y-6">
+    <div class="text-center">
+      <div class="bg-primary mx-auto flex h-12 w-12 items-center justify-center rounded-xl">
+        <span class="text-primary-foreground text-xl font-bold">D</span>
+      </div>
+      <h1 class="mt-4 text-2xl font-bold tracking-tight">Create an account</h1>
+      <p class="text-muted-foreground mt-2 text-sm">Get started with your free account</p>
+    </div>
+
+    <div class="border-border bg-card rounded-xl border p-8 shadow-sm">
+      {
+        errorMessage && (
+          <div class="border-destructive/50 bg-destructive/10 text-destructive mb-5 rounded-lg border px-4 py-3 text-sm">
+            {errorMessage}
+          </div>
+        )
+      }
+
+      <form method="POST" action={actions.auth.signUp} class="space-y-5">
+        <div class="space-y-2">
+          <label class="text-sm leading-none font-medium" for="username">Username</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            class="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+            placeholder="johndoe"
+          />
+        </div>
+        <div class="space-y-2">
+          <label class="text-sm leading-none font-medium" for="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            class="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+            placeholder="you@example.com"
+          />
+        </div>
+        <div class="space-y-2">
+          <label class="text-sm leading-none font-medium" for="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            class="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+            placeholder="Create a strong password"
+          />
+        </div>
+        <button
+          type="submit"
+          class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 w-full items-center justify-center rounded-md px-4 py-2 text-sm font-medium shadow transition-colors"
+          >Create account</button
+        >
+      </form>
+    </div>
+
+    <p class="text-muted-foreground text-center text-sm">
+      Already have an account? <a href="/sign-in" class="text-primary hover:underline">Sign in</a>
+    </p>
+  </div>
+</AuthLayout>

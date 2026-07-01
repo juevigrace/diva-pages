@@ -1,0 +1,30 @@
+---
+export interface Props {
+  headings: { id: string; label: string; level: number }[];
+}
+
+const { headings } = Astro.props;
+---
+
+<aside class="hidden w-56 shrink-0 xl:block">
+  <nav class="sticky top-16 p-6">
+    <h4 class="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
+      On this page
+    </h4>
+    <ul class="space-y-2">
+      {
+        headings.map((h) => (
+          <li>
+            <a
+              href={`#${h.id}`}
+              class="text-muted-foreground hover:text-foreground block text-sm transition-colors"
+              style={`padding-left: ${(h.level - 2) * 12}px`}
+            >
+              {h.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</aside>

@@ -1,0 +1,98 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import TocSidebar from '../../components/docs/TocSidebar.astro';
+import CodeBlock from '../../components/docs/CodeBlock.astro';
+---
+
+<DocsLayout title="Components — Diva Docs">
+  <div class="flex">
+    <main class="max-w-3xl min-w-0 flex-1">
+      <h1 id="overview" class="text-4xl font-bold tracking-tight">Components</h1>
+      <p class="text-muted-foreground mt-4 text-lg">
+        Diva Pages ships with 20+ shadcn/ui components, all built with Radix UI primitives and
+        Tailwind CSS v4.
+      </p>
+
+      <h2 id="button" class="mt-12 text-2xl font-bold tracking-tight">Button</h2>
+      <p class="text-muted-foreground mt-4 leading-relaxed">
+        A versatile button component with multiple variants and sizes.
+      </p>
+      <div class="mt-4">
+        <CodeBlock
+          code={`import { Button } from 'diva-ui/components/button'
+
+<Button variant="default">Default</Button>
+<Button variant="secondary">Secondary</Button>
+<Button variant="destructive">Destructive</Button>
+<Button variant="outline">Outline</Button>
+<Button variant="ghost">Ghost</Button>
+<Button variant="link">Link</Button>`}
+          lang="tsx"
+        />
+      </div>
+
+      <h2 id="card" class="mt-12 text-2xl font-bold tracking-tight">Card</h2>
+      <p class="text-muted-foreground mt-4 leading-relaxed">
+        A container component for grouping related content.
+      </p>
+      <div class="mt-4">
+        <CodeBlock
+          code={`import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from 'diva-ui/components/card'
+
+<Card>
+  <CardHeader>
+    <CardTitle>Card Title</CardTitle>
+    <CardDescription>Card Description</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p>Card Content</p>
+  </CardContent>
+  <CardFooter>
+    <Button>Action</Button>
+  </CardFooter>
+</Card>`}
+          lang="tsx"
+        />
+      </div>
+
+      <h2 id="forms" class="mt-12 text-2xl font-bold tracking-tight">Forms</h2>
+      <p class="text-muted-foreground mt-4 leading-relaxed">
+        Input, Textarea, Label, Checkbox, Switch, and Select — everything you need for forms.
+      </p>
+      <div class="mt-4">
+        <CodeBlock
+          code={`import { Input } from 'diva-ui/components/input'
+import { Label } from 'diva-ui/components/label'
+import { Checkbox } from 'diva-ui/components/checkbox'
+import { Switch } from 'diva-ui/components/switch'
+
+<Label htmlFor="email">Email</Label>
+<Input id="email" type="email" placeholder="you@example.com" />
+<Checkbox id="terms" />
+<Switch checked={true} />`}
+          lang="tsx"
+        />
+      </div>
+
+      <h2 id="navigation" class="mt-12 text-2xl font-bold tracking-tight">Navigation</h2>
+      <p class="text-muted-foreground mt-4 leading-relaxed">
+        NavigationMenu, Tabs, DropdownMenu, and Command palette for navigation patterns.
+      </p>
+
+      <h2 id="overlay" class="mt-12 text-2xl font-bold tracking-tight">Overlays</h2>
+      <p class="text-muted-foreground mt-4 leading-relaxed">
+        Dialog, Sheet, Popover, and Tooltip for overlay and disclosure patterns.
+      </p>
+    </main>
+    <TocSidebar
+      headings={[
+        { id: 'overview', label: 'Overview', level: 1 },
+        { id: 'button', label: 'Button', level: 2 },
+        { id: 'card', label: 'Card', level: 2 },
+        { id: 'forms', label: 'Forms', level: 2 },
+        { id: 'navigation', label: 'Navigation', level: 2 },
+        { id: 'overlay', label: 'Overlays', level: 2 },
+      ]}
+    />
+  </div>
+</DocsLayout>
