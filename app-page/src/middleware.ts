@@ -1,10 +1,10 @@
 import { defineMiddleware } from 'astro:middleware';
-import type { Session } from 'diva-types';
+import type { SessionResponse } from 'diva-types/auth/responses';
 
 declare global {
   namespace App {
     interface SessionData {
-      auth: Session;
+      auth?: SessionResponse;
     }
     interface Locals {
       session?: {
@@ -19,11 +19,11 @@ declare global {
 
 export const onRequest = defineMiddleware(async (context, next) => {
   if (context.session) {
-    const auth = await context.session.get<Session>('auth');
+    const auth = await context.session.get<SessionResponse>('auth');
     if (auth) {
       context.locals.session = {
-        userId: auth.userId,
-        accessToken: auth.accessToken,
+        userId: auth.user_id,
+        accessToken: auth.access_token,
         status: auth.status,
         type: auth.type,
       };

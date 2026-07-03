@@ -3,7 +3,15 @@
   "type": "module",
   "version": "0.0.1",
   "exports": {
-    ".": "./src/index.ts"
+    "./common/api-response": "./src/common/api-response.ts",
+    "./common/enums": "./src/common/enums.ts",
+    "./auth/dtos": "./src/auth/dtos.ts",
+    "./auth/responses": "./src/auth/responses.ts",
+    "./user/dtos": "./src/user/dtos.ts",
+    "./user/responses": "./src/user/responses.ts",
+    "./permission/dtos": "./src/permission/dtos.ts",
+    "./permission/responses": "./src/permission/responses.ts",
+    "./verification/dtos": "./src/verification/dtos.ts"
   },
   "devDependencies": {
     "typescript": "catalog:"
