@@ -47,7 +47,7 @@ export async function POST({ request, callAction }: APIContext): Promise<Respons
 
     await callAction(actions.session.saveSession, json.data);
 
-    return new Response(JSON.stringify(json), {
+    return new Response(JSON.stringify(json.data), {
       status: res.status,
       headers: { 'Content-Type': 'application/json' },
     });

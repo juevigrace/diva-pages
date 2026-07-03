@@ -1,9 +1,9 @@
-export interface VerifyActionDto {
+export type VerifyActionDto = {
   action_id: string;
   token: string;
-}
+};
 
-export interface RequestActionVerificationDto {
+export type RequestActionVerificationDto = {
   email: string;
   action: string;
-}
+};

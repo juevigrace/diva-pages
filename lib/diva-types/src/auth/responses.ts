@@ -1,4 +1,4 @@
-export interface SessionResponse {
+export type SessionResponse = {
   session_id: string;
   user_id: string;
   access_token: string;
@@ -12,4 +12,4 @@ export interface SessionResponse {
   refresh_expires_at: number;
   created_at: number;
   updated_at: number;
-}
+};

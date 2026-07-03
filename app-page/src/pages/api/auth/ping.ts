@@ -3,7 +3,7 @@ import { actions } from 'astro:actions';
 
 import { API_BASE_URL } from 'astro:env/server';
 
-export async function POST({ request, callAction }: APIContext): Promise<Response> {
+export async function POST({ callAction }: APIContext): Promise<Response> {
   try {
     const { data: session, error } = await callAction(actions.session.getSession, {});
     if (error || !session) {
@@ -17,16 +17,11 @@ export async function POST({ request, callAction }: APIContext): Promise<Respons
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
+        Authorization: `Bearer ${session.access_token}`,
       },
     });
 
-    const json = await res.json();
-
-    return new Response(JSON.stringify(json), {
-      status: res.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(null, { status: res.status });
   } catch (e) {
     const body = { message: `${e}` };
     return new Response(JSON.stringify(body), {

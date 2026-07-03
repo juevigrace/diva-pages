@@ -12,10 +12,13 @@ export async function POST({ request, callAction }: APIContext): Promise<Respons
     const body = await request.json();
     const parsed = signUpInputSchema.safeParse(body);
     if (!parsed.success) {
-      return new Response(JSON.stringify({
-        message: 'Validation failed',
-        fields: parsed.error.flatten().fieldErrors,
-      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+      return new Response(
+        JSON.stringify({
+          message: 'Validation failed',
+          fields: parsed.error.flatten().fieldErrors,
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      );
     }
 
     const dto: SignUpDto = {
@@ -47,7 +50,7 @@ export async function POST({ request, callAction }: APIContext): Promise<Respons
 
     await callAction(actions.session.saveSession, json.data);
 
-    return new Response(JSON.stringify(json), {
+    return new Response(JSON.stringify(json.data), {
       status: res.status,
       headers: { 'Content-Type': 'application/json' },
     });

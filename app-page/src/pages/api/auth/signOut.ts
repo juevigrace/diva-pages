@@ -2,6 +2,7 @@ import type { APIContext } from 'astro';
 import { actions } from 'astro:actions';
 
 import { API_BASE_URL } from 'astro:env/server';
+import type { APIResponse } from 'diva-types/common/api-response';
 
 export async function POST({ request, callAction }: APIContext): Promise<Response> {
   try {
@@ -19,12 +20,12 @@ export async function POST({ request, callAction }: APIContext): Promise<Respons
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
+        Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify(body),
     });
 
-    const json = await res.json();
+    const json: APIResponse<unknown> = await res.json();
 
     if (!res.ok) {
       return new Response(JSON.stringify(json), {
@@ -35,10 +36,7 @@ export async function POST({ request, callAction }: APIContext): Promise<Respons
 
     await callAction(actions.session.deleteSession, {});
 
-    return new Response(JSON.stringify(json), {
-      status: res.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(null, { status: res.status });
   } catch (e) {
     const body = { message: `${e}` };
     return new Response(JSON.stringify(body), {

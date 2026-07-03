@@ -1,4 +1,4 @@
-export interface PermissionResponse {
+export type PermissionResponse = {
   id: string;
   name: string;
   description: string;
@@ -6,4 +6,4 @@ export interface PermissionResponse {
   role_level: string;
   created_at: number;
   updated_at: number;
-}
+};

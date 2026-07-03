@@ -1,71 +1,73 @@
-export interface CreateUserDto {
+import type { RoleType, UserStatusType, ThemeType } from '../common/enums';
+
+export type CreateUserDto = {
   email: string;
   username: string;
   password: string;
-}
+};
 
-export interface CreateProfileDto {
+export type CreateProfileDto = {
   first_name: string;
   last_name: string;
   alias: string;
   bio?: string;
   birth_date: number;
-}
+};
 
-export interface UpdateProfileDto {
+export type UpdateProfileDto = {
   first_name: string;
   last_name: string;
   alias: string;
   bio?: string;
   birth_date: number;
-}
+};
 
-export interface UpdateUsernameDto {
+export type UpdateUsernameDto = {
   username: string;
-}
+};
 
-export interface UpdatePasswordDto {
+export type UpdatePasswordDto = {
   new_password: string;
-}
+};
 
-export interface UpdatePhoneNumberDto {
+export type UpdatePhoneNumberDto = {
   phone_number: string;
-}
+};
 
-export interface UpdateEmailDto {
+export type UpdateEmailDto = {
   email: string;
-}
+};
 
-export interface UpdateRole {
-  role: 'USER' | 'MODERATOR' | 'ADMIN';
-}
+export type UpdateRole = {
+  role: RoleType;
+};
 
-export interface UpdateVerified {
+export type UpdateVerified = {
   verified: boolean;
-}
+};
 
-export interface UpdateUserStatus {
-  status: 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
-}
+export type UpdateUserStatus = {
+  status: UserStatusType;
+};
 
-export interface CreateUserPermissionDto {
+export type CreateUserPermissionDto = {
   permission_action: string;
   granted: boolean;
   expires_at?: number | null;
-}
+};
 
-export interface UpdateUserPermissionDto {
+export type UpdateUserPermissionDto = {
   granted: boolean;
   expires_at?: number | null;
-}
+};
 
-export interface CreateUserPreferencesDto {
-  theme: 'LIGHT' | 'DARK' | 'SYSTEM';
+export type CreateUserPreferencesDto = {
+  theme: ThemeType;
   onboarding_completed: boolean;
   language: string;
-}
+};
 
-export interface UpdateUserPreferencesDto {
-  theme: 'LIGHT' | 'DARK' | 'SYSTEM';
+export type UpdateUserPreferencesDto = {
+  theme: ThemeType;
   language: string;
-}
+};

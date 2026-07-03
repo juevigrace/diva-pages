@@ -1,10 +1,10 @@
-export interface UserStateResponse {
+export type UserStateResponse = {
   verified: boolean;
   status: string;
   last_active_at: number;
-}
+};
 
-export interface UserResponse {
+export type UserResponse = {
   id: string;
   username: string;
   email: string;
@@ -14,9 +14,9 @@ export interface UserResponse {
   created_at: number;
   updated_at: number;
   deleted_at: number | null;
-}
+};
 
-export interface UserProfileResponse {
+export type UserProfileResponse = {
   first_name: string;
   last_name: string;
   birth_date: number;
@@ -24,18 +24,18 @@ export interface UserProfileResponse {
   alias: string;
   avatar: string;
   bio: string;
-}
+};
 
-export interface UserPermissionResponse {
+export type UserPermissionResponse = {
   permission_id: string;
   granted_by: string | null;
   granted: boolean;
   granted_at: number;
   expires_at: number | null;
   updated_at: number;
-}
+};
 
-export interface UserPreferencesResponse {
+export type UserPreferencesResponse = {
   id: string;
   theme: string;
   onboarding_completed: boolean;
@@ -43,9 +43,9 @@ export interface UserPreferencesResponse {
   last_sync_at: number;
   created_at: number;
   updated_at: number;
-}
+};
 
-export interface UserActionResponse {
+export type UserActionResponse = {
   id: string;
   action_name: string;
-}
+};

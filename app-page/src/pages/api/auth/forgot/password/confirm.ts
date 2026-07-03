@@ -6,16 +6,20 @@ import { forgotPasswordConfirmSchema } from '@lib/schemas/auth';
 import type { APIResponse } from 'diva-types/common/api-response';
 import type { SessionResponse } from 'diva-types/auth/responses';
 import type { ForgotPasswordConfirmDto } from 'diva-types/auth/dtos';
+import z from 'zod';
 
 export async function POST({ request, callAction }: APIContext): Promise<Response> {
   try {
     const body = await request.json();
     const parsed = forgotPasswordConfirmSchema.safeParse(body);
     if (!parsed.success) {
-      return new Response(JSON.stringify({
-        message: 'Validation failed',
-        fields: parsed.error.flatten().fieldErrors,
-      }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+      return new Response(
+        JSON.stringify({
+          message: 'Validation failed',
+          fields: z.treeifyError(parsed.error),
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      );
     }
 
     const dto: ForgotPasswordConfirmDto = {
@@ -43,7 +47,7 @@ export async function POST({ request, callAction }: APIContext): Promise<Respons
 
     await callAction(actions.session.saveSession, json.data);
 
-    return new Response(JSON.stringify(json), {
+    return new Response(JSON.stringify(json.data), {
       status: res.status,
       headers: { 'Content-Type': 'application/json' },
     });

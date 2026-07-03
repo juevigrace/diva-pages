@@ -1,24 +1,22 @@
-export interface SessionDataDto {
+import type { CreateUserDto } from '../user/dtos';
+
+export type SessionDataDto = {
   device: string;
   user_agent: string;
-}
+};
 
-export interface SignInDto {
+export type SignInDto = {
   username: string;
   password: string;
   session_data: SessionDataDto;
-}
+};
 
-export interface SignUpDto {
-  user: {
-    email: string;
-    username: string;
-    password: string;
-  };
+export type SignUpDto = {
+  user: CreateUserDto;
   session_data: SessionDataDto;
-}
+};
 
-export interface ForgotPasswordConfirmDto {
+export type ForgotPasswordConfirmDto = {
   id: string;
   session_data: SessionDataDto;
-}
+};

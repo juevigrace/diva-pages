@@ -1,11 +1,13 @@
-export interface CreatePermissionDto {
+import type { RoleType } from '../common/enums';
+
+export type CreatePermissionDto = {
   name: string;
   description: string;
   action: string;
-  level: 'USER' | 'MODERATOR' | 'ADMIN';
-}
+  level: RoleType;
+};
 
-export interface UpdatePermissionDto {
+export type UpdatePermissionDto = {
   name: string;
   description: string;
-}
+};
