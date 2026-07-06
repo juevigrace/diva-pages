@@ -1,6 +1,6 @@
 ---
 import AppLayout from '@layouts/AppLayout.astro';
-import UsersManager from '@components/app/UsersManager';
+import PermissionsManager from '@components/app/PermissionsManager';
 import { API_BASE_URL } from 'astro:env/server';
 
 const { session } = Astro.locals;
@@ -8,15 +8,15 @@ const uid = session!.userId;
 
 const url = new URL(Astro.request.url);
 const currentPage = parseInt(url.searchParams.get('page') || '1', 10);
-const limit = 10;
+const limit = 20;
 
-let usersData: Record<string, any>[] = [];
+let permissionsData: Record<string, any>[] = [];
 let totalItems = 0;
 let totalPages = 1;
 let loadError = false;
 
 try {
-  const res = await fetch(`${API_BASE_URL}/api/user/?page=${currentPage}&limit=${limit}`, {
+  const res = await fetch(`${API_BASE_URL}/api/permissions/?page=${currentPage}&limit=${limit}`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${session!.accessToken}`,
@@ -24,7 +24,7 @@ try {
   });
   if (res.ok) {
     const json = await res.json();
-    usersData = json.data?.items || [];
+    permissionsData = json.data?.items || [];
     totalItems = json.data?.pagination_info?.total_items || 0;
     totalPages = json.data?.pagination_info?.total_pages || 1;
   } else {
@@ -36,12 +36,12 @@ try {
 ---
 
 <AppLayout
-  title="Users — Diva"
-  heading="Users"
-  description="Manage your Diva Pages team members and their permissions."
+  title="Permissions — Diva"
+  heading="Permissions"
+  description="Manage permission definitions."
 >
-  <UsersManager
-    initialUsers={usersData}
+  <PermissionsManager
+    initialPermissions={permissionsData}
     initialPage={currentPage}
     initialTotalPages={totalPages}
     initialTotalItems={totalItems}

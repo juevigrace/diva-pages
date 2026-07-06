@@ -1,5 +1,5 @@
 ---
-
+import ContactFormWidget from './ContactFormWidget';
 ---
 
 <section class="py-16 md:py-24">
@@ -68,70 +68,7 @@
           </div>
         </div>
         <div class="border-border bg-card rounded-xl border p-8 shadow-sm">
-          <form class="space-y-5">
-            <div class="grid gap-5 sm:grid-cols-2">
-              <div class="space-y-2">
-                <label
-                  class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  for="first-name">First name</label
-                >
-                <input
-                  id="first-name"
-                  class="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Jane"
-                />
-              </div>
-              <div class="space-y-2">
-                <label
-                  class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  for="last-name">Last name</label
-                >
-                <input
-                  id="last-name"
-                  class="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Doe"
-                />
-              </div>
-            </div>
-            <div class="space-y-2">
-              <label
-                class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                for="email">Email</label
-              >
-              <input
-                id="email"
-                type="email"
-                class="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="jane@example.com"
-              />
-            </div>
-            <div class="space-y-2">
-              <label
-                class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                for="subject">Subject</label
-              >
-              <input
-                id="subject"
-                class="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="How can we help?"
-              />
-            </div>
-            <div class="space-y-2">
-              <label
-                class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                for="message">Message</label
-              >
-              <textarea
-                id="message"
-                class="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[120px] w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Tell us about your project..."></textarea>
-            </div>
-            <button
-              type="submit"
-              class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 w-full items-center justify-center rounded-md px-4 py-2 text-sm font-medium shadow transition-colors"
-              >Send message</button
-            >
-          </form>
+          <ContactFormWidget client:load />
         </div>
       </div>
     </div>

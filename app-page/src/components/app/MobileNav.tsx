@@ -13,7 +13,7 @@ interface MobileNavProps {
 }
 
 function isActive(href: string, currentPath: string) {
-  if (href === '/dashboard') return currentPath === '/dashboard';
+  if (href === '/') return currentPath === '/';
   return currentPath.startsWith(href);
 }
 

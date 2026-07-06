@@ -13,7 +13,7 @@ export const navItems: NavSection[] = [
   {
     section: 'Main',
     items: [
-      { href: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
+      { href: '/', label: 'Dashboard', icon: 'dashboard' },
       { href: '/users', label: 'Users', icon: 'users' },
       { href: '/settings', label: 'Settings', icon: 'settings' },
     ],
@@ -21,5 +21,9 @@ export const navItems: NavSection[] = [
   {
     section: 'Account',
     items: [{ href: '/profile', label: 'Profile', icon: 'profile' }],
+  },
+  {
+    section: 'Admin',
+    items: [{ href: '/admin/permissions', label: 'Permissions', icon: 'settings' }],
   },
 ];

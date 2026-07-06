@@ -1,9 +1,10 @@
 ---
-import ThemeToggle from '@components/app/ThemeToggle.astro';
-import UserMenu from '@components/app/UserMenu.astro';
+import ThemeToggle from '@components/app/ThemeToggle';
+import UserMenuContent from '@components/app/UserMenuContent';
 import MobileNav from '@components/app/MobileNav';
 
 const currentPath = Astro.url.pathname;
+const { session } = Astro.locals;
 ---
 
 <header
@@ -15,8 +16,8 @@ const currentPath = Astro.url.pathname;
       <h2 class="text-lg font-semibold"><slot name="title" /></h2>
     </div>
     <div class="flex items-center gap-4">
-      <ThemeToggle />
-      <UserMenu />
+      <ThemeToggle client:load />
+      <UserMenuContent signedIn={!!session} client:load />
     </div>
   </div>
 </header>

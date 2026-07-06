@@ -1,5 +1,41 @@
 ---
 import AppLayout from '@layouts/AppLayout.astro';
+import SettingsContent from '@components/app/SettingsContent';
+import { API_BASE_URL } from 'astro:env/server';
+
+const { session } = Astro.locals;
+const uid = session!.userId;
+
+let preferencesList: Record<string, any>[] | null = null;
+let sessions: Record<string, any>[] | null = null;
+
+try {
+  const prefRes = await fetch(`${API_BASE_URL}/api/user/${uid}/preferences`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session!.accessToken}`,
+    },
+  });
+  if (prefRes.ok) {
+    const json = await prefRes.json();
+    preferencesList = json.data;
+  }
+} catch (_) {}
+
+try {
+  const sessRes = await fetch(`${API_BASE_URL}/api/user/${uid}/sessions`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session!.accessToken}`,
+    },
+  });
+  if (sessRes.ok) {
+    const json = await sessRes.json();
+    sessions = json.data;
+  }
+} catch (_) {}
+
+const preferences = preferencesList && preferencesList.length > 0 ? preferencesList[0] : null;
 ---
 
 <AppLayout
@@ -7,80 +43,10 @@ import AppLayout from '@layouts/AppLayout.astro';
   heading="Settings"
   description="Manage your Diva Pages workspace settings."
 >
-  <div class="mx-auto max-w-3xl space-y-8">
-    <div class="border-border bg-card rounded-xl border p-8 shadow-sm">
-      <h3 class="text-lg font-semibold">General</h3>
-      <p class="text-muted-foreground mt-1 text-sm">Basic workspace settings.</p>
-      <div class="mt-6 space-y-5">
-        <div class="space-y-2">
-          <label class="text-sm leading-none font-medium" for="workspace-name">Workspace name</label
-          >
-          <input
-            id="workspace-name"
-            class="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
-            value="Diva"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="text-sm leading-none font-medium" for="workspace-slug">Workspace slug</label
-          >
-          <input
-            id="workspace-slug"
-            class="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
-            value="diva"
-          />
-        </div>
-        <button
-          class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center rounded-md px-4 py-2 text-sm font-medium shadow transition-colors"
-          >Save changes</button
-        >
-      </div>
-    </div>
-
-    <div class="border-border bg-card rounded-xl border p-8 shadow-sm">
-      <h3 class="text-lg font-semibold">Notifications</h3>
-      <p class="text-muted-foreground mt-1 text-sm">Choose what notifications you receive.</p>
-      <div class="mt-6 space-y-5">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium">Email notifications</p>
-            <p class="text-muted-foreground text-xs">Receive email updates about your workspace</p>
-          </div>
-          <div
-            class="border-input bg-primary flex h-6 w-11 items-center rounded-full border shadow-sm"
-          >
-            <div class="bg-background mr-0.5 ml-auto h-5 w-5 rounded-full shadow-sm"></div>
-          </div>
-        </div>
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium">Activity digest</p>
-            <p class="text-muted-foreground text-xs">Get a weekly summary of activity</p>
-          </div>
-          <div
-            class="border-input bg-background flex h-6 w-11 items-center rounded-full border shadow-sm"
-          >
-            <div class="bg-background ml-0.5 h-5 w-5 rounded-full shadow-sm"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="border-destructive/20 bg-card rounded-xl border p-8 shadow-sm">
-      <h3 class="text-destructive text-lg font-semibold">Danger Zone</h3>
-      <p class="text-muted-foreground mt-1 text-sm">Irreversible actions for your workspace.</p>
-      <div class="border-border mt-6 flex items-center justify-between rounded-lg border p-4">
-        <div>
-          <p class="text-sm font-medium">Delete workspace</p>
-          <p class="text-muted-foreground text-xs">
-            Permanently delete your workspace and all data
-          </p>
-        </div>
-        <button
-          class="border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90 inline-flex h-9 items-center justify-center rounded-md border px-4 py-2 text-sm font-medium shadow-sm transition-colors"
-          >Delete</button
-        >
-      </div>
-    </div>
-  </div>
+  <SettingsContent
+    uid={uid}
+    initialPreferences={preferences}
+    initialSessions={sessions}
+    client:load
+  />
 </AppLayout>

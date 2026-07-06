@@ -1,0 +1,302 @@
+import { useState } from 'react';
+import { Button } from 'diva-ui/components/button';
+
+interface ProfileFormsProps {
+  uid: string;
+  user: Record<string, any> | null;
+  profile: Record<string, any> | null;
+}
+
+export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) {
+  const displayName = profile
+    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || user?.username || 'User'
+    : user?.username || 'User';
+  const initials = displayName
+    .split(' ')
+    .map((n: string) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  const [firstName, setFirstName] = useState(profile?.first_name || '');
+  const [lastName, setLastName] = useState(profile?.last_name || '');
+  const [alias, setAlias] = useState(profile?.alias || '');
+  const [bio, setBio] = useState(profile?.bio || '');
+  const [birthDate, setBirthDate] = useState(
+    profile?.birth_date ? new Date(profile.birth_date * 1000).toISOString().split('T')[0] : ''
+  );
+  const [email, setEmail] = useState(user?.email || '');
+  const [phone, setPhone] = useState(user?.phone_number || '');
+  const [username, setUsername] = useState(user?.username || '');
+  const [newPassword, setNewPassword] = useState('');
+  const [profileStatus, setProfileStatus] = useState('');
+  const [profileError, setProfileError] = useState(false);
+  const [emailStatus, setEmailStatus] = useState('');
+  const [emailError, setEmailError] = useState(false);
+  const [phoneStatus, setPhoneStatus] = useState('');
+  const [phoneError, setPhoneError] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState('');
+  const [usernameError, setUsernameError] = useState(false);
+  const [passwordStatus, setPasswordStatus] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+
+  const showStatus = (setter: (s: string) => void, _setError: (e: boolean) => void, msg: string, isError: boolean) => {
+    setter(msg);
+    _setError(isError);
+    setTimeout(() => { setter(''); }, 3000);
+  };
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const body: Record<string, any> = { first_name: firstName, last_name: lastName, alias, bio };
+    if (birthDate) body.birth_date = Math.floor(new Date(birthDate).getTime() / 1000);
+    const res = await fetch(`/api/user/${uid}/profile`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) {
+      showStatus(setProfileStatus, setProfileError, 'Profile updated.', false);
+    } else {
+      const json = await res.json();
+      showStatus(setProfileStatus, setProfileError, json.message || 'Failed to update profile', true);
+    }
+  };
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await fetch(`/api/user/${uid}/email`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (res.ok) {
+      showStatus(setEmailStatus, setEmailError, 'Email updated.', false);
+    } else {
+      const json = await res.json();
+      showStatus(setEmailStatus, setEmailError, json.message || 'Failed to update email', true);
+    }
+  };
+
+  const handlePhoneSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await fetch(`/api/user/${uid}/phone`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone_number: phone }),
+    });
+    if (res.ok) {
+      showStatus(setPhoneStatus, setPhoneError, 'Phone updated.', false);
+    } else {
+      const json = await res.json();
+      showStatus(setPhoneStatus, setPhoneError, json.message || 'Failed to update phone', true);
+    }
+  };
+
+  const handleUsernameSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await fetch(`/api/user/${uid}/username`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username }),
+    });
+    if (res.ok) {
+      showStatus(setUsernameStatus, setUsernameError, 'Username updated.', false);
+    } else {
+      const json = await res.json();
+      showStatus(setUsernameStatus, setUsernameError, json.message || 'Failed to update username', true);
+    }
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await fetch(`/api/user/${uid}/password`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ new_password: newPassword }),
+    });
+    if (res.ok) {
+      showStatus(setPasswordStatus, setPasswordError, 'Password changed.', false);
+      setNewPassword('');
+    } else {
+      const json = await res.json();
+      showStatus(setPasswordStatus, setPasswordError, json.message || 'Failed to change password', true);
+    }
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const res = await fetch(`/api/user/${uid}/profile/avatar`, {
+      method: 'PATCH',
+      body: formData,
+    });
+    if (res.ok) {
+      showStatus(setProfileStatus, setProfileError, 'Photo updated. Refresh to see changes.', false);
+    } else {
+      const json = await res.json();
+      showStatus(setProfileStatus, setProfileError, json.message || 'Failed to update photo', true);
+    }
+  };
+
+  return (
+    <div className="mx-auto max-w-3xl space-y-8">
+      <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
+        <div className="flex items-start gap-6">
+          <div className="bg-primary/10 text-primary flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold">
+            {initials}
+          </div>
+          <div className="flex-1">
+            <h3 className="text-xl font-semibold">{displayName}</h3>
+            <p className="text-muted-foreground text-sm">{user?.email || ''}</p>
+            {user?.role && (
+              <p className="bg-primary/10 text-primary mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                {user.role}
+              </p>
+            )}
+          </div>
+          <label>
+            <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+            <Button type="button" variant="outline" size="sm" onClick={() => {
+              const input = document.querySelector<HTMLInputElement>('input[accept="image/*"]');
+              input?.click();
+            }}>
+              Change photo
+            </Button>
+          </label>
+        </div>
+      </div>
+
+      <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
+        <h3 className="text-lg font-semibold">Personal Information</h3>
+        <form onSubmit={handleProfileSubmit} className="mt-6 space-y-5">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label className="text-sm leading-none font-medium" htmlFor="first-name">First name</label>
+              <input
+                id="first-name"
+                className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm leading-none font-medium" htmlFor="last-name">Last name</label>
+              <input
+                id="last-name"
+                className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm leading-none font-medium" htmlFor="alias">Display alias</label>
+            <input
+              id="alias"
+              className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+              value={alias}
+              onChange={(e) => setAlias(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm leading-none font-medium" htmlFor="bio">Bio</label>
+            <textarea
+              id="bio"
+              rows={3}
+              className="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm leading-none font-medium" htmlFor="birth-date">Birth date</label>
+            <input
+              id="birth-date"
+              type="date"
+              className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <Button type="submit">Save changes</Button>
+            <span className={`text-xs ${profileError ? 'text-destructive' : 'text-muted-foreground'}`}>
+              {profileStatus}
+            </span>
+          </div>
+        </form>
+      </div>
+
+      <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
+        <h3 className="text-lg font-semibold">Contact Information</h3>
+        <div className="mt-6 space-y-5">
+          <form onSubmit={handleEmailSubmit} className="space-y-2">
+            <label className="text-sm leading-none font-medium" htmlFor="email">Email</label>
+            <div className="flex gap-3">
+              <input
+                id="email"
+                type="email"
+                className="border-input bg-background focus-visible:ring-ring flex h-10 flex-1 rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <Button type="submit" size="sm">Update</Button>
+            </div>
+            <span className={`text-xs ${emailError ? 'text-destructive' : 'text-muted-foreground'}`}>{emailStatus}</span>
+          </form>
+          <form onSubmit={handlePhoneSubmit} className="space-y-2">
+            <label className="text-sm leading-none font-medium" htmlFor="phone">Phone number</label>
+            <div className="flex gap-3">
+              <input
+                id="phone"
+                type="tel"
+                className="border-input bg-background focus-visible:ring-ring flex h-10 flex-1 rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+              <Button type="submit" size="sm">Update</Button>
+            </div>
+            <span className={`text-xs ${phoneError ? 'text-destructive' : 'text-muted-foreground'}`}>{phoneStatus}</span>
+          </form>
+        </div>
+      </div>
+
+      <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
+        <h3 className="text-lg font-semibold">Account</h3>
+        <div className="mt-6 space-y-5">
+          <form onSubmit={handleUsernameSubmit} className="space-y-2">
+            <label className="text-sm leading-none font-medium" htmlFor="username">Username</label>
+            <div className="flex gap-3">
+              <input
+                id="username"
+                className="border-input bg-background focus-visible:ring-ring flex h-10 flex-1 rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+              <Button type="submit" size="sm">Update</Button>
+            </div>
+            <span className={`text-xs ${usernameError ? 'text-destructive' : 'text-muted-foreground'}`}>{usernameStatus}</span>
+          </form>
+          <form onSubmit={handlePasswordSubmit} className="space-y-2">
+            <label className="text-sm leading-none font-medium" htmlFor="new-password">New password</label>
+            <div className="flex gap-3">
+              <input
+                id="new-password"
+                type="password"
+                placeholder="New password"
+                className="border-input bg-background focus-visible:ring-ring flex h-10 flex-1 rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <Button type="submit" size="sm">Change</Button>
+            </div>
+            <span className={`text-xs ${passwordError ? 'text-destructive' : 'text-muted-foreground'}`}>{passwordStatus}</span>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}

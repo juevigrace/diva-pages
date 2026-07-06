@@ -17,6 +17,24 @@ declare global {
   }
 }
 
+const publicRoutes = [
+  '/home',
+  '/signIn',
+  '/signUp',
+  '/about',
+  '/contact',
+  '/pricing',
+  '/docs',
+  '/api',
+  '/_astro',
+  '/robots.txt',
+  '/404',
+];
+
+function isPublicRoute(pathname: string): boolean {
+  return publicRoutes.some((route) => pathname === route || pathname.startsWith(route + '/'));
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   if (context.session) {
     const auth = await context.session.get<SessionResponse>('auth');
@@ -29,5 +47,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
       };
     }
   }
+
+  const { pathname } = context.url;
+
+  if (
+    context.request.method === 'GET' &&
+    !isPublicRoute(pathname) &&
+    !context.locals.session
+  ) {
+    return context.redirect('/home');
+  }
+
   return next();
 });
