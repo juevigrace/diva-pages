@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import { Button } from 'diva-ui/components/button';
+import { toast } from 'diva-ui/components/sonner';
 
 export default function SignInForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
 
     const res = await fetch('/api/auth/signIn', {
       method: 'POST',
@@ -18,14 +17,14 @@ export default function SignInForm() {
       body: JSON.stringify({ username, password }),
     });
 
-    const json = await res.json();
-
     if (res.ok) {
       window.location.href = '/';
-    } else {
-      setError(json.message || 'An error occurred');
-      setLoading(false);
+      return;
     }
+
+    const json = await res.json();
+    toast.error(json.message || 'An error occurred');
+    setLoading(false);
   };
 
   return (
@@ -39,12 +38,6 @@ export default function SignInForm() {
       </div>
 
       <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
-        {error && (
-          <div className="border-destructive/50 bg-destructive/10 text-destructive mb-5 rounded-lg border px-4 py-3 text-sm">
-            {error}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <label className="text-sm leading-none font-medium" htmlFor="username">Email or username</label>

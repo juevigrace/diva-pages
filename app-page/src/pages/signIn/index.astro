@@ -1,18 +1,8 @@
 ---
 import AuthLayout from '@layouts/AuthLayout.astro';
 import SignInForm from '@components/auth/SignInForm';
-
-const errorMessage = Astro.url.searchParams.get('error');
-if (Astro.url.searchParams.get('ok') === 'true') {
-  return Astro.redirect('/');
-}
 ---
 
 <AuthLayout title="Sign In — Diva" description="Sign in to your Diva Pages account to continue.">
-  {errorMessage && (
-    <div class="border-destructive/50 bg-destructive/10 text-destructive mx-auto mb-5 max-w-md rounded-lg border px-4 py-3 text-sm">
-      {errorMessage}
-    </div>
-  )}
   <SignInForm client:load />
 </AuthLayout>

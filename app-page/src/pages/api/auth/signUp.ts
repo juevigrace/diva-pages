@@ -9,16 +9,32 @@ import type { SignUpDto } from 'diva-types/auth/dtos';
 
 export async function POST({ request, callAction }: APIContext): Promise<Response> {
   try {
-    const body = await request.json();
+    const contentType = request.headers.get('content-type') || '';
+    let body: Record<string, unknown>;
+    if (contentType.includes('application/json')) {
+      body = await request.json();
+    } else {
+      const fd = await request.formData();
+      body = Object.fromEntries(fd.entries());
+    }
+
     const parsed = signUpInputSchema.safeParse(body);
     if (!parsed.success) {
-      return new Response(
-        JSON.stringify({
-          message: 'Validation failed',
-          fields: parsed.error.flatten().fieldErrors,
-        }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } },
-      );
+      const fields = parsed.error.flatten().fieldErrors;
+      const message = Object.values(fields).flat().join('. ');
+      const isHtmx = request.headers.get('HX-Request') === 'true';
+      if (isHtmx) {
+        return new Response(null, {
+          status: 200,
+          headers: {
+            'HX-Trigger': JSON.stringify({ showToast: { type: 'error', message: message || 'Validation failed' } }),
+          },
+        });
+      }
+      return new Response(JSON.stringify({ message: message || 'Validation failed', fields }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     const dto: SignUpDto = {
@@ -42,23 +58,28 @@ export async function POST({ request, callAction }: APIContext): Promise<Respons
     const json: APIResponse<SessionResponse> = await res.json();
 
     if (!res.ok) {
-      return new Response(JSON.stringify(json), {
-        status: res.status,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const isHtmx = request.headers.get('HX-Request') === 'true';
+      if (isHtmx) {
+        return new Response(null, {
+          status: 200,
+          headers: {
+            'HX-Trigger': JSON.stringify({ showToast: { type: 'error', message: json.message || 'An error occurred' } }),
+          },
+        });
+      }
+      return new Response(JSON.stringify(json), { status: res.status, headers: { 'Content-Type': 'application/json' } });
     }
 
     await callAction(actions.session.saveSession, json.data);
 
-    return new Response(JSON.stringify(json.data), {
-      status: res.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const isHtmx = request.headers.get('HX-Request') === 'true';
+    if (isHtmx) {
+      return new Response(null, { status: 200, headers: { 'HX-Redirect': '/' } });
+    }
+
+    return new Response(JSON.stringify(json.data), { status: res.status, headers: { 'Content-Type': 'application/json' } });
   } catch (e) {
     const body = { message: `${e}` };
-    return new Response(JSON.stringify(body), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(JSON.stringify(body), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }

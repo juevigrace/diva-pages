@@ -1,10 +1,9 @@
 ---
 import Layout from '@layouts/Layout.astro';
+import VerificationResult from '@components/auth/VerificationResult';
 
 const actionId = Astro.url.searchParams.get('action_id');
 const token = Astro.url.searchParams.get('token');
-const verified = Astro.url.searchParams.get('ok') === 'true';
-const errorMessage = Astro.url.searchParams.get('error');
 ---
 
 <Layout title="Verify — Diva" description="Email verification">
@@ -14,36 +13,8 @@ const errorMessage = Astro.url.searchParams.get('error');
         <span class="text-primary-foreground text-2xl font-bold">D</span>
       </div>
 
-      {verified ? (
-        <>
-          <h1 class="mt-6 text-3xl font-bold tracking-tight">Email verified</h1>
-          <p class="text-muted-foreground mt-3">
-            Your email has been verified successfully. You can now sign in to your account.
-          </p>
-          <a
-            href="/signIn"
-            class="bg-primary text-primary-foreground hover:bg-primary/90 mt-8 inline-flex h-10 items-center justify-center rounded-md px-6 text-sm font-medium shadow transition-colors"
-          >
-            Sign in
-          </a>
-        </>
-      ) : errorMessage ? (
-        <>
-          <h1 class="mt-6 text-3xl font-bold tracking-tight">Verification failed</h1>
-          <p class="text-muted-foreground mt-3">{errorMessage}</p>
-          <a
-            href="/signIn"
-            class="bg-primary text-primary-foreground hover:bg-primary/90 mt-8 inline-flex h-10 items-center justify-center rounded-md px-6 text-sm font-medium shadow transition-colors"
-          >
-            Back to sign in
-          </a>
-        </>
-      ) : actionId && token ? (
-        <VerificationClient
-          actionId={actionId}
-          token={token}
-          client:load
-        />
+      {actionId && token ? (
+        <VerificationResult actionId={actionId} token={token} client:load />
       ) : (
         <>
           <h1 class="mt-6 text-3xl font-bold tracking-tight">Invalid verification link</h1>
@@ -61,7 +32,3 @@ const errorMessage = Astro.url.searchParams.get('error');
     </div>
   </div>
 </Layout>
-
-<script>
-  import VerificationClient from '@components/auth/VerificationClient';
-</script>

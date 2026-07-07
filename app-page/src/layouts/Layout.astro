@@ -1,4 +1,5 @@
 ---
+import { Toaster } from 'diva-ui/components/sonner';
 import '@styles/global.css';
 
 export interface Props {
@@ -27,6 +28,16 @@ const {
   </head>
   <body class="bg-background text-foreground min-h-screen font-sans antialiased">
     <slot />
+    <Toaster client:load />
+    <script>
+      document.addEventListener('showToast', (e) => {
+        const { type, message } = e.detail;
+        import('diva-ui/components/sonner').then(({ toast }) => {
+          if (type === 'error') toast.error(message);
+          else toast.success(message);
+        });
+      });
+    </script>
     <script is:inline>
       const getThemePreference = () => {
         if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
