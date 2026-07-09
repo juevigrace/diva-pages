@@ -1,44 +1,15 @@
 import type { APIContext } from 'astro';
-import { actions } from 'astro:actions';
-import { API_BASE_URL } from 'astro:env/server';
-import type { APIResponse } from 'diva-types/common/api-response';
-import type { UpdateUserStatus } from 'diva-types/user/dtos';
+import { requireSession } from '@api/lib/guard';
+import { apiPut } from '@api/lib/fetch';
+import { nullResponse, apiError } from '@api/lib/response';
 
 export async function PUT({ params, request, callAction }: APIContext): Promise<Response> {
   try {
-    const { data: session, error } = await callAction(actions.session.getSession, {});
-    if (error || !session) {
-      return new Response(JSON.stringify({ message: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    const body: UpdateUserStatus = await request.json();
-
-    const res = await fetch(`${API_BASE_URL}/api/user/${params.uid}/status`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify(body),
-    });
-
-    const json: APIResponse<unknown> = await res.json();
-
-    if (!res.ok) {
-      return new Response(JSON.stringify(json), {
-        status: res.status,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    return new Response(null, { status: res.status });
+    const result = await requireSession(callAction);
+    if (!result.ok) return result.error;
+    const { session } = result;
+    return nullResponse(await apiPut(`/api/user/${params.uid}/status`, await request.json(), session.access_token));
   } catch (e) {
-    return new Response(JSON.stringify({ message: `${e}` }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return apiError(e);
   }
 }

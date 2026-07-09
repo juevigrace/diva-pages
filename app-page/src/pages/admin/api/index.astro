@@ -1,0 +1,205 @@
+---
+import AppLayout from '@layouts/AppLayout.astro';
+
+interface Endpoint {
+  method: string;
+  path: string;
+  description: string;
+  ui: string | null;
+}
+
+const modules: { name: string; icon: string; endpoints: Endpoint[] }[] = [
+  {
+    name: 'Authentication',
+    icon: '🔐',
+    endpoints: [
+      { method: 'POST', path: '/api/auth/signUp', description: 'Register a new user account', ui: '/signUp' },
+      { method: 'POST', path: '/api/auth/signIn', description: 'Sign in with username/password', ui: '/signIn' },
+      { method: 'POST', path: '/api/auth/signOut', description: 'Sign out and invalidate session', ui: '—' },
+      { method: 'POST', path: '/api/auth/refresh', description: 'Refresh access token', ui: '—' },
+      { method: 'POST', path: '/api/auth/ping', description: 'Check if session is still valid', ui: '—' },
+      { method: 'POST', path: '/api/auth/forgot/password/confirm', description: 'Confirm password reset', ui: '—' },
+    ],
+  },
+  {
+    name: 'User Management',
+    icon: '👥',
+    endpoints: [
+      { method: 'GET', path: '/api/user', description: 'List all users (paginated)', ui: '/users' },
+      { method: 'POST', path: '/api/user', description: 'Create a new user', ui: '/users' },
+      { method: 'GET', path: '/api/user/{uid}', description: 'Get user by ID', ui: '/users/[uid]' },
+      { method: 'DELETE', path: '/api/user/{uid}', description: 'Soft-delete a user', ui: '/users/[uid]' },
+      { method: 'PATCH', path: '/api/user/{uid}/email', description: 'Update user email', ui: '/profile' },
+      { method: 'PATCH', path: '/api/user/{uid}/phone', description: 'Update user phone number', ui: '/profile' },
+      { method: 'PATCH', path: '/api/user/{uid}/username', description: 'Update username', ui: '/profile' },
+      { method: 'PATCH', path: '/api/user/{uid}/password', description: 'Change password', ui: '/profile' },
+      { method: 'PATCH', path: '/api/user/{uid}/role', description: 'Change user role (admin)', ui: '/users/[uid]' },
+      { method: 'PATCH', path: '/api/user/{uid}/restore', description: 'Restore soft-deleted user', ui: '/users/[uid]' },
+      { method: 'DELETE', path: '/api/user/{uid}/forever', description: 'Permanently delete user', ui: '/settings' },
+      { method: 'PUT', path: '/api/user/{uid}/status', description: 'Update user status (admin)', ui: '/users/[uid]' },
+      { method: 'POST', path: '/api/user/{uid}/status/ping', description: 'Ping user active status', ui: '—' },
+      { method: 'PATCH', path: '/api/user/{uid}/status/verified', description: 'Mark user verified (admin)', ui: '/users/[uid]' },
+      { method: 'GET', path: '/api/user/{uid}/profile', description: 'Get user profile', ui: '/profile' },
+      { method: 'POST', path: '/api/user/{uid}/profile', description: 'Create user profile', ui: '/profile' },
+      { method: 'PUT', path: '/api/user/{uid}/profile', description: 'Update user profile', ui: '/profile' },
+      { method: 'PATCH', path: '/api/user/{uid}/profile/avatar', description: 'Upload avatar image', ui: '/profile' },
+      { method: 'GET', path: '/api/user/{uid}/sessions', description: 'List user sessions', ui: '/sessions' },
+      { method: 'GET', path: '/api/user/{uid}/preferences', description: 'Get user preferences', ui: '/settings' },
+      { method: 'POST', path: '/api/user/{uid}/preferences', description: 'Create user preferences', ui: '/settings' },
+      { method: 'GET', path: '/api/user/{uid}/permissions', description: 'List user permissions', ui: '/users/[uid]' },
+      { method: 'POST', path: '/api/user/{uid}/permissions', description: 'Grant permission to user', ui: '/users/[uid]' },
+      { method: 'GET', path: '/api/user/{uid}/permissions/{pid}', description: 'Get user permission', ui: '/users/[uid]' },
+      { method: 'PUT', path: '/api/user/{uid}/permissions/{pid}', description: 'Update user permission', ui: '/users/[uid]' },
+      { method: 'DELETE', path: '/api/user/{uid}/permissions/{pid}', description: 'Revoke user permission', ui: '/users/[uid]' },
+      { method: 'GET', path: '/api/user/{uid}/actions', description: 'List user action history', ui: '/users/[uid]' },
+      { method: 'GET', path: '/api/user/check/email/{email}', description: 'Check email availability', ui: '/signUp' },
+      { method: 'GET', path: '/api/user/check/username/{username}', description: 'Check username availability', ui: '/signUp' },
+    ],
+  },
+  {
+    name: 'Session Management',
+    icon: '⏱️',
+    endpoints: [
+      { method: 'GET', path: '/api/sessions/{sid}', description: 'Get session by ID', ui: '/sessions' },
+      { method: 'DELETE', path: '/api/sessions/{sid}', description: 'Delete/close a session', ui: '/sessions' },
+      { method: 'DELETE', path: '/api/sessions/expired', description: 'Clear all expired sessions', ui: '/sessions' },
+    ],
+  },
+  {
+    name: 'Permissions',
+    icon: '🛡️',
+    endpoints: [
+      { method: 'GET', path: '/api/permissions', description: 'List permission definitions', ui: '/admin/permissions' },
+      { method: 'POST', path: '/api/permissions', description: 'Create permission definition', ui: '/admin/permissions' },
+      { method: 'GET', path: '/api/permissions/{pid}', description: 'Get permission by ID', ui: '/admin/permissions' },
+      { method: 'PUT', path: '/api/permissions/{pid}', description: 'Update permission', ui: '/admin/permissions' },
+      { method: 'DELETE', path: '/api/permissions/{pid}', description: 'Soft-delete permission', ui: '/admin/permissions' },
+      { method: 'PATCH', path: '/api/permissions/{pid}/restore', description: 'Restore permission', ui: '/admin/permissions' },
+      { method: 'DELETE', path: '/api/permissions/{pid}/forever', description: 'Permanently delete permission', ui: '/admin/permissions' },
+    ],
+  },
+  {
+    name: 'Preferences',
+    icon: '⚙️',
+    endpoints: [
+      { method: 'GET', path: '/api/preferences/{pid}', description: 'Get preference by ID', ui: '/settings' },
+      { method: 'PUT', path: '/api/preferences/{pid}', description: 'Update preference', ui: '/settings' },
+    ],
+  },
+  {
+    name: 'Verification',
+    icon: '✅',
+    endpoints: [
+      { method: 'POST', path: '/api/verification/request', description: 'Request email verification', ui: '—' },
+      { method: 'POST', path: '/api/verification', description: 'Verify action with token', ui: '/verify' },
+    ],
+  },
+  {
+    name: 'Audit & Actions',
+    icon: '📋',
+    endpoints: [
+      { method: 'GET', path: '/api/actions/{aid}', description: 'Get action by ID', ui: '/audit' },
+      { method: 'DELETE', path: '/api/actions/{aid}', description: 'Delete action record (admin)', ui: '/audit' },
+    ],
+  },
+  {
+    name: 'System',
+    icon: '🔧',
+    endpoints: [
+      { method: 'GET', path: '/health', description: 'Health check endpoint', ui: '—' },
+    ],
+  },
+];
+---
+
+<AppLayout
+  title="API Explorer — Diva"
+  heading="API Explorer"
+  description="Browse all backend API endpoints and their corresponding UI pages."
+>
+  <div class="space-y-8">
+    <p class="text-muted-foreground text-sm">
+      Complete reference of all backend API endpoints organized by module.
+      Each endpoint shows its method, path, description, and link to the corresponding UI page.
+    </p>
+
+    {
+      modules.map((mod) => (
+        <section class="space-y-3">
+          <h2 class="flex items-center gap-2 text-lg font-semibold">
+            <span>{mod.icon}</span>
+            {mod.name}
+            <span class="text-muted-foreground text-sm font-normal">({mod.endpoints.length} endpoints)</span>
+          </h2>
+          <div class="border-border overflow-hidden rounded-lg border">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-muted/50 border-border border-b">
+                  <th class="px-4 py-2.5 text-left font-medium">Method</th>
+                  <th class="px-4 py-2.5 text-left font-medium">Path</th>
+                  <th class="px-4 py-2.5 text-left font-medium">Description</th>
+                  <th class="px-4 py-2.5 text-left font-medium">UI Page</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border">
+                {
+                  mod.endpoints.map((ep) => (
+                    <tr class="hover:bg-muted/30 transition-colors">
+                      <td class="px-4 py-2.5">
+                        <span
+                          class={`inline-block rounded px-2 py-0.5 font-mono text-xs font-bold ${
+                            ep.method === 'GET'
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : ep.method === 'POST'
+                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                : ep.method === 'PUT' || ep.method === 'PATCH'
+                                  ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          }`}
+                        >
+                          {ep.method}
+                        </span>
+                      </td>
+                      <td class="px-4 py-2.5 font-mono text-xs text-muted-foreground">
+                        {ep.path}
+                      </td>
+                      <td class="px-4 py-2.5 text-muted-foreground">
+                        {ep.description}
+                      </td>
+                      <td class="px-4 py-2.5">
+                        {ep.ui && ep.ui !== '—' ? (
+                          <a
+                            href={ep.ui}
+                            class="text-primary hover:text-primary/80 underline-offset-2 hover:underline"
+                          >
+                            {ep.ui}
+                          </a>
+                        ) : (
+                          <span class="text-muted-foreground/50 text-xs italic">No UI page</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ))
+    }
+
+    <div class="border-border bg-muted/30 mt-4 rounded-lg border p-4 text-sm text-muted-foreground">
+      <p class="font-medium">Legend</p>
+      <div class="mt-2 flex flex-wrap gap-4">
+        <span class="flex items-center gap-1.5">
+          <span class="inline-block h-2.5 w-2.5 rounded-full bg-green-500"></span>
+          Has a dedicated UI page
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="inline-block h-2.5 w-2.5 rounded-full bg-muted-foreground/30"></span>
+          No UI page yet
+        </span>
+      </div>
+    </div>
+  </div>
+</AppLayout>

@@ -1,23 +1,14 @@
 import type { APIContext } from 'astro';
 import { actions } from 'astro:actions';
-
+import { parseBody } from '@api/lib/body';
+import { apiPost } from '@api/lib/fetch';
+import { json, apiError } from '@api/lib/response';
 import { signInInputSchema } from '@lib/schemas/auth';
-import type { APIResponse } from 'diva-types/common/api-response';
 import type { SessionResponse } from 'diva-types/auth/responses';
-import type { SignInDto } from 'diva-types/auth/dtos';
-import { API_BASE_URL } from 'astro:env/server';
 
 export async function POST({ request, callAction }: APIContext): Promise<Response> {
   try {
-    const contentType = request.headers.get('content-type') || '';
-    let body: Record<string, unknown>;
-    if (contentType.includes('application/json')) {
-      body = await request.json();
-    } else {
-      const fd = await request.formData();
-      body = Object.fromEntries(fd.entries());
-    }
-
+    const body = await parseBody(request);
     const parsed = signInInputSchema.safeParse(body);
     if (!parsed.success) {
       const fields = parsed.error.flatten().fieldErrors;
@@ -26,57 +17,38 @@ export async function POST({ request, callAction }: APIContext): Promise<Respons
       if (isHtmx) {
         return new Response(null, {
           status: 200,
-          headers: {
-            'HX-Trigger': JSON.stringify({ showToast: { type: 'error', message: message || 'Validation failed' } }),
-          },
+          headers: { 'HX-Trigger': JSON.stringify({ showToast: { type: 'error', message: message || 'Validation failed' } }) },
         });
       }
-      return new Response(JSON.stringify({ message: message || 'Validation failed', fields }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return json({ message: message || 'Validation failed', fields }, 400);
     }
 
-    const dto: SignInDto = {
+    const { status, json: res } = await apiPost<SessionResponse>('/api/auth/signIn', {
       username: parsed.data.username,
       password: parsed.data.password,
-      session_data: {
-        device: parsed.data.device || 'web',
-        user_agent: request.headers.get('User-Agent') || 'web',
-      },
-    };
-
-    const res = await fetch(`${API_BASE_URL}/api/auth/signIn`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dto),
+      session_data: { device: parsed.data.device || 'web', user_agent: request.headers.get('User-Agent') || 'web' },
     });
 
-    const json: APIResponse<SessionResponse> = await res.json();
-
-    if (!res.ok) {
+    if (!status.toString().startsWith('2')) {
       const isHtmx = request.headers.get('HX-Request') === 'true';
       if (isHtmx) {
         return new Response(null, {
           status: 200,
-          headers: {
-            'HX-Trigger': JSON.stringify({ showToast: { type: 'error', message: json.message || 'An error occurred' } }),
-          },
+          headers: { 'HX-Trigger': JSON.stringify({ showToast: { type: 'error', message: res.message || 'An error occurred' } }) },
         });
       }
-      return new Response(JSON.stringify(json), { status: res.status, headers: { 'Content-Type': 'application/json' } });
+      return json(res, status);
     }
 
-    await callAction(actions.session.saveSession, json.data);
+    await callAction(actions.session.saveSession, res.data);
 
     const isHtmx = request.headers.get('HX-Request') === 'true';
     if (isHtmx) {
       return new Response(null, { status: 200, headers: { 'HX-Redirect': '/' } });
     }
 
-    return new Response(JSON.stringify(json.data), { status: res.status, headers: { 'Content-Type': 'application/json' } });
+    return json(res.data, status);
   } catch (e) {
-    const body = { message: `${e}` };
-    return new Response(JSON.stringify(body), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return apiError(e);
   }
 }

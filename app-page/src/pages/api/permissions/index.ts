@@ -1,45 +1,30 @@
 import type { APIContext } from 'astro';
-import { actions } from 'astro:actions';
-import { API_BASE_URL } from 'astro:env/server';
-import type { APIResponse, PaginatedResponse } from 'diva-types/common/api-response';
+import { requireSession } from '@api/lib/guard';
+import { apiGet, apiPost } from '@api/lib/fetch';
+import { dataResponse, apiError } from '@api/lib/response';
+import type { PaginatedResponse } from 'diva-types/common/api-response';
 import type { PermissionResponse } from 'diva-types/permission/responses';
-import type { CreatePermissionDto } from 'diva-types/permission/dtos';
 
 export async function GET({ callAction, url }: APIContext): Promise<Response> {
   try {
-    const { data: session, error } = await callAction(actions.session.getSession, {});
-    if (error || !session) {
-      return new Response(JSON.stringify({ message: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
-    }
+    const result = await requireSession(callAction);
+    if (!result.ok) return result.error;
+    const { session } = result;
     const page = url.searchParams.get('page') || '1';
     const limit = url.searchParams.get('limit') || '50';
-    const res = await fetch(`${API_BASE_URL}/api/permissions/?page=${page}&limit=${limit}`, {
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-    });
-    const json: APIResponse<PaginatedResponse<PermissionResponse>> = await res.json();
-    if (!res.ok) return new Response(JSON.stringify(json), { status: res.status, headers: { 'Content-Type': 'application/json' } });
-    return new Response(JSON.stringify(json.data), { status: res.status, headers: { 'Content-Type': 'application/json' } });
+    return dataResponse<PaginatedResponse<PermissionResponse>>(await apiGet(`/api/permissions/?page=${page}&limit=${limit}`, session.access_token));
   } catch (e) {
-    return new Response(JSON.stringify({ message: `${e}` }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return apiError(e);
   }
 }
 
 export async function POST({ request, callAction }: APIContext): Promise<Response> {
   try {
-    const { data: session, error } = await callAction(actions.session.getSession, {});
-    if (error || !session) {
-      return new Response(JSON.stringify({ message: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
-    }
-    const body: CreatePermissionDto = await request.json();
-    const res = await fetch(`${API_BASE_URL}/api/permissions/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-      body: JSON.stringify(body),
-    });
-    const json: APIResponse<PermissionResponse> = await res.json();
-    if (!res.ok) return new Response(JSON.stringify(json), { status: res.status, headers: { 'Content-Type': 'application/json' } });
-    return new Response(JSON.stringify(json.data), { status: res.status, headers: { 'Content-Type': 'application/json' } });
+    const result = await requireSession(callAction);
+    if (!result.ok) return result.error;
+    const { session } = result;
+    return dataResponse<PermissionResponse>(await apiPost(`/api/permissions/`, await request.json(), session.access_token));
   } catch (e) {
-    return new Response(JSON.stringify({ message: `${e}` }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return apiError(e);
   }
 }

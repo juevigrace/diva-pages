@@ -1,79 +1,27 @@
 import type { APIContext } from 'astro';
-import { actions } from 'astro:actions';
-import { API_BASE_URL } from 'astro:env/server';
-import type { APIResponse } from 'diva-types/common/api-response';
+import { requireSession } from '@api/lib/guard';
+import { apiGet, apiDelete } from '@api/lib/fetch';
+import { dataResponse, nullResponse, apiError } from '@api/lib/response';
 import type { SessionResponse } from 'diva-types/auth/responses';
 
 export async function GET({ params, callAction }: APIContext): Promise<Response> {
   try {
-    const { data: session, error } = await callAction(actions.session.getSession, {});
-    if (error || !session) {
-      return new Response(JSON.stringify({ message: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    const res = await fetch(`${API_BASE_URL}/api/sessions/${params.sid}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
-    });
-
-    const json: APIResponse<SessionResponse> = await res.json();
-
-    if (!res.ok) {
-      return new Response(JSON.stringify(json), {
-        status: res.status,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    return new Response(JSON.stringify(json.data), {
-      status: res.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const result = await requireSession(callAction);
+    if (!result.ok) return result.error;
+    const { session } = result;
+    return dataResponse<SessionResponse>(await apiGet(`/api/sessions/${params.sid}`, session.access_token));
   } catch (e) {
-    return new Response(JSON.stringify({ message: `${e}` }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return apiError(e);
   }
 }
 
 export async function DELETE({ params, callAction }: APIContext): Promise<Response> {
   try {
-    const { data: session, error } = await callAction(actions.session.getSession, {});
-    if (error || !session) {
-      return new Response(JSON.stringify({ message: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    const res = await fetch(`${API_BASE_URL}/api/sessions/${params.sid}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
-    });
-
-    if (!res.ok) {
-      const json: APIResponse<unknown> = await res.json();
-      return new Response(JSON.stringify(json), {
-        status: res.status,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    return new Response(null, { status: res.status });
+    const result = await requireSession(callAction);
+    if (!result.ok) return result.error;
+    const { session } = result;
+    return nullResponse(await apiDelete(`/api/sessions/${params.sid}`, session.access_token));
   } catch (e) {
-    return new Response(JSON.stringify({ message: `${e}` }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return apiError(e);
   }
 }

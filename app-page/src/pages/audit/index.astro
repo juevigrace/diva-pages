@@ -1,0 +1,8 @@
+---
+import AppLayout from '@layouts/AppLayout.astro';
+import AuditLog from '@components/app/AuditLog';
+---
+
+<AppLayout title="Audit Log — Diva" heading="Audit Log" description="System-wide audit trail of user actions.">
+  <AuditLog client:load />
+</AppLayout>

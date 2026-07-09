@@ -1,0 +1,27 @@
+---
+import AppLayout from '@layouts/AppLayout.astro';
+import SessionsManager from '@components/app/SessionsManager';
+import { API_BASE_URL } from 'astro:env/server';
+
+const { session } = Astro.locals;
+const uid = session!.userId;
+
+let sessions: Record<string, any>[] | null = null;
+
+try {
+  const res = await fetch(`${API_BASE_URL}/api/user/${uid}/sessions`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session!.accessToken}`,
+    },
+  });
+  if (res.ok) {
+    const json = await res.json();
+    sessions = json.data;
+  }
+} catch (_) {}
+---
+
+<AppLayout title="Sessions — Diva" heading="Sessions" description="Manage your active sessions across devices.">
+  <SessionsManager uid={uid} initialSessions={sessions} client:load />
+</AppLayout>

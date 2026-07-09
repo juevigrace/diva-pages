@@ -1,23 +1,11 @@
 import type { APIContext } from 'astro';
-import { API_BASE_URL } from 'astro:env/server';
+import { apiGet } from '@api/lib/fetch';
+import { dataResponse, apiError } from '@api/lib/response';
 
 export async function GET({ params }: APIContext): Promise<Response> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/user/check/email/${params.email}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    const json = await res.json();
-
-    return new Response(JSON.stringify(json), {
-      status: res.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return dataResponse(await apiGet(`/api/user/check/email/${params.email}`));
   } catch (e) {
-    return new Response(JSON.stringify({ message: `${e}` }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return apiError(e);
   }
 }

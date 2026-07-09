@@ -1,26 +1,69 @@
 ---
+import { API_BASE_URL } from 'astro:env/server';
+
+const { session } = Astro.locals;
+const token = session?.accessToken;
+
+let totalUsers = '—';
+let totalPages = 1;
+let activeUsers = '—';
+let totalSessions = '—';
+
+try {
+  if (token) {
+    const usersRes = await fetch(`${API_BASE_URL}/api/user/?page=1&limit=1`, {
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    });
+    if (usersRes.ok) {
+      const j = await usersRes.json();
+      totalUsers = String(j.data?.pagination_info?.total_items ?? '—');
+      totalPages = j.data?.pagination_info?.total_pages ?? 1;
+    }
+  }
+} catch (_) {}
+
+try {
+  if (token) {
+    const statusRes = await fetch(`${API_BASE_URL}/api/user/?page=1&limit=1`, {
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    });
+    if (statusRes.ok) {
+      const j = await statusRes.json();
+      activeUsers = String(j.data?.items?.length ?? '—');
+    }
+  }
+} catch (_) {}
+
+try {
+  if (token && session?.userId) {
+    const sessRes = await fetch(`${API_BASE_URL}/api/user/${session.userId}/sessions`, {
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    });
+    if (sessRes.ok) {
+      const j = await sessRes.json();
+      totalSessions = String((j.data as any[])?.length ?? '—');
+    }
+  }
+} catch (_) {}
+
 const stats = [
-  { label: 'Total Users', value: '2,847', change: '+12%', trend: 'up' },
-  { label: 'Active Today', value: '1,023', change: '+8%', trend: 'up' },
-  { label: 'Revenue (MTD)', value: '$48,290', change: '+23%', trend: 'up' },
-  { label: 'Bounce Rate', value: '24.1%', change: '-3%', trend: 'down' },
+  { label: 'Total Users', value: totalUsers, href: '/users' },
+  { label: 'Users per Page', value: String(totalPages), href: '/users' },
+  { label: 'Active Sessions', value: totalSessions, href: '/sessions' },
+  { label: 'System Status', value: 'Online', href: '/admin/api' },
 ];
 ---
 
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-  {
-    stats.map((stat) => (
-      <div class="border-border bg-card rounded-xl border p-6 shadow-sm">
-        <p class="text-muted-foreground text-sm">{stat.label}</p>
-        <div class="mt-2 flex items-baseline gap-2">
-          <p class="text-3xl font-bold">{stat.value}</p>
-          <span
-            class={`text-sm font-medium ${stat.trend === 'up' ? 'text-primary' : 'text-destructive'}`}
-          >
-            {stat.change}
-          </span>
-        </div>
+  {stats.map((stat) => (
+    <a
+      href={stat.href}
+      class="border-border bg-card hover:bg-accent/50 rounded-xl border p-6 shadow-sm transition-colors"
+    >
+      <p class="text-muted-foreground text-sm">{stat.label}</p>
+      <div class="mt-2 flex items-baseline gap-2">
+        <p class="text-3xl font-bold">{stat.value}</p>
       </div>
-    ))
-  }
+    </a>
+  ))}
 </div>
