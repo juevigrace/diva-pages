@@ -1,5 +1,29 @@
 import { useState } from 'react';
+import { z } from 'zod';
 import { Button } from 'diva-ui/components/button';
+
+const profileSchema = z.object({
+  first_name: z.string().max(255),
+  last_name: z.string().max(255),
+  alias: z.string().max(255),
+  bio: z.string().max(255).optional(),
+});
+
+const emailSchema = z.object({
+  email: z.email().max(100),
+});
+
+const phoneSchema = z.object({
+  phone_number: z.string().max(30),
+});
+
+const usernameSchema = z.object({
+  username: z.string().min(3).max(50),
+});
+
+const passwordSchema = z.object({
+  new_password: z.string().min(4).max(255),
+});
 
 interface ProfileFormsProps {
   uid: string;
@@ -48,6 +72,13 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const parsed = profileSchema.safeParse({ first_name: firstName, last_name: lastName, alias, bio: bio || undefined });
+    if (!parsed.success) {
+      showStatus(setProfileStatus, setProfileError, parsed.error.issues[0].message, true);
+      return;
+    }
+
     const body: Record<string, any> = { first_name: firstName, last_name: lastName, alias, bio };
     if (birthDate) body.birth_date = Math.floor(new Date(birthDate).getTime() / 1000);
     const res = await fetch(`/api/user/${uid}/profile`, {
@@ -65,6 +96,13 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const parsed = emailSchema.safeParse({ email });
+    if (!parsed.success) {
+      showStatus(setEmailStatus, setEmailError, parsed.error.issues[0].message, true);
+      return;
+    }
+
     const res = await fetch(`/api/user/${uid}/email`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -80,6 +118,13 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const parsed = phoneSchema.safeParse({ phone_number: phone });
+    if (!parsed.success) {
+      showStatus(setPhoneStatus, setPhoneError, parsed.error.issues[0].message, true);
+      return;
+    }
+
     const res = await fetch(`/api/user/${uid}/phone`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -95,6 +140,13 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
 
   const handleUsernameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const parsed = usernameSchema.safeParse({ username });
+    if (!parsed.success) {
+      showStatus(setUsernameStatus, setUsernameError, parsed.error.issues[0].message, true);
+      return;
+    }
+
     const res = await fetch(`/api/user/${uid}/username`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -110,6 +162,13 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const parsed = passwordSchema.safeParse({ new_password: newPassword });
+    if (!parsed.success) {
+      showStatus(setPasswordStatus, setPasswordError, parsed.error.issues[0].message, true);
+      return;
+    }
+
     const res = await fetch(`/api/user/${uid}/password`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },

@@ -22,6 +22,7 @@
     "astro": "catalog:",
     "diva-types": "workspace:*",
     "diva-ui": "workspace:*",
+    "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "zod": "catalog:"

@@ -1,5 +1,11 @@
 import { useState } from 'react';
+import { z } from 'zod';
 import { Button } from 'diva-ui/components/button';
+
+const preferencesSchema = z.object({
+  theme: z.enum(['LIGHT', 'DARK', 'SYSTEM']),
+  language: z.string().max(10),
+});
 
 interface SettingsContentProps {
   uid: string;
@@ -32,6 +38,13 @@ export default function SettingsContent({ uid, initialPreferences, initialSessio
 
   const handlePreferencesSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const parsed = preferencesSchema.safeParse({ theme, language });
+    if (!parsed.success) {
+      showStatus(setPrefStatus, setPrefError, parsed.error.issues[0].message, true);
+      return;
+    }
+
     if (preferences) {
       const res = await fetch(`/api/preferences/${preferences.id}`, {
         method: 'PUT',

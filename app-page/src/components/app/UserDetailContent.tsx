@@ -1,5 +1,10 @@
 import { useState } from 'react';
+import { z } from 'zod';
 import { Button } from 'diva-ui/components/button';
+
+const permissionSchema = z.object({
+  permission_action: z.string().min(1).max(255),
+});
 
 interface UserDetailContentProps {
   uid: string;
@@ -25,6 +30,13 @@ export default function UserDetailContent({ uid, user, profile, permissions, ses
 
   const grantPermission = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const parsed = permissionSchema.safeParse({ permission_action: grantAction });
+    if (!parsed.success) {
+      showPermStatus(parsed.error.issues[0].message, true);
+      return;
+    }
+
     const res = await fetch(`/api/user/${uid}/permissions/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
