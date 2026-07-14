@@ -1,7 +1,7 @@
 ---
 import AppLayout from '@layouts/AppLayout.astro';
 import UserDetailContent from '@components/app/UserDetailContent';
-import { apiGet } from '@api/lib/fetch';
+import { apiFetch } from '@api/lib/fetch';
 
 const { session } = Astro.locals;
 const { uid: currentUserId } = session!;
@@ -16,37 +16,37 @@ let actions: Record<string, any>[] | null = null;
 let allPermissions: Record<string, any>[] = [];
 
 try {
-  const curRes = await apiGet(`/api/user/${currentUserId}`, session!.accessToken);
+  const curRes = await apiFetch(`/api/user/${currentUserId}`, { token: session!.accessToken });
   if (curRes.ok) { currentUserRole = curRes.json.data?.role || ''; }
 } catch (_) {}
 
 try {
-  const userRes = await apiGet(`/api/user/${uid}`, session!.accessToken);
+  const userRes = await apiFetch(`/api/user/${uid}`, { token: session!.accessToken });
   if (userRes.ok) { user = userRes.json.data; }
 } catch (_) {}
 
 try {
-  const permRes = await apiGet(`/api/permissions/?limit=100`, session!.accessToken);
+  const permRes = await apiFetch(`/api/permissions/?limit=100`, { token: session!.accessToken });
   if (permRes.ok) { allPermissions = permRes.json.data?.items || []; }
 } catch (_) {}
 
 try {
-  const profRes = await apiGet(`/api/user/${uid}/profile`, session!.accessToken);
+  const profRes = await apiFetch(`/api/user/${uid}/profile`, { token: session!.accessToken });
   if (profRes.ok) { profile = profRes.json.data; }
 } catch (_) {}
 
 try {
-  const permRes = await apiGet(`/api/user/${uid}/permissions/`, session!.accessToken);
+  const permRes = await apiFetch(`/api/user/${uid}/permissions/`, { token: session!.accessToken });
   if (permRes.ok) { permissions = permRes.json.data; }
 } catch (_) {}
 
 try {
-  const sessRes = await apiGet(`/api/user/${uid}/sessions`, session!.accessToken);
+  const sessRes = await apiFetch(`/api/user/${uid}/sessions`, { token: session!.accessToken });
   if (sessRes.ok) { sessions = sessRes.json.data; }
 } catch (_) {}
 
 try {
-  const actRes = await apiGet(`/api/user/${uid}/actions/`, session!.accessToken);
+  const actRes = await apiFetch(`/api/user/${uid}/actions/`, { token: session!.accessToken });
   if (actRes.ok) { actions = actRes.json.data; }
 } catch (_) {}
 ---

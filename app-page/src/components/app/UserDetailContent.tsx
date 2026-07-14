@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from 'diva-ui/components/button';
+import { getUserInitials, showStatus } from '../../nav-items';
 
 interface UserDetailContentProps {
   uid: string;
@@ -23,17 +24,11 @@ export default function UserDetailContent({ uid, user, profile, permissions, ses
 
   const permMap = new Map(allPermissions.map((p: any) => [p.id, p]));
 
-  const showPermStatus = (msg: string, isError: boolean) => {
-    setPermStatus(msg);
-    setPermStatusError(isError);
-    setTimeout(() => setPermStatus(''), 3000);
-  };
-
   const grantPermission = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!grantAction) {
-      showPermStatus('Select a permission.', true);
+      showStatus(setPermStatus, setPermStatusError, 'Select a permission.', true);
       return;
     }
 
@@ -43,22 +38,22 @@ export default function UserDetailContent({ uid, user, profile, permissions, ses
       body: JSON.stringify({ permission_action: grantAction, granted: true }),
     });
     if (res.ok) {
-      showPermStatus('Permission granted.', false);
+      showStatus(setPermStatus, setPermStatusError, 'Permission granted.', false);
       setGrantAction('');
       setShowGrant(false);
     } else {
       const json = await res.json();
-      showPermStatus(json.message || 'Failed to grant permission', true);
+      showStatus(setPermStatus, setPermStatusError, json.message || 'Failed to grant permission', true);
     }
   };
 
   const revokePermission = async (pid: string) => {
     const res = await fetch(`/api/user/${uid}/permissions/${pid}`, { method: 'DELETE' });
     if (res.ok) {
-      showPermStatus('Permission revoked.', false);
+      showStatus(setPermStatus, setPermStatusError, 'Permission revoked.', false);
     } else {
       const json = await res.json();
-      showPermStatus(json.message || 'Failed to revoke permission', true);
+      showStatus(setPermStatus, setPermStatusError, json.message || 'Failed to revoke permission', true);
     }
   };
 
@@ -70,7 +65,7 @@ export default function UserDetailContent({ uid, user, profile, permissions, ses
     return <p className="text-muted-foreground text-sm">User not found.</p>;
   }
 
-  const initials = (user.username || 'U').slice(0, 2).toUpperCase();
+  const initials = getUserInitials(user.username);
 
   const tabs = [
     { key: 'profile', label: 'Profile' },

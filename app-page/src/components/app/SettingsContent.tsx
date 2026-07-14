@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { z } from 'zod';
 import { Button } from 'diva-ui/components/button';
+import { showStatus } from '../../nav-items';
 
 const preferencesSchema = z.object({
   theme: z.enum(['LIGHT', 'DARK', 'SYSTEM']),
@@ -24,17 +25,6 @@ export default function SettingsContent({ uid, initialPreferences, initialSessio
   const [sessError, setSessError] = useState(false);
   const [dangerStatus, setDangerStatus] = useState('');
   const [dangerError, setDangerError] = useState(false);
-
-  const showStatus = (
-    setter: (s: string) => void,
-    _setError: (e: boolean) => void,
-    msg: string,
-    isError: boolean
-  ) => {
-    setter(msg);
-    _setError(isError);
-    setTimeout(() => setter(''), 3000);
-  };
 
   const handlePreferencesSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,14 +1,12 @@
-import type { APIContext } from 'astro';
 import { actions } from 'astro:actions';
-import { parseBody } from '@api/lib/body';
-import { apiPost } from '@api/lib/fetch';
-import { json, apiError } from '@api/lib/response';
+import { json } from '@api/lib/response';
+import { apiFetch } from '@api/lib/fetch';
 import { signInInputSchema } from '@lib/schemas/auth';
 import type { SessionResponse } from 'diva-types/auth/responses';
 
-export async function POST({ request, callAction }: APIContext): Promise<Response> {
+export async function POST({ request, callAction }: import('astro').APIContext): Promise<Response> {
   try {
-    const body = await parseBody(request);
+    const body = await request.json();
     const parsed = signInInputSchema.safeParse(body);
     if (!parsed.success) {
       const fields = parsed.error.flatten().fieldErrors;
@@ -23,32 +21,36 @@ export async function POST({ request, callAction }: APIContext): Promise<Respons
       return json({ message: message || 'Validation failed', fields }, 400);
     }
 
-    const { status, json: res } = await apiPost<SessionResponse>('/api/auth/signIn', {
-      username: parsed.data.username,
-      password: parsed.data.password,
-      session_data: { device: parsed.data.device || 'web', user_agent: request.headers.get('User-Agent') || 'web' },
+    const res = await apiFetch<SessionResponse>('/api/auth/signIn', {
+      method: 'POST',
+      body: {
+        username: parsed.data.username,
+        password: parsed.data.password,
+        session_data: { device: parsed.data.device || 'web', user_agent: request.headers.get('User-Agent') || 'web' },
+      },
     });
 
-    if (!status.toString().startsWith('2')) {
+    if (!res.ok) {
       const isHtmx = request.headers.get('HX-Request') === 'true';
       if (isHtmx) {
         return new Response(null, {
           status: 200,
-          headers: { 'HX-Trigger': JSON.stringify({ showToast: { type: 'error', message: res.message || 'An error occurred' } }) },
+          headers: { 'HX-Trigger': JSON.stringify({ showToast: { type: 'error', message: res.json.message || 'An error occurred' } }) },
         });
       }
-      return json(res, status);
+      return json(res.json, res.status);
     }
 
-    await callAction(actions.session.saveSession, res.data);
+    await callAction(actions.session.saveSession, res.json.data);
 
     const isHtmx = request.headers.get('HX-Request') === 'true';
     if (isHtmx) {
       return new Response(null, { status: 200, headers: { 'HX-Redirect': '/' } });
     }
 
-    return json(res.data, status);
+    return json(res.json.data, res.status);
   } catch (e) {
-    return apiError(e);
+    if (e instanceof Response) return e;
+    return json({ message: `${e}` }, 500);
   }
 }

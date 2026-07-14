@@ -1,7 +1,7 @@
 ---
 import AppLayout from '@layouts/AppLayout.astro';
 import ProfileForms from '@components/app/ProfileForms';
-import { apiGet } from '@api/lib/fetch';
+import { apiFetch } from '@api/lib/fetch';
 
 const { session } = Astro.locals;
 const uid = session!.userId;
@@ -10,14 +10,14 @@ let user: Record<string, any> | null = null;
 let profile: Record<string, any> | null = null;
 
 try {
-  const userRes = await apiGet(`/api/user/${uid}`, session!.accessToken);
+  const userRes = await apiFetch(`/api/user/${uid}`, { token: session!.accessToken });
   if (userRes.ok) {
     user = userRes.json.data;
   }
 } catch (_) {}
 
 try {
-  const profileRes = await apiGet(`/api/user/${uid}/profile`, session!.accessToken);
+  const profileRes = await apiFetch(`/api/user/${uid}/profile`, { token: session!.accessToken });
   if (profileRes.ok) {
     profile = profileRes.json.data;
   }

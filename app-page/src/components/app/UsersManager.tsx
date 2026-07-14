@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from 'diva-ui/components/button';
+import { getUserInitials, buildPageArray } from '../../nav-items';
 
 interface UsersManagerProps {
   initialUsers: Record<string, any>[];
@@ -7,10 +8,6 @@ interface UsersManagerProps {
   initialTotalPages: number;
   initialTotalItems: number;
   loadError: boolean;
-}
-
-function getInitials(username: string, email: string) {
-  return (username || email || 'U').slice(0, 2).toUpperCase();
 }
 
 export default function UsersManager({
@@ -138,16 +135,7 @@ export default function UsersManager({
       )
     : users;
 
-  const paginationPages: (number | 'ellipsis')[] = [];
-  if (totalPages > 1) {
-    for (let i = 1; i <= totalPages; i++) {
-      if (Math.abs(i - page) <= 2 || i === 1 || i === totalPages) {
-        paginationPages.push(i);
-      } else if (paginationPages[paginationPages.length - 1] !== 'ellipsis') {
-        paginationPages.push('ellipsis');
-      }
-    }
-  }
+  const paginationPages = buildPageArray(page, totalPages);
 
   return (
     <div>
@@ -208,7 +196,7 @@ export default function UsersManager({
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold">
-                          {getInitials(user.username, user.email)}
+                          {getUserInitials(user.username, user.email)}
                         </div>
                         <a href={`/users/${user.id}`} className="font-medium hover:underline">
                           {user.username || 'Unknown'}

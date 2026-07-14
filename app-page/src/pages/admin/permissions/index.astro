@@ -1,7 +1,7 @@
 ---
 import AppLayout from '@layouts/AppLayout.astro';
 import PermissionsManager from '@components/app/PermissionsManager';
-import { apiGet } from '@api/lib/fetch';
+import { apiFetch } from '@api/lib/fetch';
 
 const { session } = Astro.locals;
 const uid = session!.userId;
@@ -17,14 +17,14 @@ let loadError = false;
 let currentUserRole = '';
 
 try {
-  const userRes = await apiGet(`/api/user/${uid}`, session!.accessToken);
+  const userRes = await apiFetch(`/api/user/${uid}`, { token: session!.accessToken });
   if (userRes.ok) {
     currentUserRole = userRes.json.data?.role || '';
   }
 } catch (_) {}
 
 try {
-  const res = await apiGet(`/api/permissions/?page=${currentPage}&limit=${limit}`, session!.accessToken);
+  const res = await apiFetch(`/api/permissions/?page=${currentPage}&limit=${limit}`, { token: session!.accessToken });
   if (res.ok) {
     permissionsData = res.json.data?.items || [];
     totalItems = res.json.data?.pagination_info?.total_items || 0;

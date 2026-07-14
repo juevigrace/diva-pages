@@ -1,21 +1,29 @@
 import { defineAction, ActionError } from 'astro:actions';
 import { z } from 'astro/zod';
-import { API_BASE_URL } from 'astro:env/server';
+import { apiFetch } from '@api/lib/fetch';
 import type { SessionResponse } from 'diva-types/auth/responses';
-import type { APIResponse } from 'diva-types/common/api-response';
 import type { SignInDto, SignUpDto, ForgotPasswordConfirmDto } from 'diva-types/auth/dtos';
 
-async function apiPost<T>(path: string, body?: unknown, token?: string): Promise<{ status: number; json: APIResponse<T> }> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'POST',
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
+function createAuthAction<TInput extends z.ZodTypeAny, TDto>(
+  input: TInput,
+  apiPath: string,
+  toDto: (input: z.infer<TInput>, request: Request) => TDto,
+  handler?: (session: SessionResponse, dto: TDto) => Promise<void>,
+) {
+  return defineAction({
+    accept: 'json',
+    input,
+    handler: async (parsed, ctx) => {
+      const dto = toDto(parsed, ctx.request);
+      const res = await apiFetch<SessionResponse>(apiPath, { method: 'POST', body: dto });
+      if (!res.ok) {
+        throw new ActionError({ code: 'BAD_REQUEST', message: res.json.message || 'Request failed' });
+      }
+      await ctx.session?.set('auth', res.json.data);
+      if (handler) await handler(res.json.data, dto);
+      return res.json.data;
+    },
   });
-  const text = await res.text();
-  const json = text ? (JSON.parse(text) as APIResponse<T>) : ({} as APIResponse<T>);
-  return { status: res.status, json };
 }
 
 export const server = {
@@ -62,58 +70,55 @@ export const server = {
   },
 
   auth: {
-    signUp: defineAction({
-      accept: 'json',
-      input: z.object({
+    signUp: createAuthAction(
+      z.object({
         email: z.email().max(100),
         username: z.string().min(3).max(50),
         password: z.string().min(4).max(255),
         device: z.string().optional(),
         user_agent: z.string().optional(),
       }),
-      handler: async (input, ctx) => {
-        const dto: SignUpDto = {
-          user: { email: input.email, username: input.username, password: input.password },
-          session_data: { device: input.device || 'web', user_agent: input.user_agent || 'web' },
-        };
-        const { status, json } = await apiPost<SessionResponse>('/api/auth/signUp', dto);
-        if (!status.toString().startsWith('2')) {
-          throw new ActionError({ code: 'BAD_REQUEST', message: json.message || 'Sign up failed' });
-        }
-        await ctx.session?.set('auth', json.data);
-        return json.data;
-      },
-    }),
+      '/api/auth/signUp',
+      (input, request) => ({
+        user: { email: input.email, username: input.username, password: input.password },
+        session_data: { device: input.device || 'web', user_agent: input.user_agent || request.headers.get('User-Agent') || 'web' },
+      } as SignUpDto),
+    ),
 
-    signIn: defineAction({
-      accept: 'json',
-      input: z.object({
+    signIn: createAuthAction(
+      z.object({
         username: z.string().min(1).max(100),
         password: z.string().min(1).max(1000),
         device: z.string().optional(),
         user_agent: z.string().optional(),
       }),
-      handler: async (input, ctx) => {
-        const dto: SignInDto = {
-          username: input.username,
-          password: input.password,
-          session_data: { device: input.device || 'web', user_agent: input.user_agent || 'web' },
-        };
-        const { status, json } = await apiPost<SessionResponse>('/api/auth/signIn', dto);
-        if (!status.toString().startsWith('2')) {
-          throw new ActionError({ code: 'BAD_REQUEST', message: json.message || 'Sign in failed' });
-        }
-        await ctx.session?.set('auth', json.data);
-        return json.data;
-      },
-    }),
+      '/api/auth/signIn',
+      (input, request) => ({
+        username: input.username,
+        password: input.password,
+        session_data: { device: input.device || 'web', user_agent: input.user_agent || request.headers.get('User-Agent') || 'web' },
+      } as SignInDto),
+    ),
+
+    forgotPasswordConfirm: createAuthAction(
+      z.object({
+        id: z.string(),
+        device: z.string().optional(),
+        user_agent: z.string().optional(),
+      }),
+      '/api/auth/forgot/password/confirm',
+      (input, request) => ({
+        id: input.id,
+        session_data: { device: input.device || 'web', user_agent: input.user_agent || request.headers.get('User-Agent') || 'web' },
+      } as ForgotPasswordConfirmDto),
+    ),
 
     signOut: defineAction({
       accept: 'json',
       handler: async (_, ctx) => {
         const session = await ctx.session?.get<SessionResponse>('auth');
         if (session) {
-          await apiPost('/api/auth/signOut', {}, session.access_token);
+          await apiFetch('/api/auth/signOut', { method: 'POST', token: session.access_token });
         }
         await ctx.session?.set('auth', undefined);
       },
@@ -126,8 +131,8 @@ export const server = {
         if (!session) {
           throw new ActionError({ code: 'NOT_FOUND', message: 'Session not found' });
         }
-        const { status } = await apiPost('/api/auth/ping', {}, session.access_token);
-        return { ok: status.toString().startsWith('2') };
+        const res = await apiFetch('/api/auth/ping', { method: 'POST', token: session.access_token });
+        return { ok: res.ok };
       },
     }),
 
@@ -138,33 +143,12 @@ export const server = {
         if (!session) {
           throw new ActionError({ code: 'NOT_FOUND', message: 'Session not found' });
         }
-        const { status, json } = await apiPost<SessionResponse>('/api/auth/refresh', {}, session.access_token);
-        if (!status.toString().startsWith('2')) {
-          throw new ActionError({ code: 'BAD_REQUEST', message: json.message || 'Refresh failed' });
+        const res = await apiFetch<SessionResponse>('/api/auth/refresh', { method: 'POST', token: session.access_token });
+        if (!res.ok) {
+          throw new ActionError({ code: 'BAD_REQUEST', message: res.json.message || 'Refresh failed' });
         }
-        await ctx.session?.set('auth', json.data);
-        return json.data;
-      },
-    }),
-
-    forgotPasswordConfirm: defineAction({
-      accept: 'json',
-      input: z.object({
-        id: z.uuid(),
-        device: z.string().optional(),
-        user_agent: z.string().optional(),
-      }),
-      handler: async (input, ctx) => {
-        const dto: ForgotPasswordConfirmDto = {
-          id: input.id,
-          session_data: { device: input.device || 'web', user_agent: input.user_agent || 'web' },
-        };
-        const { status, json } = await apiPost<SessionResponse>('/api/auth/forgot/password/confirm', dto);
-        if (!status.toString().startsWith('2')) {
-          throw new ActionError({ code: 'BAD_REQUEST', message: json.message || 'Confirmation failed' });
-        }
-        await ctx.session?.set('auth', json.data);
-        return json.data;
+        await ctx.session?.set('auth', res.json.data);
+        return res.json.data;
       },
     }),
   },

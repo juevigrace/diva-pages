@@ -1,19 +1,17 @@
-import type { APIContext } from 'astro';
 import { actions } from 'astro:actions';
-import { requireSession } from '@api/lib/guard';
-import { apiPost } from '@api/lib/fetch';
-import { nullResponse, apiError } from '@api/lib/response';
+import { requireSession, json } from '@api/lib/response';
+import { apiFetch } from '@api/lib/fetch';
 
-export async function POST(context: APIContext): Promise<Response> {
+export async function POST(context: import('astro').APIContext): Promise<Response> {
   try {
-    const result = await requireSession(context);
-    if (!result.ok) return result.error;
-    const { session } = result;
+    const session = await requireSession(context);
     const body = await context.request.json();
-    const res = await apiPost('/api/auth/signOut', body, session.access_token);
+    const res = await apiFetch('/api/auth/signOut', { method: 'POST', body, token: session.access_token });
     await context.callAction(actions.session.deleteSession, {});
-    return nullResponse(res);
+    if (!res.ok) return json(res.json, res.status);
+    return new Response(null, { status: res.status });
   } catch (e) {
-    return apiError(e);
+    if (e instanceof Response) return e;
+    return json({ message: `${e}` }, 500);
   }
 }

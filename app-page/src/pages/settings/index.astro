@@ -1,7 +1,7 @@
 ---
 import AppLayout from '@layouts/AppLayout.astro';
 import SettingsContent from '@components/app/SettingsContent';
-import { apiGet } from '@api/lib/fetch';
+import { apiFetch } from '@api/lib/fetch';
 
 const { session } = Astro.locals;
 const uid = session!.userId;
@@ -10,14 +10,14 @@ let preferencesList: Record<string, any>[] | null = null;
 let sessions: Record<string, any>[] | null = null;
 
 try {
-  const prefRes = await apiGet(`/api/user/${uid}/preferences`, session!.accessToken);
+  const prefRes = await apiFetch(`/api/user/${uid}/preferences`, { token: session!.accessToken });
   if (prefRes.ok) {
     preferencesList = prefRes.json.data;
   }
 } catch (_) {}
 
 try {
-  const sessRes = await apiGet(`/api/user/${uid}/sessions`, session!.accessToken);
+  const sessRes = await apiFetch(`/api/user/${uid}/sessions`, { token: session!.accessToken });
   if (sessRes.ok) {
     sessions = sessRes.json.data;
   }

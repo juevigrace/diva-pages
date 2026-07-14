@@ -8,7 +8,7 @@ interface FetchOptions {
   formData?: FormData;
 }
 
-async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<{ status: number; ok: boolean; json: APIResponse<T> }> {
+export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<{ status: number; ok: boolean; json: APIResponse<T> }> {
   const headers: Record<string, string> = {};
   if (!options.formData) {
     headers['Content-Type'] = 'application/json';
@@ -27,28 +27,4 @@ async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promis
   const text = await res.text();
   const json = text ? (JSON.parse(text) as APIResponse<T>) : ({} as APIResponse<T>);
   return { status: res.status, ok: res.ok, json };
-}
-
-export function apiGet<T = unknown>(endpoint: string, token?: string) {
-  return apiFetch<T>(endpoint, { token });
-}
-
-export function apiPost<T = unknown>(endpoint: string, body?: unknown, token?: string) {
-  return apiFetch<T>(endpoint, { method: 'POST', body, token });
-}
-
-export function apiPut<T = unknown>(endpoint: string, body?: unknown, token?: string) {
-  return apiFetch<T>(endpoint, { method: 'PUT', body, token });
-}
-
-export function apiPatch<T = unknown>(endpoint: string, body?: unknown, token?: string) {
-  return apiFetch<T>(endpoint, { method: 'PATCH', body, token });
-}
-
-export function apiDelete<T = unknown>(endpoint: string, token?: string) {
-  return apiFetch<T>(endpoint, { method: 'DELETE', token });
-}
-
-export function apiUpload<T = unknown>(endpoint: string, formData: FormData, token?: string) {
-  return apiFetch<T>(endpoint, { method: 'PATCH', formData, token });
 }

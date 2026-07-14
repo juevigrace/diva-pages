@@ -1,14 +1,9 @@
 ---
-import { navItems } from '../../nav-items';
+import { navItems, isActive } from '../../nav-items';
 import SidebarIcon from '@components/app/SidebarIcon';
 
 const currentPath = Astro.url.pathname;
 const { session } = Astro.locals;
-
-function isActive(href: string) {
-  if (href === '/') return currentPath === '/';
-  return currentPath.startsWith(href);
-}
 ---
 
 <aside
@@ -30,7 +25,7 @@ function isActive(href: string) {
           </h4>
           <ul class="space-y-1">
             {section.items.map((item) => {
-              const active = isActive(item.href);
+              const active = isActive(item.href, currentPath);
               return (
                 <li>
                   <a

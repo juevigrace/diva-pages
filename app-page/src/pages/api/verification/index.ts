@@ -1,11 +1,12 @@
-import type { APIContext } from 'astro';
-import { apiPost } from '@api/lib/fetch';
-import { nullResponse, apiError } from '@api/lib/response';
+import { json } from '@api/lib/response';
+import { apiFetch } from '@api/lib/fetch';
 
-export async function POST({ request }: APIContext): Promise<Response> {
+export async function POST({ request }: import('astro').APIContext): Promise<Response> {
   try {
-    return nullResponse(await apiPost('/api/verification/', await request.json()));
+    const res = await apiFetch('/api/verification/', { method: 'POST', body: await request.json() });
+    if (!res.ok) return json(res.json, res.status);
+    return new Response(null, { status: res.status });
   } catch (e) {
-    return apiError(e);
+    return json({ message: `${e}` }, 500);
   }
 }

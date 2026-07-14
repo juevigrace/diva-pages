@@ -1,16 +1,6 @@
-import type { APIContext } from 'astro';
-import { requireSession } from '@api/lib/guard';
-import { apiGet } from '@api/lib/fetch';
-import { dataResponse, apiError } from '@api/lib/response';
-import type { SessionResponse } from 'diva-types/auth/responses';
+import { apiRoute, jsonResponse } from '@api/lib/response';
+import { apiFetch } from '@api/lib/fetch';
 
-export async function GET(context: APIContext): Promise<Response> {
-  try {
-    const result = await requireSession(context);
-    if (!result.ok) return result.error;
-    const { session } = result;
-    return dataResponse<SessionResponse[]>(await apiGet(`/api/user/${context.params.uid}/sessions`, session.access_token));
-  } catch (e) {
-    return apiError(e);
-  }
-}
+export const GET = apiRoute(async (ctx, session) => {
+  return jsonResponse(await apiFetch(`/api/user/${ctx.params.uid}/sessions`, { token: session.access_token }));
+});

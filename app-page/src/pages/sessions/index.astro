@@ -1,7 +1,7 @@
 ---
 import AppLayout from '@layouts/AppLayout.astro';
 import SessionsManager from '@components/app/SessionsManager';
-import { apiGet } from '@api/lib/fetch';
+import { apiFetch } from '@api/lib/fetch';
 
 const { session } = Astro.locals;
 const uid = session!.userId;
@@ -9,7 +9,7 @@ const uid = session!.userId;
 let sessions: Record<string, any>[] | null = null;
 
 try {
-  const res = await apiGet(`/api/user/${uid}/sessions`, session!.accessToken);
+  const res = await apiFetch(`/api/user/${uid}/sessions`, { token: session!.accessToken });
   if (res.ok) {
     sessions = res.json.data;
   }

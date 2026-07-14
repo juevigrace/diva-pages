@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { z } from 'zod';
 import { Button } from 'diva-ui/components/button';
+import { getUserInitials, showStatus } from '../../nav-items';
 
 const profileSchema = z.object({
   first_name: z.string().max(255),
@@ -35,12 +36,7 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
   const displayName = profile
     ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || user?.username || 'User'
     : user?.username || 'User';
-  const initials = displayName
-    .split(' ')
-    .map((n: string) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+  const initials = getUserInitials(user?.username, user?.email, displayName);
 
   const [firstName, setFirstName] = useState(profile?.first_name || '');
   const [lastName, setLastName] = useState(profile?.last_name || '');
@@ -63,12 +59,6 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
   const [usernameError, setUsernameError] = useState(false);
   const [passwordStatus, setPasswordStatus] = useState('');
   const [passwordError, setPasswordError] = useState(false);
-
-  const showStatus = (setter: (s: string) => void, _setError: (e: boolean) => void, msg: string, isError: boolean) => {
-    setter(msg);
-    _setError(isError);
-    setTimeout(() => { setter(''); }, 3000);
-  };
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -6,32 +6,11 @@ import {
   SheetTitle,
   SheetClose,
 } from 'diva-ui/components/sheet';
-import { navItems } from '../../nav-items';
+import { navItems, isActive } from '../../nav-items';
 import SidebarIcon from '@components/app/SidebarIcon';
 
 interface MobileNavProps {
   currentPath: string;
-}
-
-function isActive(href: string, currentPath: string) {
-  if (href === '/') return currentPath === '/';
-  return currentPath.startsWith(href);
-}
-
-function MenuIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h16" />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 6L6 18" /><path d="M6 6l12 12" />
-    </svg>
-  );
 }
 
 export default function MobileNav({ currentPath }: MobileNavProps) {
@@ -42,7 +21,7 @@ export default function MobileNav({ currentPath }: MobileNavProps) {
           className="text-muted-foreground hover:bg-accent hover:text-accent-foreground inline-flex items-center justify-center rounded-md p-2 transition-colors md:hidden"
           aria-label="Open navigation menu"
         >
-          <MenuIcon />
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h16" /></svg>
         </button>
       </SheetTrigger>
       <SheetContent side="left" className="w-72 p-0">
@@ -54,7 +33,7 @@ export default function MobileNav({ currentPath }: MobileNavProps) {
             Diva App
           </SheetTitle>
           <SheetClose className="ring-offset-background focus:ring-ring rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none">
-            <CloseIcon />
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg>
             <span className="sr-only">Close</span>
           </SheetClose>
         </SheetHeader>

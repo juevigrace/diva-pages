@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from 'diva-ui/components/button';
+import { buildPageArray } from '../../nav-items';
 
 interface PermissionsManagerProps {
   initialPermissions: Record<string, any>[];
@@ -75,16 +76,7 @@ export default function PermissionsManager({
     }
   };
 
-  const paginationPages: (number | 'ellipsis')[] = [];
-  if (totalPages > 1) {
-    for (let i = 1; i <= totalPages; i++) {
-      if (Math.abs(i - page) <= 2 || i === 1 || i === totalPages) {
-        paginationPages.push(i);
-      } else if (paginationPages[paginationPages.length - 1] !== 'ellipsis') {
-        paginationPages.push('ellipsis');
-      }
-    }
-  }
+  const paginationPages = buildPageArray(page, totalPages);
 
   return (
     <div>

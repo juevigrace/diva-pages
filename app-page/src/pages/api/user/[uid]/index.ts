@@ -1,27 +1,10 @@
-import type { APIContext } from 'astro';
-import { requireSession } from '@api/lib/guard';
-import { apiGet, apiDelete } from '@api/lib/fetch';
-import { dataResponse, nullResponse, apiError } from '@api/lib/response';
-import type { UserResponse } from 'diva-types/user/responses';
+import { apiRoute, jsonResponse, nullResponse } from '@api/lib/response';
+import { apiFetch } from '@api/lib/fetch';
 
-export async function GET(context: APIContext): Promise<Response> {
-  try {
-    const result = await requireSession(context);
-    if (!result.ok) return result.error;
-    const { session } = result;
-    return dataResponse<UserResponse>(await apiGet(`/api/user/${context.params.uid}`, session.access_token));
-  } catch (e) {
-    return apiError(e);
-  }
-}
+export const GET = apiRoute(async (ctx, session) => {
+  return jsonResponse(await apiFetch(`/api/user/${ctx.params.uid}`, { token: session.access_token }));
+});
 
-export async function DELETE(context: APIContext): Promise<Response> {
-  try {
-    const result = await requireSession(context);
-    if (!result.ok) return result.error;
-    const { session } = result;
-    return nullResponse(await apiDelete(`/api/user/${context.params.uid}`, session.access_token));
-  } catch (e) {
-    return apiError(e);
-  }
-}
+export const DELETE = apiRoute(async (ctx, session) => {
+  return nullResponse(await apiFetch(`/api/user/${ctx.params.uid}`, { method: 'DELETE', token: session.access_token }));
+});

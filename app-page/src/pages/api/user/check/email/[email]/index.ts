@@ -1,11 +1,12 @@
-import type { APIContext } from 'astro';
-import { apiGet } from '@api/lib/fetch';
-import { dataResponse, apiError } from '@api/lib/response';
+import { json } from '@api/lib/response';
+import { apiFetch } from '@api/lib/fetch';
 
-export async function GET({ params }: APIContext): Promise<Response> {
+export async function GET({ params }: import('astro').APIContext): Promise<Response> {
   try {
-    return dataResponse(await apiGet(`/api/user/check/email/${params.email}`));
+    const res = await apiFetch(`/api/user/check/email/${params.email}`);
+    if (!res.ok) return json(res.json, res.status);
+    return json(res.json.data ?? null, res.status);
   } catch (e) {
-    return apiError(e);
+    return json({ message: `${e}` }, 500);
   }
 }

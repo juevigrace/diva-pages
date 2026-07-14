@@ -1,7 +1,7 @@
 ---
 import AppLayout from '@layouts/AppLayout.astro';
 import UsersManager from '@components/app/UsersManager';
-import { apiGet } from '@api/lib/fetch';
+import { apiFetch } from '@api/lib/fetch';
 
 const { session } = Astro.locals;
 const uid = session!.userId;
@@ -16,7 +16,7 @@ let totalPages = 1;
 let loadError = false;
 
 try {
-  const res = await apiGet(`/api/user/?page=${currentPage}&limit=${limit}`, session!.accessToken);
+  const res = await apiFetch(`/api/user/?page=${currentPage}&limit=${limit}`, { token: session!.accessToken });
   if (res.ok) {
     usersData = res.json.data?.items || [];
     totalItems = res.json.data?.pagination_info?.total_items || 0;
