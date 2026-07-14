@@ -38,7 +38,7 @@ export const server = {
         updated_at: z.number(),
       }),
       handler: async (input, ctx) => {
-        ctx.session?.set('auth', input);
+        await ctx.session?.set('auth', input);
       },
     }),
 
@@ -56,7 +56,7 @@ export const server = {
     deleteSession: defineAction({
       accept: 'json',
       handler: async (_, ctx) => {
-        ctx.session?.set('auth', undefined);
+        await ctx.session?.set('auth', undefined);
       },
     }),
   },
@@ -115,7 +115,7 @@ export const server = {
         if (session) {
           await apiPost('/api/auth/signOut', {}, session.access_token);
         }
-        ctx.session?.set('auth', undefined);
+        await ctx.session?.set('auth', undefined);
       },
     }),
 

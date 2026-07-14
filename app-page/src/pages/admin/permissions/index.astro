@@ -1,7 +1,7 @@
 ---
 import AppLayout from '@layouts/AppLayout.astro';
 import PermissionsManager from '@components/app/PermissionsManager';
-import { API_BASE_URL } from 'astro:env/server';
+import { apiGet } from '@api/lib/fetch';
 
 const { session } = Astro.locals;
 const uid = session!.userId;
@@ -16,17 +16,11 @@ let totalPages = 1;
 let loadError = false;
 
 try {
-  const res = await fetch(`${API_BASE_URL}/api/permissions/?page=${currentPage}&limit=${limit}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${session!.accessToken}`,
-    },
-  });
+  const res = await apiGet(`/api/permissions/?page=${currentPage}&limit=${limit}`, session!.accessToken);
   if (res.ok) {
-    const json = await res.json();
-    permissionsData = json.data?.items || [];
-    totalItems = json.data?.pagination_info?.total_items || 0;
-    totalPages = json.data?.pagination_info?.total_pages || 1;
+    permissionsData = res.json.data?.items || [];
+    totalItems = res.json.data?.pagination_info?.total_items || 0;
+    totalPages = res.json.data?.pagination_info?.total_pages || 1;
   } else {
     loadError = true;
   }

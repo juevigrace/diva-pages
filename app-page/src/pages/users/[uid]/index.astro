@@ -1,7 +1,7 @@
 ---
 import AppLayout from '@layouts/AppLayout.astro';
 import UserDetailContent from '@components/app/UserDetailContent';
-import { API_BASE_URL } from 'astro:env/server';
+import { apiGet } from '@api/lib/fetch';
 
 const { session } = Astro.locals;
 const { uid } = Astro.params;
@@ -13,38 +13,28 @@ let sessions: Record<string, any>[] | null = null;
 let actions: Record<string, any>[] | null = null;
 
 try {
-  const userRes = await fetch(`${API_BASE_URL}/api/user/${uid}`, {
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session!.accessToken}` },
-  });
-  if (userRes.ok) { const j = await userRes.json(); user = j.data; }
+  const userRes = await apiGet(`/api/user/${uid}`, session!.accessToken);
+  if (userRes.ok) { user = userRes.json.data; }
 } catch (_) {}
 
 try {
-  const profRes = await fetch(`${API_BASE_URL}/api/user/${uid}/profile`, {
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session!.accessToken}` },
-  });
-  if (profRes.ok) { const j = await profRes.json(); profile = j.data; }
+  const profRes = await apiGet(`/api/user/${uid}/profile`, session!.accessToken);
+  if (profRes.ok) { profile = profRes.json.data; }
 } catch (_) {}
 
 try {
-  const permRes = await fetch(`${API_BASE_URL}/api/user/${uid}/permissions/`, {
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session!.accessToken}` },
-  });
-  if (permRes.ok) { const j = await permRes.json(); permissions = j.data; }
+  const permRes = await apiGet(`/api/user/${uid}/permissions/`, session!.accessToken);
+  if (permRes.ok) { permissions = permRes.json.data; }
 } catch (_) {}
 
 try {
-  const sessRes = await fetch(`${API_BASE_URL}/api/user/${uid}/sessions`, {
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session!.accessToken}` },
-  });
-  if (sessRes.ok) { const j = await sessRes.json(); sessions = j.data; }
+  const sessRes = await apiGet(`/api/user/${uid}/sessions`, session!.accessToken);
+  if (sessRes.ok) { sessions = sessRes.json.data; }
 } catch (_) {}
 
 try {
-  const actRes = await fetch(`${API_BASE_URL}/api/user/${uid}/actions/`, {
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session!.accessToken}` },
-  });
-  if (actRes.ok) { const j = await actRes.json(); actions = j.data; }
+  const actRes = await apiGet(`/api/user/${uid}/actions/`, session!.accessToken);
+  if (actRes.ok) { actions = actRes.json.data; }
 } catch (_) {}
 ---
 

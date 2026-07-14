@@ -4,14 +4,14 @@ import { requireSession } from '@api/lib/guard';
 import { apiPost } from '@api/lib/fetch';
 import { nullResponse, apiError } from '@api/lib/response';
 
-export async function POST({ request, callAction }: APIContext): Promise<Response> {
+export async function POST(context: APIContext): Promise<Response> {
   try {
-    const result = await requireSession(callAction);
+    const result = await requireSession(context);
     if (!result.ok) return result.error;
     const { session } = result;
-    const body = await request.json();
+    const body = await context.request.json();
     const res = await apiPost('/api/auth/signOut', body, session.access_token);
-    await callAction(actions.session.deleteSession, {});
+    await context.callAction(actions.session.deleteSession, {});
     return nullResponse(res);
   } catch (e) {
     return apiError(e);

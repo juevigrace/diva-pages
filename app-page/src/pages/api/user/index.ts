@@ -1,29 +1,37 @@
 import type { APIContext } from 'astro';
 import { requireSession } from '@api/lib/guard';
 import { apiGet, apiPost } from '@api/lib/fetch';
-import { dataResponse, nullResponse, apiError } from '@api/lib/response';
+import { json, dataResponse, nullResponse, apiError } from '@api/lib/response';
+import { signUpInputSchema } from '@lib/schemas/auth';
 import type { PaginatedResponse } from 'diva-types/common/api-response';
 import type { UserResponse } from 'diva-types/user/responses';
 
-export async function GET({ callAction, url }: APIContext): Promise<Response> {
+export async function GET(context: APIContext): Promise<Response> {
   try {
-    const result = await requireSession(callAction);
+    const result = await requireSession(context);
     if (!result.ok) return result.error;
     const { session } = result;
-    const page = url.searchParams.get('page') || '1';
-    const limit = url.searchParams.get('limit') || '50';
+    const page = context.url.searchParams.get('page') || '1';
+    const limit = context.url.searchParams.get('limit') || '50';
     return dataResponse<PaginatedResponse<UserResponse>>(await apiGet(`/api/user/?page=${page}&limit=${limit}`, session.access_token));
   } catch (e) {
     return apiError(e);
   }
 }
 
-export async function POST({ request, callAction }: APIContext): Promise<Response> {
+export async function POST(context: APIContext): Promise<Response> {
   try {
-    const result = await requireSession(callAction);
+    const body = await context.request.json();
+    const parsed = signUpInputSchema.safeParse(body);
+    if (!parsed.success) {
+      const fields = parsed.error.flatten().fieldErrors;
+      const message = Object.values(fields).flat().join('. ');
+      return json({ message: message || 'Validation failed', fields }, 400);
+    }
+    const result = await requireSession(context);
     if (!result.ok) return result.error;
     const { session } = result;
-    return nullResponse(await apiPost(`/api/user/`, await request.json(), session.access_token));
+    return nullResponse(await apiPost(`/api/user/`, parsed.data, session.access_token));
   } catch (e) {
     return apiError(e);
   }

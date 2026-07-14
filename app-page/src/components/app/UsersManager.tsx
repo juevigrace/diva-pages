@@ -59,6 +59,21 @@ export default function UsersManager({
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newEmail) {
+      setCreateStatus('Email is required');
+      setCreateError(true);
+      return;
+    }
+    if (!newUsername || newUsername.length < 3) {
+      setCreateStatus('Username must be at least 3 characters');
+      setCreateError(true);
+      return;
+    }
+    if (!newPassword || newPassword.length < 4) {
+      setCreateStatus('Password must be at least 4 characters');
+      setCreateError(true);
+      return;
+    }
     const res = await fetch('/api/user/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -340,11 +355,11 @@ export default function UsersManager({
               </div>
               <div className="space-y-2">
                 <label className="text-sm leading-none font-medium" htmlFor="new-password">Password</label>
-                <input
-                  id="new-password"
-                  type="password"
-                  required
-                  minLength={8}
+                  <input
+                    id="new-password"
+                    type="password"
+                    required
+                    minLength={4}
                   className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}

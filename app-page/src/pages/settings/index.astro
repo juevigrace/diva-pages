@@ -1,7 +1,7 @@
 ---
 import AppLayout from '@layouts/AppLayout.astro';
 import SettingsContent from '@components/app/SettingsContent';
-import { API_BASE_URL } from 'astro:env/server';
+import { apiGet } from '@api/lib/fetch';
 
 const { session } = Astro.locals;
 const uid = session!.userId;
@@ -10,28 +10,16 @@ let preferencesList: Record<string, any>[] | null = null;
 let sessions: Record<string, any>[] | null = null;
 
 try {
-  const prefRes = await fetch(`${API_BASE_URL}/api/user/${uid}/preferences`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${session!.accessToken}`,
-    },
-  });
+  const prefRes = await apiGet(`/api/user/${uid}/preferences`, session!.accessToken);
   if (prefRes.ok) {
-    const json = await prefRes.json();
-    preferencesList = json.data;
+    preferencesList = prefRes.json.data;
   }
 } catch (_) {}
 
 try {
-  const sessRes = await fetch(`${API_BASE_URL}/api/user/${uid}/sessions`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${session!.accessToken}`,
-    },
-  });
+  const sessRes = await apiGet(`/api/user/${uid}/sessions`, session!.accessToken);
   if (sessRes.ok) {
-    const json = await sessRes.json();
-    sessions = json.data;
+    sessions = sessRes.json.data;
   }
 } catch (_) {}
 
