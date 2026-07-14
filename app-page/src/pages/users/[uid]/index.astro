@@ -4,17 +4,30 @@ import UserDetailContent from '@components/app/UserDetailContent';
 import { apiGet } from '@api/lib/fetch';
 
 const { session } = Astro.locals;
+const { uid: currentUserId } = session!;
 const { uid } = Astro.params;
 
+let currentUserRole = '';
 let user: Record<string, any> | null = null;
 let profile: Record<string, any> | null = null;
 let permissions: Record<string, any>[] | null = null;
 let sessions: Record<string, any>[] | null = null;
 let actions: Record<string, any>[] | null = null;
+let allPermissions: Record<string, any>[] = [];
+
+try {
+  const curRes = await apiGet(`/api/user/${currentUserId}`, session!.accessToken);
+  if (curRes.ok) { currentUserRole = curRes.json.data?.role || ''; }
+} catch (_) {}
 
 try {
   const userRes = await apiGet(`/api/user/${uid}`, session!.accessToken);
   if (userRes.ok) { user = userRes.json.data; }
+} catch (_) {}
+
+try {
+  const permRes = await apiGet(`/api/permissions/?limit=100`, session!.accessToken);
+  if (permRes.ok) { allPermissions = permRes.json.data?.items || []; }
 } catch (_) {}
 
 try {
@@ -50,6 +63,8 @@ try {
     permissions={permissions}
     sessions={sessions}
     actions={actions}
+    allPermissions={allPermissions}
+    currentUserRole={currentUserRole}
     client:load
   />
 </AppLayout>

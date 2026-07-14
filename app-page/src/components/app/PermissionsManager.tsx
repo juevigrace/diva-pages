@@ -7,24 +7,24 @@ interface PermissionsManagerProps {
   initialTotalPages: number;
   initialTotalItems: number;
   loadError: boolean;
+  currentUserRole: string;
 }
 
 export default function PermissionsManager({
-  initialPermissions, initialPage, initialTotalPages, initialTotalItems, loadError: initError,
+  initialPermissions, initialPage, initialTotalPages, initialTotalItems, loadError: initError, currentUserRole,
 }: PermissionsManagerProps) {
   const [permissions, setPermissions] = useState(initialPermissions);
   const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [totalItems, setTotalItems] = useState(initialTotalItems);
   const [loadError, setLoadError] = useState(initError);
-  const [showCreate, setShowCreate] = useState(false);
   const [editPid, setEditPid] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [action, setAction] = useState('');
-  const [level, setLevel] = useState('USER');
   const [status, setStatus] = useState('');
   const [statusError, setStatusError] = useState(false);
+
+  const isAdmin = currentUserRole === 'ADMIN';
 
   const showStatus = (msg: string, isError: boolean) => {
     setStatus(msg);
@@ -44,24 +44,6 @@ export default function PermissionsManager({
     }
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const res = await fetch('/api/permissions/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, description, action, level }),
-    });
-    if (res.ok) {
-      showStatus('Permission created.', false);
-      setShowCreate(false);
-      setName(''); setDescription(''); setAction(''); setLevel('USER');
-      loadPage(1);
-    } else {
-      const json = await res.json();
-      showStatus(json.message || 'Failed to create permission', true);
-    }
-  };
-
   const handleUpdate = async (pid: string) => {
     const res = await fetch(`/api/permissions/${pid}`, {
       method: 'PUT',
@@ -78,38 +60,18 @@ export default function PermissionsManager({
     }
   };
 
-  const handleDelete = async (pid: string) => {
-    if (!confirm('Soft-delete this permission?')) return;
-    const res = await fetch(`/api/permissions/${pid}`, { method: 'DELETE' });
+  const handleLevelChange = async (pid: string, level: string) => {
+    const res = await fetch(`/api/permissions/${pid}/level`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ level }),
+    });
     if (res.ok) {
-      showStatus('Permission deleted.', false);
+      showStatus('Role level updated.', false);
       loadPage(page);
     } else {
       const json = await res.json();
-      showStatus(json.message || 'Failed to delete permission', true);
-    }
-  };
-
-  const handleRestore = async (pid: string) => {
-    const res = await fetch(`/api/permissions/${pid}/restore`, { method: 'PATCH' });
-    if (res.ok) {
-      showStatus('Permission restored.', false);
-      loadPage(page);
-    } else {
-      const json = await res.json();
-      showStatus(json.message || 'Failed to restore permission', true);
-    }
-  };
-
-  const handleHardDelete = async (pid: string) => {
-    if (!confirm('Permanently delete this permission? This cannot be undone.')) return;
-    const res = await fetch(`/api/permissions/${pid}/forever`, { method: 'DELETE' });
-    if (res.ok) {
-      showStatus('Permission permanently deleted.', false);
-      loadPage(page);
-    } else {
-      const json = await res.json();
-      showStatus(json.message || 'Failed to permanently delete permission', true);
+      showStatus(json.message || 'Failed to update role level', true);
     }
   };
 
@@ -129,7 +91,6 @@ export default function PermissionsManager({
       <div className="border-border bg-card rounded-xl border shadow-sm">
         <div className="border-border flex items-center justify-between border-b px-6 py-4">
           <h3 className="font-semibold">Permission Definitions</h3>
-          <Button type="button" size="sm" onClick={() => setShowCreate(true)}>Create permission</Button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -159,7 +120,21 @@ export default function PermissionsManager({
                     </td>
                     <td className="text-muted-foreground px-6 py-4 font-mono text-xs">{p.action}</td>
                     <td className="text-muted-foreground px-6 py-4">{p.description}</td>
-                    <td className="px-6 py-4"><span className="border-border inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium">{p.role_level}</span></td>
+                    <td className="px-6 py-4">
+                      {isAdmin ? (
+                        <select
+                          className="border-border bg-background rounded-md border px-2 py-0.5 text-xs font-medium shadow-sm"
+                          defaultValue={p.role_level}
+                          onChange={(e) => handleLevelChange(p.id, e.target.value)}
+                        >
+                          <option value="USER">USER</option>
+                          <option value="MODERATOR">MODERATOR</option>
+                          <option value="ADMIN">ADMIN</option>
+                        </select>
+                      ) : (
+                        <span className="border-border inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium">{p.role_level}</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         {editPid === p.id ? (
@@ -169,14 +144,6 @@ export default function PermissionsManager({
                           </>
                         ) : (
                           <Button type="button" variant="ghost" size="sm" onClick={() => { setEditPid(p.id); setName(p.name); setDescription(p.description); }}>Edit</Button>
-                        )}
-                        {p.deleted_at ? (
-                          <>
-                            <Button type="button" variant="ghost" size="sm" onClick={() => handleRestore(p.id)}>Restore</Button>
-                            <Button type="button" variant="destructive" size="sm" onClick={() => handleHardDelete(p.id)}>Delete forever</Button>
-                          </>
-                        ) : (
-                          <Button type="button" variant="ghost" size="sm" onClick={() => handleDelete(p.id)}>Delete</Button>
                         )}
                       </div>
                     </td>
@@ -201,42 +168,6 @@ export default function PermissionsManager({
         </div>
       </div>
       <span className={`text-xs ${statusError ? 'text-destructive' : 'text-muted-foreground'}`}>{status}</span>
-
-      {showCreate && (
-        <div className="bg-background/80 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-          <div className="border-border bg-card mx-4 w-full max-w-md rounded-xl border p-8 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Create Permission</h3>
-              <Button type="button" variant="ghost" size="icon" onClick={() => setShowCreate(false)}>
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-              </Button>
-            </div>
-            <form onSubmit={handleCreate} className="mt-6 space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm leading-none font-medium" htmlFor="perm-name">Name</label>
-                <input id="perm-name" required className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-1 focus-visible:outline-none" value={name} onChange={(e) => setName(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm leading-none font-medium" htmlFor="perm-action">Action</label>
-                <input id="perm-action" required placeholder="e.g. USERS_READ" className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm font-mono focus-visible:ring-1 focus-visible:outline-none" value={action} onChange={(e) => setAction(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm leading-none font-medium" htmlFor="perm-desc">Description</label>
-                <textarea id="perm-desc" rows={2} className="border-input bg-background focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-1 focus-visible:outline-none" value={description} onChange={(e) => setDescription(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm leading-none font-medium" htmlFor="perm-level">Minimum role level</label>
-                <select id="perm-level" className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-1 focus-visible:outline-none" value={level} onChange={(e) => setLevel(e.target.value)}>
-                  <option value="USER">User</option>
-                  <option value="MODERATOR">Moderator</option>
-                  <option value="ADMIN">Admin</option>
-                </select>
-              </div>
-              <Button type="submit" className="w-full">Create permission</Button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

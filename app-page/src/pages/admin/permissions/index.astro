@@ -14,6 +14,14 @@ let permissionsData: Record<string, any>[] = [];
 let totalItems = 0;
 let totalPages = 1;
 let loadError = false;
+let currentUserRole = '';
+
+try {
+  const userRes = await apiGet(`/api/user/${uid}`, session!.accessToken);
+  if (userRes.ok) {
+    currentUserRole = userRes.json.data?.role || '';
+  }
+} catch (_) {}
 
 try {
   const res = await apiGet(`/api/permissions/?page=${currentPage}&limit=${limit}`, session!.accessToken);
@@ -40,6 +48,7 @@ try {
     initialTotalPages={totalPages}
     initialTotalItems={totalItems}
     loadError={loadError}
+    currentUserRole={currentUserRole}
     client:load
   />
 </AppLayout>

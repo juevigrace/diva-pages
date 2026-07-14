@@ -1,10 +1,5 @@
 import { useState } from 'react';
-import { z } from 'zod';
 import { Button } from 'diva-ui/components/button';
-
-const permissionSchema = z.object({
-  permission_action: z.string().min(1).max(255),
-});
 
 interface UserDetailContentProps {
   uid: string;
@@ -13,14 +8,20 @@ interface UserDetailContentProps {
   permissions: Record<string, any>[] | null;
   sessions: Record<string, any>[] | null;
   actions: Record<string, any>[] | null;
+  allPermissions: Record<string, any>[];
+  currentUserRole: string;
 }
 
-export default function UserDetailContent({ uid, user, profile, permissions, sessions, actions }: UserDetailContentProps) {
+export default function UserDetailContent({ uid, user, profile, permissions, sessions, actions, allPermissions, currentUserRole }: UserDetailContentProps) {
   const [tab, setTab] = useState<'profile' | 'permissions' | 'sessions' | 'activity'>('profile');
   const [showGrant, setShowGrant] = useState(false);
   const [grantAction, setGrantAction] = useState('');
   const [permStatus, setPermStatus] = useState('');
   const [permStatusError, setPermStatusError] = useState(false);
+
+  const canManage = currentUserRole === 'ADMIN' || currentUserRole === 'MODERATOR';
+
+  const permMap = new Map(allPermissions.map((p: any) => [p.id, p]));
 
   const showPermStatus = (msg: string, isError: boolean) => {
     setPermStatus(msg);
@@ -31,9 +32,8 @@ export default function UserDetailContent({ uid, user, profile, permissions, ses
   const grantPermission = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const parsed = permissionSchema.safeParse({ permission_action: grantAction });
-    if (!parsed.success) {
-      showPermStatus(parsed.error.issues[0].message, true);
+    if (!grantAction) {
+      showPermStatus('Select a permission.', true);
       return;
     }
 
@@ -185,38 +185,49 @@ export default function UserDetailContent({ uid, user, profile, permissions, ses
                 <p className="text-muted-foreground text-sm">
                   {permissions ? `${permissions.length} permission${permissions.length !== 1 ? 's' : ''}` : ''}
                 </p>
-                <Button type="button" size="sm" onClick={() => setShowGrant(!showGrant)}>
-                  Grant permission
-                </Button>
+                {canManage && (
+                  <Button type="button" size="sm" onClick={() => setShowGrant(!showGrant)}>
+                    Grant permission
+                  </Button>
+                )}
               </div>
-              {showGrant && (
+              {showGrant && canManage && (
                 <form onSubmit={grantPermission} className="border-border mb-4 flex gap-3 rounded-lg border p-4">
-                  <input
-                    placeholder="permission_action (e.g. USERS_READ)"
+                  <select
                     className="border-input bg-background focus-visible:ring-ring flex h-9 flex-1 rounded-md border px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                     value={grantAction}
                     onChange={(e) => setGrantAction(e.target.value)}
-                  />
+                  >
+                    <option value="">Select a permission...</option>
+                    {allPermissions.map((p: any) => (
+                      <option key={p.id} value={p.action}>{p.name} ({p.action})</option>
+                    ))}
+                  </select>
                   <Button type="submit" size="sm">Grant</Button>
                 </form>
               )}
               <span className={`text-xs ${permStatusError ? 'text-destructive' : 'text-muted-foreground'}`}>{permStatus}</span>
               {permissions && permissions.length > 0 ? (
                 <div className="space-y-2">
-                  {permissions.map((p: any) => (
-                    <div key={p.permission_id} className="border-border hover:bg-muted/50 flex items-center justify-between rounded-lg border p-3">
-                      <div>
-                        <p className="text-sm font-medium">{p.permission_id}</p>
-                        <p className="text-muted-foreground text-xs">
-                          Granted: {p.granted ? 'Yes' : 'No'}
-                          {p.expires_at ? ` · Expires: ${new Date(p.expires_at * 1000).toLocaleDateString()}` : ''}
-                        </p>
+                  {permissions.map((p: any) => {
+                    const permDef = permMap.get(p.permission_id) || {};
+                    return (
+                      <div key={p.permission_id} className="border-border hover:bg-muted/50 flex items-center justify-between rounded-lg border p-3">
+                        <div>
+                          <p className="text-sm font-medium">{permDef.name || p.permission_id}</p>
+                          <p className="text-muted-foreground text-xs">
+                            {permDef.action ? `${permDef.action}` : p.permission_id}
+                            {p.expires_at ? ` · Expires: ${new Date(p.expires_at * 1000).toLocaleDateString()}` : ''}
+                          </p>
+                        </div>
+                        {canManage && (
+                          <Button type="button" variant="ghost" size="sm" onClick={() => revokePermission(p.permission_id)}>
+                            Revoke
+                          </Button>
+                        )}
                       </div>
-                      <Button type="button" variant="ghost" size="sm" onClick={() => revokePermission(p.permission_id)}>
-                        Revoke
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-muted-foreground py-4 text-center text-sm">No permissions assigned.</p>
