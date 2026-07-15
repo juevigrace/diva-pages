@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { actions } from 'astro:actions';
 import type { SessionResponse } from 'diva-types/auth/responses';
 
 declare global {
@@ -37,7 +38,31 @@ function isPublicRoute(pathname: string): boolean {
 
 export const onRequest = defineMiddleware(async (context, next) => {
   if (context.session) {
-    const auth = await context.session.get<SessionResponse>('auth');
+    let auth = await context.session.get<SessionResponse | null>('auth');
+
+	if (auth) {
+	  const now = Date.now();
+	  const buffer = 60_000;
+
+	  if (auth.access_expires_at <= now + buffer) {
+	    try {
+	      const refreshed = await context.callAction(actions.server.auth.refresh, {});
+	      auth = refreshed;
+	    } catch {
+	      await context.session?.set('auth', undefined);
+	      auth = null;
+	    }
+	  }
+
+	  if (auth && context.request.method === 'GET' && !isPublicRoute(context.url.pathname)) {
+	    const pingUrl = new URL('/api/auth/ping', context.url);
+	    const pingRes = await fetch(pingUrl.toString(), { method: 'POST' });
+	    if (!pingRes.ok) {
+	      auth = null;
+	    }
+	  }
+	}
+
     if (auth) {
       context.locals.session = {
         userId: auth.user_id,

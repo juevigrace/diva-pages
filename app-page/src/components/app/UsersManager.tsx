@@ -104,6 +104,21 @@ export default function UsersManager({
     }
   };
 
+  const handleVerify = async (uid: string) => {
+    const res = await fetch(`/api/user/${uid}/status/verified`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ verified: true }),
+    });
+    if (res.ok) {
+      showTableStatus('User verified.', false);
+      setUsers((prev) => prev.map((u) => (u.id === uid ? { ...u, state: { ...u.state, verified: true } } : u)));
+    } else {
+      const json = await res.json();
+      showTableStatus(json.message || 'Failed to verify user', true);
+    }
+  };
+
   const handleDelete = async (uid: string, username: string) => {
     if (!confirm(`Delete user "${username}"? This can be undone.`)) return;
     const res = await fetch(`/api/user/${uid}`, { method: 'DELETE' });
@@ -234,9 +249,11 @@ export default function UsersManager({
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       ) : (
-                        <svg className="text-muted-foreground mx-auto h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        <button type="button" onClick={() => handleVerify(user.id)} title="Mark as verified">
+                          <svg className="text-muted-foreground hover:text-primary mx-auto h-4 w-4 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </button>
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">
