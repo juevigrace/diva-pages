@@ -10,6 +10,7 @@ declare global {
     interface Locals {
       session?: {
         userId: string;
+        sessionId: string;
         accessToken: string;
         status: string;
         type: string;
@@ -53,19 +54,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
 	      auth = null;
 	    }
 	  }
-
-	  if (auth && context.request.method === 'GET' && !isPublicRoute(context.url.pathname)) {
-	    const pingUrl = new URL('/api/auth/ping', context.url);
-	    const pingRes = await fetch(pingUrl.toString(), { method: 'POST' });
-	    if (!pingRes.ok) {
-	      auth = null;
-	    }
-	  }
 	}
 
     if (auth) {
       context.locals.session = {
         userId: auth.user_id,
+        sessionId: auth.session_id,
         accessToken: auth.access_token,
         status: auth.status,
         type: auth.type,

@@ -17,5 +17,5 @@ try {
 ---
 
 <AppLayout title="Sessions — Diva" heading="Sessions" description="Manage your active sessions across devices.">
-  <SessionsManager uid={uid} initialSessions={sessions} client:load />
+  <SessionsManager uid={uid} initialSessions={sessions} currentSessionId={session!.sessionId} client:load />
 </AppLayout>

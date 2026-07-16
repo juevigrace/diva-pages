@@ -20,6 +20,7 @@ interface SessionData {
 interface SessionsManagerProps {
   uid: string;
   initialSessions: SessionData[] | null;
+  currentSessionId?: string;
 }
 
 function formatDate(ts?: number) {
@@ -35,7 +36,7 @@ function isExpired(s: SessionData): boolean {
 type SessionGroup = 'active' | 'expired' | 'closed';
 
 function sessionGroup(s: SessionData): SessionGroup {
-  if (s.status === 'closed') return 'closed';
+  if (s.status?.toUpperCase() === 'CLOSED') return 'closed';
   if (isExpired(s)) return 'expired';
   return 'active';
 }
@@ -85,7 +86,7 @@ function SessionRow({ s, loading, onClose }: {
   );
 }
 
-export default function SessionsManager({ uid, initialSessions }: SessionsManagerProps) {
+export default function SessionsManager({ uid, initialSessions, currentSessionId }: SessionsManagerProps) {
   const [sessions, setSessions] = useState<SessionData[]>(initialSessions || []);
   const [loading, setLoading] = useState<Record<string, boolean>>({});
 
@@ -104,7 +105,13 @@ export default function SessionsManager({ uid, initialSessions }: SessionsManage
     try {
       const res = await fetch(`/api/sessions/${sid}`, { method: 'DELETE' });
       if (res.ok) {
-        setSessions((prev) => prev.filter((s) => (s.session_id || s.id) !== sid));
+        if (sid === currentSessionId) {
+          window.location.href = '/home';
+          return;
+        }
+        setSessions((prev) => prev.map((s) =>
+          (s.session_id || s.id) === sid ? { ...s, status: 'CLOSED' } : s,
+        ));
         toast.success('Session closed');
       } else {
         const j = await res.json();
