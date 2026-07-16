@@ -2,26 +2,23 @@
 import AppLayout from '@layouts/AppLayout.astro';
 import ProfileForms from '@components/app/ProfileForms';
 import { apiFetch } from '@api/lib/fetch';
+import { fetchCurrentUser } from '@api/lib/user';
 
 const { session } = Astro.locals;
 const uid = session!.userId;
 
-let user: Record<string, any> | null = null;
+const { user, isVerified } = await fetchCurrentUser(uid, session!.accessToken);
+
 let profile: Record<string, any> | null = null;
 
-try {
-  const userRes = await apiFetch(`/api/user/${uid}`, { token: session!.accessToken });
-  if (userRes.ok) {
-    user = userRes.json.data;
-  }
-} catch (_) {}
-
-try {
-  const profileRes = await apiFetch(`/api/user/${uid}/profile`, { token: session!.accessToken });
-  if (profileRes.ok) {
-    profile = profileRes.json.data;
-  }
-} catch (_) {}
+if (isVerified) {
+  try {
+    const profileRes = await apiFetch(`/api/user/${uid}/profile`, { token: session!.accessToken });
+    if (profileRes.ok) {
+      profile = profileRes.json.data;
+    }
+  } catch (_) {}
+}
 ---
 
 <AppLayout
@@ -29,5 +26,5 @@ try {
   heading="Profile"
   description="Manage your Diva Pages profile and personal information."
 >
-  <ProfileForms uid={uid} user={user} profile={profile} client:load />
+  <ProfileForms uid={uid} user={user} profile={profile} isVerified={isVerified} client:load />
 </AppLayout>

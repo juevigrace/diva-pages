@@ -30,9 +30,10 @@ interface ProfileFormsProps {
   uid: string;
   user: Record<string, any> | null;
   profile: Record<string, any> | null;
+  isVerified?: boolean;
 }
 
-export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) {
+export default function ProfileForms({ uid, user, profile, isVerified = true }: ProfileFormsProps) {
   const displayName = profile
     ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || user?.username || 'User'
     : user?.username || 'User';
@@ -192,6 +193,12 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
+      {!isVerified && (
+        <div className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 rounded-xl border p-4 text-center text-sm text-amber-800 dark:text-amber-200">
+          Verify your email to edit your profile. <a href="/verify" class="underline font-medium">Verify now</a>
+        </div>
+      )}
+
       <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
         <div className="flex items-start gap-6">
           <div className="bg-primary/10 text-primary flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold">
@@ -208,7 +215,7 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
           </div>
           <label>
             <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-            <Button type="button" variant="outline" size="sm" onClick={() => {
+            <Button type="button" variant="outline" size="sm" disabled={!isVerified} onClick={() => {
               const input = document.querySelector<HTMLInputElement>('input[accept="image/*"]');
               input?.click();
             }}>
@@ -226,6 +233,7 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
               <label className="text-sm leading-none font-medium" htmlFor="first-name">First name</label>
               <input
                 id="first-name"
+                readOnly={!isVerified}
                 className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
@@ -235,6 +243,7 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
               <label className="text-sm leading-none font-medium" htmlFor="last-name">Last name</label>
               <input
                 id="last-name"
+                readOnly={!isVerified}
                 className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
@@ -243,18 +252,20 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
           </div>
           <div className="space-y-2">
             <label className="text-sm leading-none font-medium" htmlFor="alias">Display alias</label>
-            <input
-              id="alias"
-              className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
-              value={alias}
-              onChange={(e) => setAlias(e.target.value)}
-            />
+              <input
+                id="alias"
+                readOnly={!isVerified}
+                className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                value={alias}
+                onChange={(e) => setAlias(e.target.value)}
+              />
           </div>
           <div className="space-y-2">
             <label className="text-sm leading-none font-medium" htmlFor="bio">Bio</label>
             <textarea
               id="bio"
               rows={3}
+              readOnly={!isVerified}
               className="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -262,16 +273,17 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
           </div>
           <div className="space-y-2">
             <label className="text-sm leading-none font-medium" htmlFor="birth-date">Birth date</label>
-            <input
-              id="birth-date"
-              type="date"
-              className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-            />
+              <input
+                id="birth-date"
+                type="date"
+                readOnly={!isVerified}
+                className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+              />
           </div>
           <div className="flex items-center gap-3">
-            <Button type="submit">Save changes</Button>
+            <Button type="submit" disabled={!isVerified}>Save changes</Button>
             <span className={`text-xs ${profileError ? 'text-destructive' : 'text-muted-foreground'}`}>
               {profileStatus}
             </span>
@@ -288,11 +300,12 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
               <input
                 id="email"
                 type="email"
+                readOnly={!isVerified}
                 className="border-input bg-background focus-visible:ring-ring flex h-10 flex-1 rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-              <Button type="submit" size="sm">Update</Button>
+              <Button type="submit" size="sm" disabled={!isVerified}>Update</Button>
             </div>
             <span className={`text-xs ${emailError ? 'text-destructive' : 'text-muted-foreground'}`}>{emailStatus}</span>
           </form>
@@ -302,11 +315,12 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
               <input
                 id="phone"
                 type="tel"
+                readOnly={!isVerified}
                 className="border-input bg-background focus-visible:ring-ring flex h-10 flex-1 rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
-              <Button type="submit" size="sm">Update</Button>
+              <Button type="submit" size="sm" disabled={!isVerified}>Update</Button>
             </div>
             <span className={`text-xs ${phoneError ? 'text-destructive' : 'text-muted-foreground'}`}>{phoneStatus}</span>
           </form>
@@ -321,11 +335,12 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
             <div className="flex gap-3">
               <input
                 id="username"
+                readOnly={!isVerified}
                 className="border-input bg-background focus-visible:ring-ring flex h-10 flex-1 rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
-              <Button type="submit" size="sm">Update</Button>
+              <Button type="submit" size="sm" disabled={!isVerified}>Update</Button>
             </div>
             <span className={`text-xs ${usernameError ? 'text-destructive' : 'text-muted-foreground'}`}>{usernameStatus}</span>
           </form>
@@ -336,11 +351,12 @@ export default function ProfileForms({ uid, user, profile }: ProfileFormsProps) 
                 id="new-password"
                 type="password"
                 placeholder="New password"
+                readOnly={!isVerified}
                 className="border-input bg-background focus-visible:ring-ring flex h-10 flex-1 rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
-              <Button type="submit" size="sm">Change</Button>
+              <Button type="submit" size="sm" disabled={!isVerified}>Change</Button>
             </div>
             <span className={`text-xs ${passwordError ? 'text-destructive' : 'text-muted-foreground'}`}>{passwordStatus}</span>
           </form>

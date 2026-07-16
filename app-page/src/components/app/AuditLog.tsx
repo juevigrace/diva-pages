@@ -15,7 +15,11 @@ interface ActionData {
   created_at?: number;
 }
 
-export default function AuditLog() {
+interface AuditLogProps {
+  isVerified?: boolean;
+}
+
+export default function AuditLog({ isVerified = true }: AuditLogProps) {
   const [actions, setActions] = useState<ActionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -41,8 +45,12 @@ export default function AuditLog() {
   }, [page]);
 
   useEffect(() => {
-    fetchActions();
-  }, [fetchActions]);
+    if (isVerified) {
+      fetchActions();
+    } else {
+      setLoading(false);
+    }
+  }, [fetchActions, isVerified]);
 
   const filtered = search
     ? actions.filter(

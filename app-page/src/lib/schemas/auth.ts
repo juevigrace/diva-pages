@@ -17,3 +17,13 @@ export const forgotPasswordConfirmSchema = z.object({
   id: z.uuid(),
   device: z.string().optional(),
 });
+
+export const requestVerificationSchema = z.object({
+  email: z.email().max(100),
+  action: z.string().max(255),
+});
+
+export const verifyActionSchema = z.object({
+  action_id: z.string().uuid(),
+  token: z.string().length(6),
+});

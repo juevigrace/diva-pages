@@ -2,10 +2,13 @@
 import AppLayout from '@layouts/AppLayout.astro';
 import UserDetailContent from '@components/app/UserDetailContent';
 import { apiFetch } from '@api/lib/fetch';
+import { fetchCurrentUser } from '@api/lib/user';
 
 const { session } = Astro.locals;
 const { uid: currentUserId } = session!;
 const { uid } = Astro.params;
+
+const { isVerified } = await fetchCurrentUser(currentUserId, session!.accessToken);
 
 let currentUserRole = '';
 let user: Record<string, any> | null = null;
@@ -25,30 +28,32 @@ try {
   if (userRes.ok) { user = userRes.json.data; }
 } catch (_) {}
 
-try {
-  const permRes = await apiFetch(`/api/permissions/?limit=100`, { token: session!.accessToken });
-  if (permRes.ok) { allPermissions = permRes.json.data?.items || []; }
-} catch (_) {}
+if (isVerified) {
+  try {
+    const permRes = await apiFetch(`/api/permissions/?limit=100`, { token: session!.accessToken });
+    if (permRes.ok) { allPermissions = permRes.json.data?.items || []; }
+  } catch (_) {}
 
-try {
-  const profRes = await apiFetch(`/api/user/${uid}/profile`, { token: session!.accessToken });
-  if (profRes.ok) { profile = profRes.json.data; }
-} catch (_) {}
+  try {
+    const profRes = await apiFetch(`/api/user/${uid}/profile`, { token: session!.accessToken });
+    if (profRes.ok) { profile = profRes.json.data; }
+  } catch (_) {}
 
-try {
-  const permRes = await apiFetch(`/api/user/${uid}/permissions/`, { token: session!.accessToken });
-  if (permRes.ok) { permissions = permRes.json.data; }
-} catch (_) {}
+  try {
+    const permRes = await apiFetch(`/api/user/${uid}/permissions/`, { token: session!.accessToken });
+    if (permRes.ok) { permissions = permRes.json.data; }
+  } catch (_) {}
 
-try {
-  const sessRes = await apiFetch(`/api/user/${uid}/sessions`, { token: session!.accessToken });
-  if (sessRes.ok) { sessions = sessRes.json.data; }
-} catch (_) {}
+  try {
+    const sessRes = await apiFetch(`/api/user/${uid}/sessions`, { token: session!.accessToken });
+    if (sessRes.ok) { sessions = sessRes.json.data; }
+  } catch (_) {}
 
-try {
-  const actRes = await apiFetch(`/api/user/${uid}/actions/`, { token: session!.accessToken });
-  if (actRes.ok) { actions = actRes.json.data; }
-} catch (_) {}
+  try {
+    const actRes = await apiFetch(`/api/user/${uid}/actions/`, { token: session!.accessToken });
+    if (actRes.ok) { actions = actRes.json.data; }
+  } catch (_) {}
+}
 ---
 
 <AppLayout
@@ -65,6 +70,7 @@ try {
     actions={actions}
     allPermissions={allPermissions}
     currentUserRole={currentUserRole}
+    isVerified={isVerified}
     client:load
   />
 </AppLayout>

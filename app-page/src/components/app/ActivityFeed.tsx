@@ -3,6 +3,7 @@ import { Badge } from 'diva-ui/components/badge';
 
 interface ActivityFeedProps {
   uid: string;
+  isVerified?: boolean;
 }
 
 interface ActionItem {
@@ -15,12 +16,16 @@ interface ActionItem {
   metadata?: Record<string, unknown>;
 }
 
-export default function ActivityFeed({ uid }: ActivityFeedProps) {
+export default function ActivityFeed({ uid, isVerified = true }: ActivityFeedProps) {
   const [actions, setActions] = useState<ActionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!isVerified) {
+      setLoading(false);
+      return;
+    }
     (async () => {
       try {
         const res = await fetch(`/api/user/${uid}/actions/`);
@@ -35,7 +40,7 @@ export default function ActivityFeed({ uid }: ActivityFeedProps) {
       }
       setLoading(false);
     })();
-  }, [uid]);
+  }, [uid, isVerified]);
 
   if (loading) {
     return (

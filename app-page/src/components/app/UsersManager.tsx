@@ -8,6 +8,8 @@ interface UsersManagerProps {
   initialTotalPages: number;
   initialTotalItems: number;
   loadError: boolean;
+  isVerified?: boolean;
+  currentUserRole?: string;
 }
 
 export default function UsersManager({
@@ -16,6 +18,8 @@ export default function UsersManager({
   initialTotalPages,
   initialTotalItems,
   loadError: initialLoadError,
+  isVerified = true,
+  currentUserRole = '',
 }: UsersManagerProps) {
   const [users, setUsers] = useState(initialUsers);
   const [page, setPage] = useState(initialPage);
@@ -31,6 +35,8 @@ export default function UsersManager({
   const [createError, setCreateError] = useState(false);
   const [tableStatus, setTableStatus] = useState('');
   const [tableError, setTableError] = useState(false);
+
+  const canManage = isVerified && (currentUserRole === 'ADMIN' || currentUserRole === 'MODERATOR');
 
   const showTableStatus = (msg: string, isError: boolean) => {
     setTableStatus(msg);
@@ -172,7 +178,7 @@ export default function UsersManager({
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Button type="button" onClick={() => { setShowModal(true); setCreateStatus(''); }}>
+            <Button type="button" onClick={() => { setShowModal(true); setCreateStatus(''); }} disabled={!canManage}>
               <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
@@ -193,7 +199,13 @@ export default function UsersManager({
               </tr>
             </thead>
             <tbody>
-              {loadError ? (
+              {!canManage ? (
+                <tr>
+                  <td colSpan={6} className="text-muted-foreground px-6 py-12 text-center text-sm">
+                    {isVerified ? 'You do not have permission to manage users.' : 'Verify your email to manage users.'}
+                  </td>
+                </tr>
+              ) : loadError ? (
                 <tr>
                   <td colSpan={6} className="text-muted-foreground px-6 py-12 text-center text-sm">
                     Could not load users. Check your permissions.
@@ -223,6 +235,7 @@ export default function UsersManager({
                       <select
                         className="border-border bg-background rounded-md border px-2 py-1 text-xs font-medium shadow-sm"
                         defaultValue={user.role}
+                        disabled={!canManage}
                         onChange={(e) => handleRoleChange(user.id, e.target.value)}
                       >
                         <option value="USER">User</option>
@@ -249,7 +262,7 @@ export default function UsersManager({
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       ) : (
-                        <button type="button" onClick={() => handleVerify(user.id)} title="Mark as verified">
+                        <button type="button" onClick={() => canManage && handleVerify(user.id)} title="Mark as verified">
                           <svg className="text-muted-foreground hover:text-primary mx-auto h-4 w-4 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
@@ -262,6 +275,7 @@ export default function UsersManager({
                           type="button"
                           variant="outline"
                           size="icon"
+                          disabled={!canManage}
                           onClick={() => handleDelete(user.id, user.username)}
                           title="Delete user"
                         >
@@ -274,6 +288,7 @@ export default function UsersManager({
                             type="button"
                             variant="outline"
                             size="icon"
+                            disabled={!canManage}
                             onClick={() => handleRestore(user.id)}
                             title="Restore user"
                           >

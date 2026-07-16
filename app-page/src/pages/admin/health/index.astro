@@ -1,0 +1,15 @@
+---
+import AppLayout from '@layouts/AppLayout.astro';
+import HealthView from '@components/app/HealthView';
+
+const { session } = Astro.locals;
+const isVerified = session!.isVerified;
+---
+
+<AppLayout
+  title="Health — Diva"
+  heading="System Health"
+  description="Monitor the health and status of the Diva system."
+>
+  <HealthView isVerified={isVerified} client:load />
+</AppLayout>

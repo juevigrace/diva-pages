@@ -1,8 +1,11 @@
 ---
 import AppLayout from '@layouts/AppLayout.astro';
 import AuditLog from '@components/app/AuditLog';
+
+const { session } = Astro.locals;
+const isVerified = session!.isVerified;
 ---
 
 <AppLayout title="Audit Log — Diva" heading="Audit Log" description="System-wide audit trail of user actions.">
-  <AuditLog client:load />
+  <AuditLog isVerified={isVerified} client:load />
 </AppLayout>

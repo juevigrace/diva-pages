@@ -1,0 +1,8 @@
+---
+import AuthLayout from '@layouts/AuthLayout.astro';
+import VerificationFlow from '@components/auth/VerificationFlow';
+---
+
+<AuthLayout title="Reset Password — Diva" description="Reset your password">
+  <VerificationFlow action="PASSWORD_RESET" client:load />
+</AuthLayout>

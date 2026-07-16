@@ -5,17 +5,20 @@ import { apiFetch } from '@api/lib/fetch';
 
 const { session } = Astro.locals;
 const uid = session!.userId;
+const isVerified = session!.isVerified;
 
 let sessions: Record<string, any>[] | null = null;
 
-try {
-  const res = await apiFetch(`/api/user/${uid}/sessions`, { token: session!.accessToken });
-  if (res.ok) {
-    sessions = res.json.data;
-  }
-} catch (_) {}
+if (isVerified) {
+  try {
+    const res = await apiFetch(`/api/user/${uid}/sessions`, { token: session!.accessToken });
+    if (res.ok) {
+      sessions = res.json.data;
+    }
+  } catch (_) {}
+}
 ---
 
 <AppLayout title="Sessions — Diva" heading="Sessions" description="Manage your active sessions across devices.">
-  <SessionsManager uid={uid} initialSessions={sessions} currentSessionId={session!.sessionId} client:load />
+  <SessionsManager uid={uid} initialSessions={sessions} currentSessionId={session!.sessionId} isVerified={isVerified} client:load />
 </AppLayout>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from 'diva-ui/components/button';
 import { buildPageArray } from '../../nav-items';
+import PermissionLevelSelect from './PermissionLevelSelect';
 
 interface PermissionsManagerProps {
   initialPermissions: Record<string, any>[];
@@ -9,10 +10,11 @@ interface PermissionsManagerProps {
   initialTotalItems: number;
   loadError: boolean;
   currentUserRole: string;
+  isVerified?: boolean;
 }
 
 export default function PermissionsManager({
-  initialPermissions, initialPage, initialTotalPages, initialTotalItems, loadError: initError, currentUserRole,
+  initialPermissions, initialPage, initialTotalPages, initialTotalItems, loadError: initError, currentUserRole, isVerified = true,
 }: PermissionsManagerProps) {
   const [permissions, setPermissions] = useState(initialPermissions);
   const [page, setPage] = useState(initialPage);
@@ -61,19 +63,9 @@ export default function PermissionsManager({
     }
   };
 
-  const handleLevelChange = async (pid: string, level: string) => {
-    const res = await fetch(`/api/permissions/${pid}/level`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ level }),
-    });
-    if (res.ok) {
-      showStatus('Role level updated.', false);
-      loadPage(page);
-    } else {
-      const json = await res.json();
-      showStatus(json.message || 'Failed to update role level', true);
-    }
+  const handleLevelChanged = () => {
+    showStatus('Role level updated.', false);
+    loadPage(page);
   };
 
   const paginationPages = buildPageArray(page, totalPages);
@@ -96,7 +88,9 @@ export default function PermissionsManager({
               </tr>
             </thead>
             <tbody>
-              {loadError ? (
+              {!isVerified ? (
+                <tr><td colSpan={5} className="text-muted-foreground px-6 py-12 text-center text-sm">Verify your email to manage permissions.</td></tr>
+              ) : loadError ? (
                 <tr><td colSpan={5} className="text-muted-foreground px-6 py-12 text-center text-sm">Could not load permissions.</td></tr>
               ) : permissions.length === 0 ? (
                 <tr><td colSpan={5} className="text-muted-foreground px-6 py-12 text-center text-sm">No permissions found.</td></tr>
@@ -114,15 +108,11 @@ export default function PermissionsManager({
                     <td className="text-muted-foreground px-6 py-4">{p.description}</td>
                     <td className="px-6 py-4">
                       {isAdmin ? (
-                        <select
-                          className="border-border bg-background rounded-md border px-2 py-0.5 text-xs font-medium shadow-sm"
-                          defaultValue={p.role_level}
-                          onChange={(e) => handleLevelChange(p.id, e.target.value)}
-                        >
-                          <option value="USER">USER</option>
-                          <option value="MODERATOR">MODERATOR</option>
-                          <option value="ADMIN">ADMIN</option>
-                        </select>
+                        <PermissionLevelSelect
+                          pid={p.id}
+                          currentLevel={p.role_level}
+                          onLevelChanged={handleLevelChanged}
+                        />
                       ) : (
                         <span className="border-border inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium">{p.role_level}</span>
                       )}
@@ -135,7 +125,7 @@ export default function PermissionsManager({
                             <Button type="button" variant="ghost" size="sm" onClick={() => setEditPid(null)}>Cancel</Button>
                           </>
                         ) : (
-                          <Button type="button" variant="ghost" size="sm" onClick={() => { setEditPid(p.id); setName(p.name); setDescription(p.description); }}>Edit</Button>
+                          <Button type="button" variant="ghost" size="sm" disabled={!isVerified} onClick={() => { setEditPid(p.id); setName(p.name); setDescription(p.description); }}>Edit</Button>
                         )}
                       </div>
                     </td>

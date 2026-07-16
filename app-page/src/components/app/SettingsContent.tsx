@@ -11,18 +11,15 @@ const preferencesSchema = z.object({
 interface SettingsContentProps {
   uid: string;
   initialPreferences: Record<string, any> | null;
-  initialSessions: Record<string, any>[] | null;
+  isVerified?: boolean;
 }
 
-export default function SettingsContent({ uid, initialPreferences, initialSessions }: SettingsContentProps) {
+export default function SettingsContent({ uid, initialPreferences, isVerified = true }: SettingsContentProps) {
   const [preferences, setPreferences] = useState(initialPreferences);
-  const [sessions, setSessions] = useState(initialSessions || []);
   const [theme, setTheme] = useState(preferences?.theme || 'SYSTEM');
   const [language, setLanguage] = useState(preferences?.language || 'en');
   const [prefStatus, setPrefStatus] = useState('');
   const [prefError, setPrefError] = useState(false);
-  const [sessStatus, setSessStatus] = useState('');
-  const [sessError, setSessError] = useState(false);
   const [dangerStatus, setDangerStatus] = useState('');
   const [dangerError, setDangerError] = useState(false);
 
@@ -42,6 +39,8 @@ export default function SettingsContent({ uid, initialPreferences, initialSessio
         body: JSON.stringify({ theme, language }),
       });
       if (res.ok) {
+        const json = await res.json();
+        setPreferences(json);
         showStatus(setPrefStatus, setPrefError, 'Preferences saved.', false);
       } else {
         const json = await res.json();
@@ -64,27 +63,6 @@ export default function SettingsContent({ uid, initialPreferences, initialSessio
     }
   };
 
-  const closeSession = async (sid: string) => {
-    const res = await fetch(`/api/sessions/${sid}`, { method: 'DELETE' });
-    if (res.ok) {
-      setSessions((prev) => prev.filter((s) => s.session_id !== sid));
-      showStatus(setSessStatus, setSessError, 'Session closed.', false);
-    } else {
-      const json = await res.json();
-      showStatus(setSessStatus, setSessError, json.message || 'Failed to close session', true);
-    }
-  };
-
-  const clearExpired = async () => {
-    const res = await fetch('/api/sessions/expired', { method: 'DELETE' });
-    if (res.ok) {
-      showStatus(setSessStatus, setSessError, 'Expired sessions cleared.', false);
-    } else {
-      const json = await res.json();
-      showStatus(setSessStatus, setSessError, json.message || 'Failed to clear expired sessions', true);
-    }
-  };
-
   const deleteAccount = async () => {
     if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
     const res = await fetch(`/api/user/${uid}/forever`, { method: 'DELETE' });
@@ -99,6 +77,12 @@ export default function SettingsContent({ uid, initialPreferences, initialSessio
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
+      {!isVerified && (
+        <div className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 rounded-xl border p-4 text-center text-sm text-amber-800 dark:text-amber-200">
+          Verify your email to manage settings. <a href="/verify" class="underline font-medium">Verify now</a>
+        </div>
+      )}
+
       <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
         <h3 className="text-lg font-semibold">Preferences</h3>
         <p className="text-muted-foreground mt-1 text-sm">Customize your experience.</p>
@@ -132,61 +116,10 @@ export default function SettingsContent({ uid, initialPreferences, initialSessio
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <Button type="submit">{preferences ? 'Save preferences' : 'Create preferences'}</Button>
+            <Button type="submit" disabled={!isVerified}>{preferences ? 'Save preferences' : 'Create preferences'}</Button>
             <span className={`text-xs ${prefError ? 'text-destructive' : 'text-muted-foreground'}`}>{prefStatus}</span>
           </div>
         </form>
-      </div>
-
-      <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold">Sessions</h3>
-            <p className="text-muted-foreground mt-1 text-sm">Manage your active sessions across devices.</p>
-          </div>
-          <Button type="button" variant="outline" size="sm" onClick={clearExpired}>Clear expired</Button>
-        </div>
-        <div className="mt-6 space-y-3">
-          {sessions.length === 0 ? (
-            <p className="text-muted-foreground py-4 text-center text-sm">No sessions found.</p>
-          ) : (
-            sessions.map((sess) => (
-              <div key={sess.session_id} className="border-border hover:bg-muted/50 flex items-center justify-between rounded-lg border p-4 transition-colors">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium">{sess.device || 'Unknown device'}</p>
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                      sess.status === 'ACTIVE' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                    }`}>
-                      {sess.status}
-                    </span>
-                  </div>
-                  <p className="text-muted-foreground mt-0.5 text-xs">
-                    {sess.ip || 'Unknown IP'}
-                    {sess.agent ? ` · ${sess.agent}` : ''}
-                  </p>
-                  {sess.created_at && (
-                    <p className="text-muted-foreground mt-0.5 text-xs">
-                      Created {new Date(sess.created_at * 1000).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => closeSession(sess.session_id)}
-                  title="Close session"
-                >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </Button>
-              </div>
-            ))
-          )}
-        </div>
-        <span className={`text-xs ${sessError ? 'text-destructive' : 'text-muted-foreground'}`}>{sessStatus}</span>
       </div>
 
       <div className="border-destructive/20 bg-card rounded-xl border p-8 shadow-sm">
@@ -197,7 +130,7 @@ export default function SettingsContent({ uid, initialPreferences, initialSessio
             <p className="text-sm font-medium">Delete account</p>
             <p className="text-muted-foreground text-xs">Permanently delete your account and all associated data</p>
           </div>
-          <Button type="button" variant="destructive" size="sm" onClick={deleteAccount}>Delete</Button>
+          <Button type="button" variant="destructive" size="sm" onClick={deleteAccount} disabled={!isVerified}>Delete</Button>
         </div>
         <span className={`text-xs ${dangerError ? 'text-destructive' : 'text-muted-foreground'}`}>{dangerStatus}</span>
       </div>

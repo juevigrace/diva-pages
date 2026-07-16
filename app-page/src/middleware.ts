@@ -1,5 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { actions } from 'astro:actions';
+import { API_BASE_URL } from 'astro:env/server';
 import type { SessionResponse } from 'diva-types/auth/responses';
 
 declare global {
@@ -14,6 +15,8 @@ declare global {
         accessToken: string;
         status: string;
         type: string;
+        role: string;
+        isVerified: boolean;
       } | null;
     }
   }
@@ -23,6 +26,8 @@ const publicRoutes = [
   '/home',
   '/signIn',
   '/signUp',
+  '/verify',
+  '/forgot-password',
   '/about',
   '/contact',
   '/pricing',
@@ -35,6 +40,29 @@ const publicRoutes = [
 
 function isPublicRoute(pathname: string): boolean {
   return publicRoutes.some((route) => pathname === route || pathname.startsWith(route + '/'));
+}
+
+const adminRoutes = ['/admin/permissions', '/admin/health', '/admin/api'];
+
+function isAdminRoute(pathname: string): boolean {
+  return adminRoutes.some((route) => pathname === route || pathname.startsWith(route + '/'));
+}
+
+async function fetchUserRole(userId: string, token: string): Promise<{ role: string; isVerified: boolean }> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/user/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const data = json?.data;
+      return {
+        role: data?.role || 'USER',
+        isVerified: data?.state?.verified ?? false,
+      };
+    }
+  } catch {}
+  return { role: 'USER', isVerified: false };
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
@@ -57,12 +85,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
 	}
 
     if (auth) {
+      const { role, isVerified } = await fetchUserRole(auth.user_id, auth.access_token);
+
       context.locals.session = {
         userId: auth.user_id,
         sessionId: auth.session_id,
         accessToken: auth.access_token,
         status: auth.status,
         type: auth.type,
+        role,
+        isVerified,
       };
     }
   }
@@ -73,6 +105,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
     context.request.method === 'GET' &&
     !isPublicRoute(pathname) &&
     !context.locals.session
+  ) {
+    return context.redirect('/home');
+  }
+
+  if (
+    context.locals.session &&
+    isAdminRoute(pathname) &&
+    context.locals.session.role !== 'ADMIN' &&
+    context.locals.session.role !== 'MODERATOR'
   ) {
     return context.redirect('/home');
   }

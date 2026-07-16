@@ -21,6 +21,7 @@ interface SessionsManagerProps {
   uid: string;
   initialSessions: SessionData[] | null;
   currentSessionId?: string;
+  isVerified?: boolean;
 }
 
 function formatDate(ts?: number) {
@@ -53,9 +54,10 @@ const groupBadges: Record<SessionGroup, React.ReactNode> = {
   closed: <Badge variant="secondary">Closed</Badge>,
 };
 
-function SessionRow({ s, loading, onClose }: {
+function SessionRow({ s, loading, onClose, isCurrent }: {
   s: SessionData;
   loading: boolean;
+  isCurrent: boolean;
   onClose: (sid: string) => void;
 }) {
   const sid = s.session_id || s.id || '';
@@ -66,6 +68,7 @@ function SessionRow({ s, loading, onClose }: {
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{s.device || 'Unknown device'}</span>
+          {isCurrent && <Badge variant="outline" className="text-xs">Current</Badge>}
           {groupBadges[group]}
         </div>
         <p className="text-muted-foreground text-xs">
@@ -82,13 +85,15 @@ function SessionRow({ s, loading, onClose }: {
           {loading ? 'Closing...' : 'Close'}
         </Button>
       )}
+      {!isVerified && <span className="text-muted-foreground text-xs">Verify email to manage</span>}
     </div>
   );
 }
 
-export default function SessionsManager({ uid, initialSessions, currentSessionId }: SessionsManagerProps) {
+export default function SessionsManager({ uid, initialSessions, currentSessionId, isVerified = true }: SessionsManagerProps) {
   const [sessions, setSessions] = useState<SessionData[]>(initialSessions || []);
   const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const [refreshing, setRefreshing] = useState(false);
 
   const groups = useMemo(() => {
     const grouped: Record<SessionGroup, SessionData[]> = { active: [], expired: [], closed: [] };
@@ -100,7 +105,25 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
 
   const expiredCount = groups.expired.length;
 
+  const refetchSessions = async () => {
+    setRefreshing(true);
+    try {
+      const res = await fetch(`/api/user/${uid}/sessions`);
+      if (res.ok) {
+        const json = await res.json();
+        setSessions(json || []);
+        toast.success('Sessions refreshed');
+      } else {
+        toast.error('Failed to refresh sessions');
+      }
+    } catch {
+      toast.error('Failed to refresh sessions');
+    }
+    setRefreshing(false);
+  };
+
   const closeSession = async (sid: string) => {
+    if (!confirm('Are you sure you want to close this session?')) return;
     setLoading((prev) => ({ ...prev, [sid]: true }));
     try {
       const res = await fetch(`/api/sessions/${sid}`, { method: 'DELETE' });
@@ -146,11 +169,16 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Sessions</CardTitle>
-          {expiredCount > 0 && (
-            <Button variant="outline" size="sm" onClick={clearExpired}>
-              Clear {expiredCount} expired
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={refetchSessions} disabled={refreshing || !isVerified}>
+              {refreshing ? 'Refreshing...' : 'Refresh'}
             </Button>
-          )}
+            {expiredCount > 0 && (
+              <Button variant="outline" size="sm" onClick={clearExpired} disabled={!isVerified}>
+                Clear {expiredCount} expired
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {visibleGroups.length === 0 ? (
@@ -167,7 +195,7 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
                     {groups[group].map((s) => {
                       const sid = s.session_id || s.id || '';
                       return (
-                        <SessionRow key={sid} s={s} loading={loading[sid] || false} onClose={closeSession} />
+                        <SessionRow key={sid} s={s} loading={loading[sid] || false} isCurrent={sid === currentSessionId} onClose={closeSession} />
                       );
                     })}
                   </div>

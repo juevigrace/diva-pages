@@ -5,23 +5,18 @@ import { apiFetch } from '@api/lib/fetch';
 
 const { session } = Astro.locals;
 const uid = session!.userId;
+const isVerified = session!.isVerified;
 
 let preferencesList: Record<string, any>[] | null = null;
-let sessions: Record<string, any>[] | null = null;
 
-try {
-  const prefRes = await apiFetch(`/api/user/${uid}/preferences`, { token: session!.accessToken });
-  if (prefRes.ok) {
-    preferencesList = prefRes.json.data;
-  }
-} catch (_) {}
-
-try {
-  const sessRes = await apiFetch(`/api/user/${uid}/sessions`, { token: session!.accessToken });
-  if (sessRes.ok) {
-    sessions = sessRes.json.data;
-  }
-} catch (_) {}
+if (isVerified) {
+  try {
+    const prefRes = await apiFetch(`/api/user/${uid}/preferences`, { token: session!.accessToken });
+    if (prefRes.ok) {
+      preferencesList = prefRes.json.data;
+    }
+  } catch (_) {}
+}
 
 const preferences = preferencesList && preferencesList.length > 0 ? preferencesList[0] : null;
 ---
@@ -31,10 +26,5 @@ const preferences = preferencesList && preferencesList.length > 0 ? preferencesL
   heading="Settings"
   description="Manage your Diva Pages workspace settings."
 >
-  <SettingsContent
-    uid={uid}
-    initialPreferences={preferences}
-    initialSessions={sessions}
-    client:load
-  />
+  <SettingsContent uid={uid} initialPreferences={preferences} isVerified={isVerified} client:load />
 </AppLayout>

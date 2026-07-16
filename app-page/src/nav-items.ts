@@ -2,6 +2,7 @@ export interface NavItem {
   href: string;
   label: string;
   icon: string;
+  adminOnly?: boolean;
 }
 
 export interface NavSection {
@@ -29,8 +30,9 @@ export const navItems: NavSection[] = [
   {
     section: 'Administration',
     items: [
-      { href: '/admin/permissions', label: 'Permissions', icon: 'settings' },
-      { href: '/admin/api', label: 'API Explorer', icon: 'api' },
+      { href: '/admin/permissions', label: 'Permissions', icon: 'settings', adminOnly: true },
+      { href: '/admin/health', label: 'Health', icon: 'health', adminOnly: true },
+      { href: '/admin/api', label: 'API Explorer', icon: 'api', adminOnly: true },
     ],
   },
 ];

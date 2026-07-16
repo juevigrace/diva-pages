@@ -1,34 +1,13 @@
 ---
 import Layout from '@layouts/Layout.astro';
-import VerificationResult from '@components/auth/VerificationResult';
+import VerificationFlow from '@components/auth/VerificationFlow';
 
-const actionId = Astro.url.searchParams.get('action_id');
-const token = Astro.url.searchParams.get('token');
+const action = Astro.url.searchParams.get('action') || 'USER_VERIFICATION';
+const email = Astro.url.searchParams.get('email') || '';
 ---
 
 <Layout title="Verify — Diva" description="Email verification">
   <div class="flex min-h-screen items-center justify-center px-4">
-    <div class="mx-auto w-full max-w-md text-center">
-      <div class="bg-primary mx-auto flex h-16 w-16 items-center justify-center rounded-2xl">
-        <span class="text-primary-foreground text-2xl font-bold">D</span>
-      </div>
-
-      {actionId && token ? (
-        <VerificationResult actionId={actionId} token={token} client:load />
-      ) : (
-        <>
-          <h1 class="mt-6 text-3xl font-bold tracking-tight">Invalid verification link</h1>
-          <p class="text-muted-foreground mt-3">
-            This verification link is invalid or missing required parameters.
-          </p>
-          <a
-            href="/home"
-            class="bg-primary text-primary-foreground hover:bg-primary/90 mt-8 inline-flex h-10 items-center justify-center rounded-md px-6 text-sm font-medium shadow transition-colors"
-          >
-            Go home
-          </a>
-        </>
-      )}
-    </div>
+    <VerificationFlow action={action} email={email} client:load />
   </div>
 </Layout>

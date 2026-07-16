@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from 'diva-ui/components/button';
 import { getUserInitials, showStatus } from '../../nav-items';
+import GrantPermissionForm from './GrantPermissionForm';
 
 interface UserDetailContentProps {
   uid: string;
@@ -11,45 +12,24 @@ interface UserDetailContentProps {
   actions: Record<string, any>[] | null;
   allPermissions: Record<string, any>[];
   currentUserRole: string;
+  isVerified?: boolean;
 }
 
-export default function UserDetailContent({ uid, user, profile, permissions, sessions, actions, allPermissions, currentUserRole }: UserDetailContentProps) {
+export default function UserDetailContent({ uid, user, profile, permissions: initialPermissions, sessions: initialSessions, actions, allPermissions, currentUserRole, isVerified = true }: UserDetailContentProps) {
   const [tab, setTab] = useState<'profile' | 'permissions' | 'sessions' | 'activity'>('profile');
-  const [showGrant, setShowGrant] = useState(false);
-  const [grantAction, setGrantAction] = useState('');
   const [permStatus, setPermStatus] = useState('');
   const [permStatusError, setPermStatusError] = useState(false);
+  const [permissions, setPermissions] = useState(initialPermissions);
+  const [sessions, setSessions] = useState(initialSessions);
 
-  const canManage = currentUserRole === 'ADMIN' || currentUserRole === 'MODERATOR';
+  const canManage = isVerified && (currentUserRole === 'ADMIN' || currentUserRole === 'MODERATOR');
 
   const permMap = new Map(allPermissions.map((p: any) => [p.id, p]));
-
-  const grantPermission = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!grantAction) {
-      showStatus(setPermStatus, setPermStatusError, 'Select a permission.', true);
-      return;
-    }
-
-    const res = await fetch(`/api/user/${uid}/permissions/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ permission_action: grantAction, granted: true }),
-    });
-    if (res.ok) {
-      showStatus(setPermStatus, setPermStatusError, 'Permission granted.', false);
-      setGrantAction('');
-      setShowGrant(false);
-    } else {
-      const json = await res.json();
-      showStatus(setPermStatus, setPermStatusError, json.message || 'Failed to grant permission', true);
-    }
-  };
 
   const revokePermission = async (pid: string) => {
     const res = await fetch(`/api/user/${uid}/permissions/${pid}`, { method: 'DELETE' });
     if (res.ok) {
+      setPermissions((prev) => (prev || []).filter((p: any) => p.permission_id !== pid));
       showStatus(setPermStatus, setPermStatusError, 'Permission revoked.', false);
     } else {
       const json = await res.json();
@@ -58,7 +38,10 @@ export default function UserDetailContent({ uid, user, profile, permissions, ses
   };
 
   const closeSession = async (sid: string) => {
-    await fetch(`/api/sessions/${sid}`, { method: 'DELETE' });
+    const res = await fetch(`/api/sessions/${sid}`, { method: 'DELETE' });
+    if (res.ok) {
+      setSessions((prev) => (prev || []).filter((s: any) => s.session_id !== sid));
+    }
   };
 
   if (!user) {
@@ -180,26 +163,13 @@ export default function UserDetailContent({ uid, user, profile, permissions, ses
                 <p className="text-muted-foreground text-sm">
                   {permissions ? `${permissions.length} permission${permissions.length !== 1 ? 's' : ''}` : ''}
                 </p>
-                {canManage && (
-                  <Button type="button" size="sm" onClick={() => setShowGrant(!showGrant)}>
-                    Grant permission
-                  </Button>
-                )}
               </div>
-              {showGrant && canManage && (
-                <form onSubmit={grantPermission} className="border-border mb-4 flex gap-3 rounded-lg border p-4">
-                  <select
-                    className="border-input bg-background focus-visible:ring-ring flex h-9 flex-1 rounded-md border px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
-                    value={grantAction}
-                    onChange={(e) => setGrantAction(e.target.value)}
-                  >
-                    <option value="">Select a permission...</option>
-                    {allPermissions.map((p: any) => (
-                      <option key={p.id} value={p.action}>{p.name} ({p.action})</option>
-                    ))}
-                  </select>
-                  <Button type="submit" size="sm">Grant</Button>
-                </form>
+              {canManage && (
+                <GrantPermissionForm
+                  uid={uid}
+                  allPermissions={allPermissions}
+                  onGranted={(perm) => setPermissions((prev) => [...(prev || []), perm])}
+                />
               )}
               <span className={`text-xs ${permStatusError ? 'text-destructive' : 'text-muted-foreground'}`}>{permStatus}</span>
               {permissions && permissions.length > 0 ? (

@@ -2,9 +2,12 @@
 import AppLayout from '@layouts/AppLayout.astro';
 import PermissionsManager from '@components/app/PermissionsManager';
 import { apiFetch } from '@api/lib/fetch';
+import { fetchCurrentUser } from '@api/lib/user';
 
 const { session } = Astro.locals;
 const uid = session!.userId;
+
+const { isVerified } = await fetchCurrentUser(uid, session!.accessToken);
 
 const url = new URL(Astro.request.url);
 const currentPage = parseInt(url.searchParams.get('page') || '1', 10);
@@ -23,17 +26,19 @@ try {
   }
 } catch (_) {}
 
-try {
-  const res = await apiFetch(`/api/permissions/?page=${currentPage}&limit=${limit}`, { token: session!.accessToken });
-  if (res.ok) {
-    permissionsData = res.json.data?.items || [];
-    totalItems = res.json.data?.pagination_info?.total_items || 0;
-    totalPages = res.json.data?.pagination_info?.total_pages || 1;
-  } else {
+if (isVerified) {
+  try {
+    const res = await apiFetch(`/api/permissions/?page=${currentPage}&limit=${limit}`, { token: session!.accessToken });
+    if (res.ok) {
+      permissionsData = res.json.data?.items || [];
+      totalItems = res.json.data?.pagination_info?.total_items || 0;
+      totalPages = res.json.data?.pagination_info?.total_pages || 1;
+    } else {
+      loadError = true;
+    }
+  } catch (_) {
     loadError = true;
   }
-} catch (_) {
-  loadError = true;
 }
 ---
 
@@ -49,6 +54,7 @@ try {
     initialTotalItems={totalItems}
     loadError={loadError}
     currentUserRole={currentUserRole}
+    isVerified={isVerified}
     client:load
   />
 </AppLayout>
