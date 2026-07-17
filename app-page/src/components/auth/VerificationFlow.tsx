@@ -149,6 +149,11 @@ export default function VerificationFlow({ action, email: initialEmail = '' }: V
       });
 
       if (res.ok) {
+        await fetch('/api/auth/signOut', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ device: 'web', user_agent: navigator.userAgent }),
+        }).catch(() => {});
         setStep('complete');
       } else {
         const json = await res.json();
