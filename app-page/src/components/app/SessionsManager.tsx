@@ -3,6 +3,14 @@ import { Button } from 'diva-ui/components/button';
 import { Card, CardHeader, CardTitle, CardContent } from 'diva-ui/components/card';
 import { Badge } from 'diva-ui/components/badge';
 import { toast } from 'diva-ui/components/sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from 'diva-ui/components/dialog';
 
 interface SessionData {
   session_id?: string;
@@ -54,11 +62,12 @@ const groupBadges: Record<SessionGroup, React.ReactNode> = {
   closed: <Badge variant="secondary">Closed</Badge>,
 };
 
-function SessionRow({ s, loading, onClose, isCurrent }: {
+function SessionRow({ s, loading, onClose, isCurrent, isVerified }: {
   s: SessionData;
   loading: boolean;
   isCurrent: boolean;
   onClose: (sid: string) => void;
+  isVerified: boolean;
 }) {
   const sid = s.session_id || s.id || '';
   const group = sessionGroup(s);
@@ -94,6 +103,7 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
   const [sessions, setSessions] = useState<SessionData[]>(initialSessions || []);
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [refreshing, setRefreshing] = useState(false);
+  const [confirmSid, setConfirmSid] = useState<string | null>(null);
 
   const groups = useMemo(() => {
     const grouped: Record<SessionGroup, SessionData[]> = { active: [], expired: [], closed: [] };
@@ -122,18 +132,23 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
     setRefreshing(false);
   };
 
-  const closeSession = async (sid: string) => {
-    if (!confirm('Are you sure you want to close this session?')) return;
-    setLoading((prev) => ({ ...prev, [sid]: true }));
+  const closeSession = (sid: string) => {
+    setConfirmSid(sid);
+  };
+
+  const confirmClose = async () => {
+    if (!confirmSid) return;
+    setLoading((prev) => ({ ...prev, [confirmSid]: true }));
+    setConfirmSid(null);
     try {
-      const res = await fetch(`/api/sessions/${sid}`, { method: 'DELETE' });
+      const res = await fetch(`/api/sessions/${confirmSid}`, { method: 'DELETE' });
       if (res.ok) {
-        if (sid === currentSessionId) {
+        if (confirmSid === currentSessionId) {
           window.location.href = '/home';
           return;
         }
         setSessions((prev) => prev.map((s) =>
-          (s.session_id || s.id) === sid ? { ...s, status: 'CLOSED' } : s,
+          (s.session_id || s.id) === confirmSid ? { ...s, status: 'CLOSED' } : s,
         ));
         toast.success('Session closed');
       } else {
@@ -143,7 +158,7 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
     } catch {
       toast.error('Failed to close session');
     }
-    setLoading((prev) => ({ ...prev, [sid]: false }));
+    setLoading((prev) => ({ ...prev, [confirmSid]: false }));
   };
 
   const clearExpired = async () => {
@@ -195,7 +210,7 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
                     {groups[group].map((s) => {
                       const sid = s.session_id || s.id || '';
                       return (
-                        <SessionRow key={sid} s={s} loading={loading[sid] || false} isCurrent={sid === currentSessionId} onClose={closeSession} />
+                        <SessionRow key={sid} s={s} loading={loading[sid] || false} isCurrent={sid === currentSessionId} onClose={closeSession} isVerified={isVerified} />
                       );
                     })}
                   </div>
@@ -205,6 +220,21 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={confirmSid !== null} onOpenChange={(open) => { if (!open) setConfirmSid(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Close Session</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to close this session? The device will be signed out immediately.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmSid(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmClose}>Close Session</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -9,6 +9,12 @@ export default defineConfig({
   site: 'https://example.com',
   output: 'server',
   adapter: node({ mode: 'standalone' }),
+  session: {
+    cookie: {
+      maxAge: 86400,
+    },
+    ttl: 86400,
+  },
   integrations: [react(), sitemap({ namespaces: { news: false, image: false, video: false } })],
   env: {
     schema: {

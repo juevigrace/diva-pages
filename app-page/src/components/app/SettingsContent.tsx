@@ -5,7 +5,7 @@ import { showStatus } from '../../nav-items';
 
 const preferencesSchema = z.object({
   theme: z.enum(['LIGHT', 'DARK', 'SYSTEM']),
-  language: z.string().max(10),
+  language: z.string().min(1, 'Language is required').max(10),
 });
 
 interface SettingsContentProps {

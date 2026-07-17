@@ -1,7 +1,13 @@
 import { useState } from 'react';
+import { z } from 'zod';
 import { Button } from 'diva-ui/components/button';
 import { buildPageArray } from '../../nav-items';
 import PermissionLevelSelect from './PermissionLevelSelect';
+
+const permissionSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(255),
+  description: z.string().min(1, 'Description is required').max(255),
+});
 
 interface PermissionsManagerProps {
   initialPermissions: Record<string, any>[];
@@ -48,6 +54,11 @@ export default function PermissionsManager({
   };
 
   const handleUpdate = async (pid: string) => {
+    const parsed = permissionSchema.safeParse({ name, description });
+    if (!parsed.success) {
+      showStatus(parsed.error.issues[0].message, true);
+      return;
+    }
     const res = await fetch(`/api/permissions/${pid}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

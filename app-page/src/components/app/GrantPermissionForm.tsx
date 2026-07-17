@@ -1,6 +1,11 @@
 import { useState } from 'react';
+import { z } from 'zod';
 import { Button } from 'diva-ui/components/button';
 import { showStatus } from '../../nav-items';
+
+const grantSchema = z.object({
+  permission_action: z.string().min(1, 'Select a permission').max(255),
+});
 
 interface GrantPermissionFormProps {
   uid: string;
@@ -16,8 +21,9 @@ export default function GrantPermissionForm({ uid, allPermissions, onGranted }: 
 
   const grantPermission = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!grantAction) {
-      showStatus(setPermStatus, setPermStatusError, 'Select a permission.', true);
+    const parsed = grantSchema.safeParse({ permission_action: grantAction });
+    if (!parsed.success) {
+      showStatus(setPermStatus, setPermStatusError, parsed.error.issues[0].message, true);
       return;
     }
     const res = await fetch(`/api/user/${uid}/permissions/`, {

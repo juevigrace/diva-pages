@@ -4,9 +4,10 @@ import { Button } from 'diva-ui/components/button';
 import { getUserInitials, showStatus } from '../../nav-items';
 
 const profileSchema = z.object({
-  first_name: z.string().max(255),
-  last_name: z.string().max(255),
-  alias: z.string().max(255),
+  first_name: z.string().min(1, 'First name is required').max(255),
+  last_name: z.string().min(1, 'Last name is required').max(255),
+  alias: z.string().min(1, 'Alias is required').max(255),
+  birth_date: z.string().min(1, 'Birth date is required'),
   bio: z.string().max(255).optional(),
 });
 
@@ -15,7 +16,7 @@ const emailSchema = z.object({
 });
 
 const phoneSchema = z.object({
-  phone_number: z.string().max(30),
+  phone_number: z.string().min(1, 'Phone number is required').max(30),
 });
 
 const usernameSchema = z.object({
@@ -52,6 +53,16 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
   const [newPassword, setNewPassword] = useState('');
   const [profileStatus, setProfileStatus] = useState('');
   const [profileError, setProfileError] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const clearFieldError = (field: string) => {
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
   const [emailStatus, setEmailStatus] = useState('');
   const [emailError, setEmailError] = useState(false);
   const [phoneStatus, setPhoneStatus] = useState('');
@@ -64,21 +75,33 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const parsed = profileSchema.safeParse({ first_name: firstName, last_name: lastName, alias, bio: bio || undefined });
+    const parsed = profileSchema.safeParse({ first_name: firstName, last_name: lastName, alias, birth_date: birthDate, bio: bio || undefined });
     if (!parsed.success) {
-      showStatus(setProfileStatus, setProfileError, parsed.error.issues[0].message, true);
+      const errors: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0] as string;
+        if (!errors[field]) errors[field] = issue.message;
+      }
+      setFieldErrors(errors);
       return;
     }
+    setFieldErrors({});
 
-    const body: Record<string, any> = { first_name: firstName, last_name: lastName, alias, bio };
-    if (birthDate) body.birth_date = Math.floor(new Date(birthDate).getTime() / 1000);
+    const body: Record<string, any> = {
+      first_name: firstName,
+      last_name: lastName,
+      alias,
+      bio,
+      birth_date: Math.floor(new Date(birthDate).getTime() / 1000),
+    };
+    const method = profile ? 'PUT' : 'POST';
     const res = await fetch(`/api/user/${uid}/profile`, {
-      method: 'PUT',
+      method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
     if (res.ok) {
-      showStatus(setProfileStatus, setProfileError, 'Profile updated.', false);
+      showStatus(setProfileStatus, setProfileError, profile ? 'Profile updated.' : 'Profile created.', false);
     } else {
       const json = await res.json();
       showStatus(setProfileStatus, setProfileError, json.message || 'Failed to update profile', true);
@@ -236,8 +259,9 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
                 readOnly={!isVerified}
                 className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                onChange={(e) => { setFirstName(e.target.value); clearFieldError('first_name'); }}
               />
+              {fieldErrors.first_name && <p className="text-destructive text-xs">{fieldErrors.first_name}</p>}
             </div>
             <div className="space-y-2">
               <label className="text-sm leading-none font-medium" htmlFor="last-name">Last name</label>
@@ -246,8 +270,9 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
                 readOnly={!isVerified}
                 className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                onChange={(e) => { setLastName(e.target.value); clearFieldError('last_name'); }}
               />
+              {fieldErrors.last_name && <p className="text-destructive text-xs">{fieldErrors.last_name}</p>}
             </div>
           </div>
           <div className="space-y-2">
@@ -257,8 +282,9 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
                 readOnly={!isVerified}
                 className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 value={alias}
-                onChange={(e) => setAlias(e.target.value)}
+                onChange={(e) => { setAlias(e.target.value); clearFieldError('alias'); }}
               />
+              {fieldErrors.alias && <p className="text-destructive text-xs">{fieldErrors.alias}</p>}
           </div>
           <div className="space-y-2">
             <label className="text-sm leading-none font-medium" htmlFor="bio">Bio</label>
@@ -268,8 +294,9 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
               readOnly={!isVerified}
               className="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
               value={bio}
-              onChange={(e) => setBio(e.target.value)}
+              onChange={(e) => { setBio(e.target.value); clearFieldError('bio'); }}
             />
+            {fieldErrors.bio && <p className="text-destructive text-xs">{fieldErrors.bio}</p>}
           </div>
           <div className="space-y-2">
             <label className="text-sm leading-none font-medium" htmlFor="birth-date">Birth date</label>
@@ -279,11 +306,12 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
                 readOnly={!isVerified}
                 className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
+                onChange={(e) => { setBirthDate(e.target.value); clearFieldError('birth_date'); }}
               />
+              {fieldErrors.birth_date && <p className="text-destructive text-xs">{fieldErrors.birth_date}</p>}
           </div>
           <div className="flex items-center gap-3">
-            <Button type="submit" disabled={!isVerified}>Save changes</Button>
+            <Button type="submit" disabled={!isVerified}>{profile ? 'Save changes' : 'Create profile'}</Button>
             <span className={`text-xs ${profileError ? 'text-destructive' : 'text-muted-foreground'}`}>
               {profileStatus}
             </span>
