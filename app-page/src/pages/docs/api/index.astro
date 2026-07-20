@@ -1,16 +1,18 @@
 ---
+export const prerender = true;
 import DocsLayout from '@layouts/DocsLayout.astro';
 import TocSidebar from '@components/docs/TocSidebar.astro';
 import CodeBlock from '@components/docs/CodeBlock.astro';
+import { t } from '@lib/i18n/t';
 ---
 
 <DocsLayout
-  title="API Reference — Diva Docs"
-  description="Detailed Diva Pages API reference — all component props, events, and TypeScript types."
+  title={t('page.docsApi.title', Astro.locals.lang)}
+  description={t('page.docsApi.desc', Astro.locals.lang)}
 >
   <div class="flex">
     <main class="max-w-3xl min-w-0 flex-1">
-      <h1 id="overview" class="text-4xl font-bold tracking-tight">API Reference</h1>
+      <h1 id="overview" class="text-4xl font-bold tracking-tight">{t('docs.api', Astro.locals.lang)}</h1>
       <p class="text-muted-foreground mt-4 text-lg">
         Detailed documentation for all component props, events, and TypeScript types.
       </p>
@@ -114,7 +116,7 @@ type MyButtonProps = ButtonProps & {
         />
       </div>
     </main>
-    <TocSidebar
+    <TocSidebar lang={Astro.locals.lang}
       headings={[
         { id: 'overview', label: 'Overview', level: 1 },
         { id: 'props', label: 'Component Props', level: 2 },

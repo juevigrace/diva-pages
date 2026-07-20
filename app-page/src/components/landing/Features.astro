@@ -1,19 +1,21 @@
 ---
-
+import Card from 'diva-ui/astro/Card.astro';
+import { t } from '@lib/i18n/t';
+const { lang = 'en' } = Astro.props;
 ---
 
 <section class="border-border border-t py-20 md:py-28">
   <div class="container mx-auto px-6">
     <div class="mx-auto max-w-3xl text-center">
       <h2 class="text-3xl font-bold tracking-tight md:text-4xl">
-        Everything you need to ship fast
+        {t('landing.featuresHeadline', lang)}
       </h2>
       <p class="text-muted-foreground mt-4 text-lg">
-        Pre-built components, consistent design, and zero friction.
+        {t('landing.featuresSubtitle', lang)}
       </p>
     </div>
     <div class="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <div class="border-border bg-card rounded-xl border p-6 shadow-sm">
+      <Card class="p-6">
         <div class="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
           <svg
             class="text-primary h-5 w-5"
@@ -29,12 +31,12 @@
             ></path>
           </svg>
         </div>
-        <h3 class="mt-4 font-semibold">20+ Components</h3>
+        <h3 class="mt-4 font-semibold">{t('landing.featureComponents', lang)}</h3>
         <p class="text-muted-foreground mt-2 text-sm">
-          Buttons, cards, forms, dialogs, navigation — everything you need to build a complete page.
+          {t('landing.featureComponentsDesc', lang)}
         </p>
-      </div>
-      <div class="border-border bg-card rounded-xl border p-6 shadow-sm">
+      </Card>
+      <Card class="p-6">
         <div class="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
           <svg
             class="text-primary h-5 w-5"
@@ -50,12 +52,12 @@
             ></path>
           </svg>
         </div>
-        <h3 class="mt-4 font-semibold">Customizable Themes</h3>
+        <h3 class="mt-4 font-semibold">{t('landing.featureThemes', lang)}</h3>
         <p class="text-muted-foreground mt-2 text-sm">
-          Dark mode built in. Change your brand colors with a single CSS variable.
+          {t('landing.featureThemesDesc', lang)}
         </p>
-      </div>
-      <div class="border-border bg-card rounded-xl border p-6 shadow-sm">
+      </Card>
+      <Card class="p-6">
         <div class="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
           <svg
             class="text-primary h-5 w-5"
@@ -68,12 +70,12 @@
             ></path>
           </svg>
         </div>
-        <h3 class="mt-4 font-semibold">Blazing Fast</h3>
+        <h3 class="mt-4 font-semibold">{t('landing.featureFast', lang)}</h3>
         <p class="text-muted-foreground mt-2 text-sm">
-          Built on Astro — zero JS by default, instant page loads, and optimized builds.
+          {t('landing.featureFastDesc', lang)}
         </p>
-      </div>
-      <div class="border-border bg-card rounded-xl border p-6 shadow-sm">
+      </Card>
+      <Card class="p-6">
         <div class="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
           <svg
             class="text-primary h-5 w-5"
@@ -89,12 +91,12 @@
             ></path>
           </svg>
         </div>
-        <h3 class="mt-4 font-semibold">Secure by Default</h3>
+        <h3 class="mt-4 font-semibold">{t('landing.featureSecure', lang)}</h3>
         <p class="text-muted-foreground mt-2 text-sm">
-          Built-in CSP support, type-safe forms with Zod validation, and SSR.
+          {t('landing.featureSecureDesc', lang)}
         </p>
-      </div>
-      <div class="border-border bg-card rounded-xl border p-6 shadow-sm">
+      </Card>
+      <Card class="p-6">
         <div class="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
           <svg
             class="text-primary h-5 w-5"
@@ -110,12 +112,12 @@
             ></path>
           </svg>
         </div>
-        <h3 class="mt-4 font-semibold">Team Ready</h3>
+        <h3 class="mt-4 font-semibold">{t('landing.featureTeam', lang)}</h3>
         <p class="text-muted-foreground mt-2 text-sm">
-          Workspace monorepo, shared component library, and consistent design tokens.
+          {t('landing.featureTeamDesc', lang)}
         </p>
-      </div>
-      <div class="border-border bg-card rounded-xl border p-6 shadow-sm">
+      </Card>
+      <Card class="p-6">
         <div class="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
           <svg
             class="text-primary h-5 w-5"
@@ -131,11 +133,11 @@
             ></path>
           </svg>
         </div>
-        <h3 class="mt-4 font-semibold">Battle Tested</h3>
+        <h3 class="mt-4 font-semibold">{t('landing.featureTested', lang)}</h3>
         <p class="text-muted-foreground mt-2 text-sm">
-          Used in production by teams shipping docs, dashboards, and marketing sites.
+          {t('landing.featureTestedDesc', lang)}
         </p>
-      </div>
+      </Card>
     </div>
   </div>
 </section>

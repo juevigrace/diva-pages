@@ -3,13 +3,16 @@ import { Button } from 'diva-ui/components/button';
 import { Input } from 'diva-ui/components/input';
 import { toast } from 'diva-ui/components/sonner';
 import { Loader2 } from 'lucide-react';
+import { useT } from '@lib/i18n/useT';
 
 interface VerificationFlowProps {
   action: string;
   email?: string;
+  lang?: string;
 }
 
-export default function VerificationFlow({ action, email: initialEmail = '' }: VerificationFlowProps) {
+export default function VerificationFlow({ action, email: initialEmail = '', lang = 'en' }: VerificationFlowProps) {
+  const t = useT(lang);
   const [step, setStep] = useState<'request' | 'verify' | 'verified' | 'confirming' | 'new_password' | 'complete'>(initialEmail ? 'verify' : 'request');
   const [email, setEmail] = useState(initialEmail);
   const [actionId, setActionId] = useState('');
@@ -37,14 +40,14 @@ export default function VerificationFlow({ action, email: initialEmail = '' }: V
         const json = await res.json();
         setActionId(json.id || json.data?.id || '');
         setStep('verify');
-        toast.success('Verification code sent to your email');
+        toast.success(t('verification.codeSent'));
         setTimeout(() => tokenInputs.current[0]?.focus(), 100);
       } else {
         const json = await res.json();
-        setError(json.message || 'Failed to send verification code');
+        setError(json.message || t('verification.failedToSendCode'));
       }
     } catch {
-      setError('Network error. Please try again.');
+      setError(t('auth.networkError'));
     }
     setLoading(false);
   };
@@ -101,10 +104,10 @@ export default function VerificationFlow({ action, email: initialEmail = '' }: V
         }
       } else {
         const json = await res.json();
-        setError(json.message || 'Verification failed. The code may be expired or invalid.');
+        setError(json.message || t('verification.verificationFailed'));
       }
     } catch {
-      setError('Network error. Please try again.');
+      setError(t('auth.networkError'));
     }
     setLoading(false);
   };
@@ -119,14 +122,14 @@ export default function VerificationFlow({ action, email: initialEmail = '' }: V
 
       if (res.ok) {
         setStep('new_password');
-        toast.success('Identity verified. Please set a new password.');
+        toast.success(t('verification.identityVerified'));
       } else {
         const json = await res.json();
-        setError(json.message || 'Failed to confirm password reset');
+        setError(json.message || t('verification.failedToSendCode'));
         setStep('verify');
       }
     } catch {
-      setError('Network error. Please try again.');
+      setError(t('auth.networkError'));
       setStep('verify');
     }
     setLoading(false);
@@ -135,7 +138,7 @@ export default function VerificationFlow({ action, email: initialEmail = '' }: V
   const handlePasswordSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (newPassword.length < 4) {
-      setError('Password must be at least 4 characters');
+      setError(t('profile.passwordMin'));
       return;
     }
     setError('');
@@ -157,10 +160,10 @@ export default function VerificationFlow({ action, email: initialEmail = '' }: V
         setStep('complete');
       } else {
         const json = await res.json();
-        setError(json.message || 'Failed to change password');
+        setError(json.message || t('profile.failedChangePassword'));
       }
     } catch {
-      setError('Network error. Please try again.');
+      setError(t('auth.networkError'));
     }
     setLoading(false);
   };
@@ -173,10 +176,10 @@ export default function VerificationFlow({ action, email: initialEmail = '' }: V
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="mt-6 text-2xl font-bold">Email verified</h1>
-        <p className="text-muted-foreground mt-2 text-sm">Your email has been verified successfully.</p>
+        <h1 className="mt-6 text-2xl font-bold">{t('verification.emailVerified')}</h1>
+        <p className="text-muted-foreground mt-2 text-sm">{t('verification.emailVerifiedDesc')}</p>
         <Button asChild className="mt-8">
-          <a href="/">Go to dashboard</a>
+          <a href="/">{t('verification.goToDashboard')}</a>
         </Button>
       </div>
     );
@@ -190,10 +193,10 @@ export default function VerificationFlow({ action, email: initialEmail = '' }: V
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="mt-6 text-2xl font-bold">Password changed</h1>
-        <p className="text-muted-foreground mt-2 text-sm">Your password has been updated successfully.</p>
+        <h1 className="mt-6 text-2xl font-bold">{t('verification.passwordChanged')}</h1>
+        <p className="text-muted-foreground mt-2 text-sm">{t('verification.passwordChangedDesc')}</p>
         <Button asChild className="mt-8">
-          <a href="/signIn">Sign in with new password</a>
+          <a href="/signIn">{t('verification.signInWithNewPassword')}</a>
         </Button>
       </div>
     );
@@ -203,8 +206,8 @@ export default function VerificationFlow({ action, email: initialEmail = '' }: V
     return (
       <div className="mx-auto w-full max-w-md text-center">
         <Loader2 className="text-primary mx-auto h-8 w-8 animate-spin" />
-        <h1 className="mt-6 text-2xl font-bold">Confirming...</h1>
-        <p className="text-muted-foreground mt-2 text-sm">Please wait while we confirm your identity.</p>
+        <h1 className="mt-6 text-2xl font-bold">{t('verification.confirming')}</h1>
+        <p className="text-muted-foreground mt-2 text-sm">{t('verification.pleaseWait')}</p>
       </div>
     );
   }
@@ -216,25 +219,25 @@ export default function VerificationFlow({ action, email: initialEmail = '' }: V
           <div className="bg-primary mx-auto flex h-12 w-12 items-center justify-center rounded-xl">
             <span className="text-primary-foreground text-xl font-bold">D</span>
           </div>
-          <h1 className="mt-4 text-2xl font-bold tracking-tight">Set new password</h1>
-          <p className="text-muted-foreground mt-2 text-sm">Enter your new password below.</p>
+          <h1 className="mt-4 text-2xl font-bold tracking-tight">{t('verification.setNewPassword')}</h1>
+          <p className="text-muted-foreground mt-2 text-sm">{t('verification.enterNewPassword')}</p>
         </div>
 
         <div className="border-border bg-card mt-8 rounded-xl border p-8 shadow-sm">
           <form onSubmit={handlePasswordSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-sm leading-none font-medium" htmlFor="new-password">New password</label>
+              <label className="text-sm leading-none font-medium" htmlFor="new-password">{t('verification.newPassword')}</label>
               <Input
                 id="new-password"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('auth.passwordPlaceholder')}
                 value={newPassword}
                 onChange={(e) => { setNewPassword(e.target.value); setError(''); }}
               />
             </div>
             {error && <p className="text-destructive text-sm">{error}</p>}
             <Button type="submit" className="w-full" disabled={loading || newPassword.length < 4}>
-              {loading ? 'Changing password...' : 'Change password'}
+              {loading ? t('verification.changingPassword') : t('verification.changePassword')}
             </Button>
           </form>
         </div>
@@ -250,23 +253,21 @@ export default function VerificationFlow({ action, email: initialEmail = '' }: V
             <span className="text-primary-foreground text-xl font-bold">D</span>
           </div>
           <h1 className="mt-4 text-2xl font-bold tracking-tight">
-            {isPasswordReset ? 'Reset your password' : 'Verify your email'}
+            {isPasswordReset ? t('verification.resetPassword') : t('verification.verifyEmailTitle')}
           </h1>
           <p className="text-muted-foreground mt-2 text-sm">
-            {isPasswordReset
-              ? 'Enter your email address and we\'ll send you a verification code.'
-              : 'Enter your email address to receive a verification code.'}
+            {isPasswordReset ? t('verification.enterCode') : t('verification.enterCode')}
           </p>
         </div>
 
         <div className="border-border bg-card mt-8 rounded-xl border p-8 shadow-sm">
           <form onSubmit={handleRequestCode} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-sm leading-none font-medium" htmlFor="email">Email</label>
+              <label className="text-sm leading-none font-medium" htmlFor="email">{t('auth.email')}</label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t('auth.emailPlaceholder')}
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); setError(''); }}
                 required
@@ -274,14 +275,14 @@ export default function VerificationFlow({ action, email: initialEmail = '' }: V
             </div>
             {error && <p className="text-destructive text-sm">{error}</p>}
             <Button type="submit" className="w-full" disabled={loading || !email}>
-              {loading ? 'Sending...' : 'Send verification code'}
+              {loading ? t('verification.sending') : t('verification.sendCode')}
             </Button>
           </form>
         </div>
 
         <p className="text-muted-foreground mt-6 text-center text-sm">
-          Remember your password?{' '}
-          <a href="/signIn" className="text-primary hover:underline">Sign in</a>
+          {t('verification.rememberPassword')}{' '}
+          <a href="/signIn" className="text-primary hover:underline">{t('auth.signIn')}</a>
         </p>
       </div>
     );
@@ -293,16 +294,16 @@ export default function VerificationFlow({ action, email: initialEmail = '' }: V
         <div className="bg-primary mx-auto flex h-12 w-12 items-center justify-center rounded-xl">
           <span className="text-primary-foreground text-xl font-bold">D</span>
         </div>
-        <h1 className="mt-4 text-2xl font-bold tracking-tight">Enter verification code</h1>
+        <h1 className="mt-4 text-2xl font-bold tracking-tight">{t('verification.enterCode')}</h1>
         <p className="text-muted-foreground mt-2 text-sm">
-          We sent a 6-digit code to <span className="font-medium text-foreground">{email}</span>
+          {t('verification.enterCode')} <span className="font-medium text-foreground">{email}</span>
         </p>
       </div>
 
       <div className="border-border bg-card mt-8 rounded-xl border p-8 shadow-sm">
         <div className="space-y-5">
           <div>
-            <label className="text-sm leading-none font-medium">Verification code</label>
+            <label className="text-sm leading-none font-medium">{t('verification.codePlaceholder')}</label>
             <div className="mt-3 flex justify-center gap-2">
               {token.map((digit, i) => (
                 <input
@@ -327,20 +328,20 @@ export default function VerificationFlow({ action, email: initialEmail = '' }: V
             disabled={loading || !tokenComplete}
             onClick={handleVerifyCode}
           >
-            {loading ? 'Verifying...' : 'Verify code'}
+            {loading ? t('verification.verifying') : t('verification.verifyCode')}
           </Button>
         </div>
       </div>
 
-      <p className="text-muted-foreground mt-6 text-center text-sm">
-        Didn't receive the code?{' '}
-        <button
-          type="button"
-          className="text-primary hover:underline cursor-pointer"
-          onClick={handleRequestCode}
-        >
-          Resend
-        </button>
+        <p className="text-muted-foreground mt-6 text-center text-sm">
+          {t('verification.resendCode')}{' '}
+          <button
+            type="button"
+            className="text-primary hover:underline cursor-pointer"
+            onClick={handleRequestCode}
+          >
+            {t('verification.resendCode')}
+          </button>
       </p>
     </div>
   );

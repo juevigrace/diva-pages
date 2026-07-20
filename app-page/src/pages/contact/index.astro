@@ -1,11 +1,13 @@
 ---
+export const prerender = true;
 import LandingLayout from '@layouts/LandingLayout.astro';
 import ContactForm from '@components/landing/ContactForm.astro';
+import { t } from '@lib/i18n/t';
 ---
 
 <LandingLayout
-  title="Contact — Diva"
-  description="Get in touch with the Diva team. Have a question, feedback, or want to talk about your project?"
+  title={t('page.contact.title', Astro.locals.lang)}
+  description={t('page.contact.desc', Astro.locals.lang)}
 >
-  <ContactForm />
+  <ContactForm lang={Astro.locals.lang} />
 </LandingLayout>

@@ -1,6 +1,7 @@
 ---
 import '@styles/global.css';
 import Layout from '@layouts/Layout.astro';
+import { t } from '@lib/i18n/t';
 
 export interface Props {
   title?: string;
@@ -8,6 +9,7 @@ export interface Props {
 }
 
 const { title = 'Diva', description } = Astro.props;
+const lang = Astro.locals.lang || 'en';
 ---
 
 <Layout title={title} description={description}>
@@ -25,7 +27,7 @@ const { title = 'Diva', description } = Astro.props;
           href="/home"
           class="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
         >
-          &larr; Back to home
+          &larr; {t('common.back', lang)}
         </a>
       </div>
     </header>

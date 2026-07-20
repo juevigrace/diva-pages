@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from 'diva-ui/components/button';
 import { getUserInitials, showStatus } from '../../nav-items';
 import GrantPermissionForm from './GrantPermissionForm';
+import { useT } from '@lib/i18n/useT';
 
 interface UserDetailContentProps {
   uid: string;
@@ -13,9 +14,11 @@ interface UserDetailContentProps {
   allPermissions: Record<string, any>[];
   currentUserRole: string;
   isVerified?: boolean;
+  lang?: string;
 }
 
-export default function UserDetailContent({ uid, user, profile, permissions: initialPermissions, sessions: initialSessions, actions, allPermissions, currentUserRole, isVerified = true }: UserDetailContentProps) {
+export default function UserDetailContent({ uid, user, profile, permissions: initialPermissions, sessions: initialSessions, actions, allPermissions, currentUserRole, isVerified = true, lang = 'en' }: UserDetailContentProps) {
+  const t = useT(lang);
   const [tab, setTab] = useState<'profile' | 'permissions' | 'sessions' | 'activity'>('profile');
   const [permStatus, setPermStatus] = useState('');
   const [permStatusError, setPermStatusError] = useState(false);
@@ -30,10 +33,10 @@ export default function UserDetailContent({ uid, user, profile, permissions: ini
     const res = await fetch(`/api/user/${uid}/permissions/${pid}`, { method: 'DELETE' });
     if (res.ok) {
       setPermissions((prev) => (prev || []).filter((p: any) => p.permission_id !== pid));
-      showStatus(setPermStatus, setPermStatusError, 'Permission revoked.', false);
+      showStatus(setPermStatus, setPermStatusError, t('users.permissionRevoked'), false);
     } else {
       const json = await res.json();
-      showStatus(setPermStatus, setPermStatusError, json.message || 'Failed to revoke permission', true);
+      showStatus(setPermStatus, setPermStatusError, json.message || t('users.failedRevokePermission'), true);
     }
   };
 
@@ -45,16 +48,16 @@ export default function UserDetailContent({ uid, user, profile, permissions: ini
   };
 
   if (!user) {
-    return <p className="text-muted-foreground text-sm">User not found.</p>;
+    return <p className="text-muted-foreground text-sm">{t('users.unknown')}</p>;
   }
 
   const initials = getUserInitials(user.username);
 
   const tabs = [
-    { key: 'profile', label: 'Profile' },
-    { key: 'permissions', label: 'Permissions' },
-    { key: 'sessions', label: 'Sessions' },
-    { key: 'activity', label: 'Activity' },
+    { key: 'profile', label: t('users.profile') },
+    { key: 'permissions', label: t('users.permissions') },
+    { key: 'sessions', label: t('users.sessions') },
+    { key: 'activity', label: t('users.activity') },
   ] as const;
 
   return (
@@ -109,27 +112,27 @@ export default function UserDetailContent({ uid, user, profile, permissions: ini
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <p className="text-muted-foreground text-xs uppercase tracking-wider">Email</p>
+                  <p className="text-muted-foreground text-xs uppercase tracking-wider">{t('users.email')}</p>
                   <p className="text-sm font-medium">{user.email || '—'}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs uppercase tracking-wider">Phone</p>
+                  <p className="text-muted-foreground text-xs uppercase tracking-wider">{t('users.phone')}</p>
                   <p className="text-sm font-medium">{user.phone_number || '—'}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs uppercase tracking-wider">Username</p>
+                  <p className="text-muted-foreground text-xs uppercase tracking-wider">{t('auth.username')}</p>
                   <p className="text-sm font-medium">{user.username}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs uppercase tracking-wider">Role</p>
+                  <p className="text-muted-foreground text-xs uppercase tracking-wider">{t('users.role')}</p>
                   <p className="text-sm font-medium">{user.role}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs uppercase tracking-wider">Verified</p>
-                  <p className="text-sm font-medium">{user.state?.verified ? 'Yes' : 'No'}</p>
+                  <p className="text-muted-foreground text-xs uppercase tracking-wider">{t('users.verified')}</p>
+                  <p className="text-sm font-medium">{user.state?.verified ? t('users.yes') : t('users.no')}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs uppercase tracking-wider">Created</p>
+                  <p className="text-muted-foreground text-xs uppercase tracking-wider">{t('users.created')}</p>
                   <p className="text-sm font-medium">
                     {user.created_at ? new Date(user.created_at * 1000).toLocaleDateString() : '—'}
                   </p>
@@ -137,18 +140,18 @@ export default function UserDetailContent({ uid, user, profile, permissions: ini
               </div>
               {profile && (
                 <div className="border-border mt-4 border-t pt-4">
-                  <h4 className="text-sm font-semibold mb-3">Profile</h4>
+                  <h4 className="text-sm font-semibold mb-3">{t('users.profile')}</h4>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <p className="text-muted-foreground text-xs uppercase tracking-wider">Name</p>
+                      <p className="text-muted-foreground text-xs uppercase tracking-wider">{t('users.name')}</p>
                       <p className="text-sm font-medium">{`${profile.first_name || ''} ${profile.last_name || ''}`.trim() || '—'}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground text-xs uppercase tracking-wider">Alias</p>
+                      <p className="text-muted-foreground text-xs uppercase tracking-wider">{t('profile.displayAlias')}</p>
                       <p className="text-sm font-medium">{profile.alias || '—'}</p>
                     </div>
                     <div className="sm:col-span-2">
-                      <p className="text-muted-foreground text-xs uppercase tracking-wider">Bio</p>
+                      <p className="text-muted-foreground text-xs uppercase tracking-wider">{t('profile.bio')}</p>
                       <p className="text-sm font-medium">{profile.bio || '—'}</p>
                     </div>
                   </div>
@@ -169,6 +172,7 @@ export default function UserDetailContent({ uid, user, profile, permissions: ini
                   uid={uid}
                   allPermissions={allPermissions}
                   onGranted={(perm) => setPermissions((prev) => [...(prev || []), perm])}
+                  lang={lang}
                 />
               )}
               <span className={`text-xs ${permStatusError ? 'text-destructive' : 'text-muted-foreground'}`}>{permStatus}</span>
@@ -187,7 +191,7 @@ export default function UserDetailContent({ uid, user, profile, permissions: ini
                         </div>
                         {canManage && (
                           <Button type="button" variant="ghost" size="sm" onClick={() => revokePermission(p.permission_id)}>
-                            Revoke
+                            {t('users.revoke')}
                           </Button>
                         )}
                       </div>
@@ -195,7 +199,7 @@ export default function UserDetailContent({ uid, user, profile, permissions: ini
                   })}
                 </div>
               ) : (
-                <p className="text-muted-foreground py-4 text-center text-sm">No permissions assigned.</p>
+                <p className="text-muted-foreground py-4 text-center text-sm">{t('users.noPermissions')}</p>
               )}
             </div>
           )}
@@ -217,7 +221,7 @@ export default function UserDetailContent({ uid, user, profile, permissions: ini
                         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                           s.status === 'ACTIVE' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
                         }`}>{s.status}</span>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => closeSession(s.session_id)} title="Close">
+                        <Button type="button" variant="ghost" size="icon" onClick={() => closeSession(s.session_id)} title={t('users.close')}>
                           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -227,7 +231,7 @@ export default function UserDetailContent({ uid, user, profile, permissions: ini
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground py-4 text-center text-sm">No sessions found.</p>
+                <p className="text-muted-foreground py-4 text-center text-sm">{t('users.noSessions')}</p>
               )}
             </div>
           )}
@@ -246,7 +250,7 @@ export default function UserDetailContent({ uid, user, profile, permissions: ini
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground py-4 text-center text-sm">No activity recorded.</p>
+                <p className="text-muted-foreground py-4 text-center text-sm">{t('users.noActivity')}</p>
               )}
             </div>
           )}

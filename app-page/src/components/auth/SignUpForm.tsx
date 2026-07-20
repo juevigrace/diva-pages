@@ -4,13 +4,19 @@ import { toast } from 'diva-ui/components/sonner';
 import { Input } from 'diva-ui/components/input';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { signUpInputSchema } from '@lib/schemas/auth';
+import { useT } from '@lib/i18n/useT';
 
 interface AvailabilityState {
   status: 'idle' | 'checking' | 'available' | 'taken';
   message: string;
 }
 
-export default function SignUpForm() {
+interface SignUpFormProps {
+  lang?: string;
+}
+
+export default function SignUpForm({ lang = 'en' }: SignUpFormProps) {
+  const t = useT(lang);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,7 +47,7 @@ export default function SignUpForm() {
         if (res.ok) {
           setUsernameAvail({ status: 'available', message: '' });
         } else {
-          setUsernameAvail({ status: 'taken', message: json.message || 'Username is taken' });
+          setUsernameAvail({ status: 'taken', message: json.message || t('auth.usernameTaken') });
         }
       } catch {
         setUsernameAvail({ status: 'idle', message: '' });
@@ -65,7 +71,7 @@ export default function SignUpForm() {
         if (res.ok) {
           setEmailAvail({ status: 'available', message: '' });
         } else {
-          setEmailAvail({ status: 'taken', message: json.message || 'Email is taken' });
+          setEmailAvail({ status: 'taken', message: json.message || t('auth.emailTaken') });
         }
       } catch {
         setEmailAvail({ status: 'idle', message: '' });
@@ -127,9 +133,9 @@ export default function SignUpForm() {
         }
       }
 
-      toast.error(json.message || 'An error occurred');
+      toast.error(json.message || t('auth.anErrorOccurred'));
     } catch {
-      toast.error('Network error. Please try again.');
+      toast.error(t('auth.networkError'));
     } finally {
       setLoading(false);
     }
@@ -141,19 +147,19 @@ export default function SignUpForm() {
         <div className="bg-primary mx-auto flex h-12 w-12 items-center justify-center rounded-xl">
           <span className="text-primary-foreground text-xl font-bold">D</span>
         </div>
-        <h1 className="mt-4 text-2xl font-bold tracking-tight">Create an account</h1>
-        <p className="text-muted-foreground mt-2 text-sm">Get started with your free account</p>
+        <h1 className="mt-4 text-2xl font-bold tracking-tight">{t('auth.createAccount')}</h1>
+        <p className="text-muted-foreground mt-2 text-sm">{t('auth.getStarted')}</p>
       </div>
 
       <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label className="text-sm leading-none font-medium" htmlFor="username">Username</label>
+            <label className="text-sm leading-none font-medium" htmlFor="username">{t('auth.username')}</label>
             <div className="relative">
               <Input
                 id="username"
                 type="text"
-                placeholder="johndoe"
+                placeholder={t('auth.usernamePlaceholder')}
                 className="pr-8"
                 value={username}
                 onChange={(e) => { setUsername(e.target.value); clearFieldError('username'); }}
@@ -175,12 +181,12 @@ export default function SignUpForm() {
             ) : null}
           </div>
           <div className="space-y-2">
-            <label className="text-sm leading-none font-medium" htmlFor="email">Email</label>
+            <label className="text-sm leading-none font-medium" htmlFor="email">{t('auth.email')}</label>
             <div className="relative">
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t('auth.emailPlaceholder')}
                 className="pr-8"
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); clearFieldError('email'); }}
@@ -202,11 +208,11 @@ export default function SignUpForm() {
             ) : null}
           </div>
           <div className="space-y-2">
-            <label className="text-sm leading-none font-medium" htmlFor="password">Password</label>
+            <label className="text-sm leading-none font-medium" htmlFor="password">{t('auth.password')}</label>
             <Input
               id="password"
               type="password"
-              placeholder="Create a strong password"
+              placeholder={t('auth.strongPasswordPlaceholder')}
               value={password}
               onChange={(e) => { setPassword(e.target.value); clearFieldError('password'); }}
             />
@@ -215,14 +221,14 @@ export default function SignUpForm() {
             )}
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Creating account...' : 'Create account'}
+            {loading ? t('auth.creatingAccount') : t('auth.createAccountBtn')}
           </Button>
         </form>
       </div>
 
       <p className="text-muted-foreground text-center text-sm">
-        Already have an account?{' '}
-        <a href="/signIn" className="text-primary hover:underline">Sign in</a>
+        {t('auth.haveAccount')}{' '}
+        <a href="/signIn" className="text-primary hover:underline">{t('auth.signIn')}</a>
       </p>
     </div>
   );

@@ -2,19 +2,21 @@
 import ThemeToggle from '@components/app/ThemeToggle';
 import UserMenuContent from '@components/app/UserMenuContent';
 import MobileNav from '@components/app/MobileNav';
+import { t } from '@lib/i18n/t';
 
 const currentPath = Astro.url.pathname;
 const { session } = Astro.locals;
+const lang = Astro.locals.lang;
 
-const breadcrumbMap: Record<string, string> = {
-  '/': 'Dashboard',
-  '/users': 'Users',
-  '/sessions': 'Sessions',
-  '/audit': 'Audit Log',
-  '/profile': 'Profile',
-  '/settings': 'Settings',
-  '/admin/permissions': 'Permissions',
-  '/admin/api': 'API Explorer',
+const breadcrumbKey: Record<string, string> = {
+  '/': 'dashboard',
+  '/users': 'users',
+  '/sessions': 'sessions',
+  '/audit': 'auditLog',
+  '/profile': 'profile',
+  '/settings': 'settings',
+  '/admin/permissions': 'permissions',
+  '/admin/api': 'apiExplorer',
 };
 
 function getBreadcrumbs(path: string): { label: string; href: string }[] {
@@ -23,10 +25,11 @@ function getBreadcrumbs(path: string): { label: string; href: string }[] {
   let accum = '';
   for (const seg of segments) {
     accum += '/' + seg;
-    const label = breadcrumbMap[accum] || seg.charAt(0).toUpperCase() + seg.slice(1);
+    const bk = breadcrumbKey[accum];
+    const label = bk ? t(`nav.${bk}`, lang) : seg.charAt(0).toUpperCase() + seg.slice(1);
     crumbs.push({ label, href: accum });
   }
-  if (crumbs.length === 0) crumbs.push({ label: 'Dashboard', href: '/' });
+  if (crumbs.length === 0) crumbs.push({ label: t('nav.dashboard', lang), href: '/' });
   return crumbs;
 }
 
@@ -38,7 +41,7 @@ const crumbs = getBreadcrumbs(currentPath);
 >
   <div class="flex h-full items-center justify-between px-6 md:ml-64">
     <div class="flex items-center gap-3">
-      <MobileNav currentPath={currentPath} isAdmin={session?.role === 'ADMIN' || session?.role === 'MODERATOR'} client:load />
+      <MobileNav currentPath={currentPath} isAdmin={session?.role === 'ADMIN' || session?.role === 'MODERATOR'} lang={lang} client:visible />
       <div>
         <nav class="hidden items-center gap-1 text-sm text-muted-foreground md:flex">
           {
@@ -62,8 +65,8 @@ const crumbs = getBreadcrumbs(currentPath);
       <div class="hidden items-center gap-2 md:flex">
         <slot name="actions" />
       </div>
-      <ThemeToggle client:load />
-      <UserMenuContent signedIn={!!session} client:load />
+      <ThemeToggle client:idle />
+      <UserMenuContent signedIn={!!session} lang={lang} client:idle />
     </div>
   </div>
 </header>

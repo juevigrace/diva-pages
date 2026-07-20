@@ -1,16 +1,18 @@
 ---
+export const prerender = true;
 import DocsLayout from '@layouts/DocsLayout.astro';
 import TocSidebar from '@components/docs/TocSidebar.astro';
 import CodeBlock from '@components/docs/CodeBlock.astro';
+import { t } from '@lib/i18n/t';
 ---
 
 <DocsLayout
-  title="Components — Diva Docs"
-  description="Diva Pages ships with 20+ shadcn/ui components built with Radix UI primitives and Tailwind CSS v4."
+  title={t('page.components.title', Astro.locals.lang)}
+  description={t('page.components.desc', Astro.locals.lang)}
 >
   <div class="flex">
     <main class="max-w-3xl min-w-0 flex-1">
-      <h1 id="overview" class="text-4xl font-bold tracking-tight">Components</h1>
+      <h1 id="overview" class="text-4xl font-bold tracking-tight">{t('docs.components', Astro.locals.lang)}</h1>
       <p class="text-muted-foreground mt-4 text-lg">
         Diva Pages ships with 20+ shadcn/ui components, all built with Radix UI primitives and
         Tailwind CSS v4.
@@ -87,7 +89,7 @@ import { Switch } from 'diva-ui/components/switch'
         Dialog, Sheet, Popover, and Tooltip for overlay and disclosure patterns.
       </p>
     </main>
-    <TocSidebar
+    <TocSidebar lang={Astro.locals.lang}
       headings={[
         { id: 'overview', label: 'Overview', level: 1 },
         { id: 'button', label: 'Button', level: 2 },

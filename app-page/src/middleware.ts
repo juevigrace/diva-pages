@@ -18,6 +18,7 @@ declare global {
         role: string;
         isVerified: boolean;
       } | null;
+      lang: string;
     }
   }
 }
@@ -117,6 +118,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   ) {
     return context.redirect('/home');
   }
+
+  const acceptLang = context.request.headers.get('accept-language') || '';
+  const preferredLang = acceptLang.split(',')[0]?.split('-')[0] || 'en';
+  context.locals.lang = preferredLang === 'es' ? 'es' : 'en';
 
   return next();
 });

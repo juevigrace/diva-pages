@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Button } from 'diva-ui/components/button';
 import { buildPageArray } from '../../nav-items';
 import PermissionLevelSelect from './PermissionLevelSelect';
+import { useT } from '@lib/i18n/useT';
 
 const permissionSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255),
@@ -17,11 +18,13 @@ interface PermissionsManagerProps {
   loadError: boolean;
   currentUserRole: string;
   isVerified?: boolean;
+  lang?: string;
 }
 
 export default function PermissionsManager({
-  initialPermissions, initialPage, initialTotalPages, initialTotalItems, loadError: initError, currentUserRole, isVerified = true,
+  initialPermissions, initialPage, initialTotalPages, initialTotalItems, loadError: initError, currentUserRole, isVerified = true, lang = 'en',
 }: PermissionsManagerProps) {
+  const t = useT(lang);
   const [permissions, setPermissions] = useState(initialPermissions);
   const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
@@ -65,17 +68,17 @@ export default function PermissionsManager({
       body: JSON.stringify({ name, description }),
     });
     if (res.ok) {
-      showStatus('Permission updated.', false);
+      showStatus(t('admin.permissionUpdated'), false);
       setEditPid(null);
       loadPage(page);
     } else {
       const json = await res.json();
-      showStatus(json.message || 'Failed to update permission', true);
+      showStatus(json.message || t('admin.failedUpdatePermission'), true);
     }
   };
 
   const handleLevelChanged = () => {
-    showStatus('Role level updated.', false);
+    showStatus(t('users.roleUpdated'), false);
     loadPage(page);
   };
 
@@ -85,26 +88,26 @@ export default function PermissionsManager({
     <div>
       <div className="border-border bg-card rounded-xl border shadow-sm">
         <div className="border-border flex items-center justify-between border-b px-6 py-4">
-          <h3 className="font-semibold">Permission Definitions</h3>
+          <h3 className="font-semibold">{t('admin.permissionName')}</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-border bg-muted/50 border-b">
-                <th className="text-muted-foreground px-6 py-3 text-left font-medium">Name</th>
-                <th className="text-muted-foreground px-6 py-3 text-left font-medium">Action</th>
-                <th className="text-muted-foreground px-6 py-3 text-left font-medium">Description</th>
-                <th className="text-muted-foreground px-6 py-3 text-left font-medium">Level</th>
-                <th className="text-muted-foreground px-6 py-3 text-right font-medium">Actions</th>
+                <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('admin.permissionName')}</th>
+                <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('admin.endpoint')}</th>
+                <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('admin.permissionDescription')}</th>
+                <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('admin.permissionDescription')}</th>
+                <th className="text-muted-foreground px-6 py-3 text-right font-medium">{t('users.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {!isVerified ? (
-                <tr><td colSpan={5} className="text-muted-foreground px-6 py-12 text-center text-sm">Verify your email to manage permissions.</td></tr>
+                <tr><td colSpan={5} className="text-muted-foreground px-6 py-12 text-center text-sm">{t('nav.verifyToManage')}</td></tr>
               ) : loadError ? (
-                <tr><td colSpan={5} className="text-muted-foreground px-6 py-12 text-center text-sm">Could not load permissions.</td></tr>
+                <tr><td colSpan={5} className="text-muted-foreground px-6 py-12 text-center text-sm">{t('common.error')}</td></tr>
               ) : permissions.length === 0 ? (
-                <tr><td colSpan={5} className="text-muted-foreground px-6 py-12 text-center text-sm">No permissions found.</td></tr>
+                <tr><td colSpan={5} className="text-muted-foreground px-6 py-12 text-center text-sm">{t('admin.noPermissions')}</td></tr>
               ) : (
                 permissions.map((p: any) => (
                   <tr key={p.id} className="border-border hover:bg-muted/50 border-b">
@@ -132,11 +135,11 @@ export default function PermissionsManager({
                       <div className="flex items-center justify-end gap-1">
                         {editPid === p.id ? (
                           <>
-                            <Button type="button" variant="default" size="sm" onClick={() => handleUpdate(p.id)}>Save</Button>
-                            <Button type="button" variant="ghost" size="sm" onClick={() => setEditPid(null)}>Cancel</Button>
+                            <Button type="button" variant="default" size="sm" onClick={() => handleUpdate(p.id)}>{t('common.save')}</Button>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => setEditPid(null)}>{t('common.cancel')}</Button>
                           </>
                         ) : (
-                          <Button type="button" variant="ghost" size="sm" disabled={!isVerified} onClick={() => { setEditPid(p.id); setName(p.name); setDescription(p.description); }}>Edit</Button>
+                          <Button type="button" variant="ghost" size="sm" disabled={!isVerified} onClick={() => { setEditPid(p.id); setName(p.name); setDescription(p.description); }}>{t('admin.editPermission')}</Button>
                         )}
                       </div>
                     </td>

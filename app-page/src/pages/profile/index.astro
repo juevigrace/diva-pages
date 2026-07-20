@@ -3,6 +3,7 @@ import AppLayout from '@layouts/AppLayout.astro';
 import ProfileForms from '@components/app/ProfileForms';
 import { apiFetch } from '@api/lib/fetch';
 import { fetchCurrentUser } from '@api/lib/user';
+import { t } from '@lib/i18n/t';
 
 const { session } = Astro.locals;
 const uid = session!.userId;
@@ -22,9 +23,9 @@ if (isVerified) {
 ---
 
 <AppLayout
-  title="Profile — Diva"
+  title={t('page.profile.title', Astro.locals.lang)}
   heading="Profile"
-  description="Manage your Diva Pages profile and personal information."
+  description={t('page.profile.desc', Astro.locals.lang)}
 >
-  <ProfileForms uid={uid} user={user} profile={profile} isVerified={isVerified} client:load />
+  <ProfileForms uid={uid} user={user} profile={profile} isVerified={isVerified} lang={Astro.locals.lang} client:load />
 </AppLayout>

@@ -1,14 +1,16 @@
 ---
+export const prerender = true;
 import LandingLayout from '@layouts/LandingLayout.astro';
 import Hero from '@components/landing/Hero.astro';
 import Features from '@components/landing/Features.astro';
 import PricingCards from '@components/landing/PricingCards.astro';
 import CtaSection from '@components/landing/CtaSection.astro';
+import { t } from '@lib/i18n/t';
 ---
 
 <LandingLayout
-  title="Diva — Build pages your users will love"
-  description="Build pages your users will love. Diva Pages gives you beautiful, responsive page designs out of the box."
+  title={t('page.home.title', Astro.locals.lang)}
+  description={t('page.home.desc', Astro.locals.lang)}
 >
   <Hero />
   <Features />

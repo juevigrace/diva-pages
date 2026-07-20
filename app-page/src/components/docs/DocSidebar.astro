@@ -1,4 +1,24 @@
 ---
+import { t } from '@lib/i18n/t';
+import { docSectionKey as sectionKey } from '@lib/i18n/nav-keys';
+
+const { lang = 'en' } = Astro.props;
+
+const linkKey: Record<string, string> = {
+  'Installation': 'gettingStarted',
+  'Quick Start': 'gettingStarted',
+  'Project Structure': 'gettingStarted',
+  'Overview': 'components',
+  'Button': 'components',
+  'Card': 'components',
+  'Forms': 'components',
+  'Navigation': 'components',
+  'Overlays': 'components',
+  'Component Props': 'api',
+  'Events': 'api',
+  'TypeScript Types': 'api',
+};
+
 const sections = [
   {
     title: 'Getting Started',
@@ -39,29 +59,35 @@ const sections = [
           class="bg-primary text-primary-foreground flex h-7 w-7 items-center justify-center rounded-md text-xs font-bold"
           >D</span
         >
-        Docs
+        {t('docs.title', lang)}
       </a>
     </div>
     {
-      sections.map((section) => (
-        <div class="mb-6">
-          <h4 class="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
-            {section.title}
-          </h4>
-          <ul class="space-y-1">
-            {section.links.map((link) => (
-              <li>
-                <a
-                  href={link.href}
-                  class="text-muted-foreground hover:bg-accent hover:text-accent-foreground block rounded-md px-3 py-1.5 text-sm transition-colors"
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))
+      sections.map((section) => {
+        const sk = sectionKey[section.title] || section.title.toLowerCase().replace(/\s+/g, '');
+        return (
+          <div class="mb-6">
+            <h4 class="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
+              {t(`docs.${sk}`, lang)}
+            </h4>
+            <ul class="space-y-1">
+              {section.links.map((link) => {
+                const lk = linkKey[link.label] || sk;
+                return (
+                  <li>
+                    <a
+                      href={link.href}
+                      class="text-muted-foreground hover:bg-accent hover:text-accent-foreground block rounded-md px-3 py-1.5 text-sm transition-colors"
+                    >
+                      {t(`docs.${lk}`, lang)}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        );
+      })
     }
   </nav>
 </aside>

@@ -1,5 +1,7 @@
 ---
+import { t } from '@lib/i18n/t';
 
+const { lang = 'en' } = Astro.props;
 ---
 
 <div class="relative">
@@ -17,7 +19,7 @@
   </svg>
   <input
     class="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border pr-4 pl-10 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
-    placeholder="Search documentation..."
+    placeholder={t('docs.searchDocs', lang)}
     readonly
   />
   <kbd

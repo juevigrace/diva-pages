@@ -11,6 +11,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from 'diva-ui/components/dialog';
+import { useT } from '@lib/i18n/useT';
 
 interface SessionData {
   session_id?: string;
@@ -30,6 +31,7 @@ interface SessionsManagerProps {
   initialSessions: SessionData[] | null;
   currentSessionId?: string;
   isVerified?: boolean;
+  lang?: string;
 }
 
 function formatDate(ts?: number) {
@@ -50,24 +52,20 @@ function sessionGroup(s: SessionData): SessionGroup {
   return 'active';
 }
 
-const groupLabels: Record<SessionGroup, string> = {
-  active: 'Active',
-  expired: 'Expired',
-  closed: 'Closed',
-};
+function groupBadge(group: SessionGroup, t: (k: string) => string) {
+  if (group === 'active') {
+    return <Badge variant="default" className="bg-green-600">{t('sessionsPage.active')}</Badge>;
+  }
+  return <Badge variant="secondary">{t(`sessionsPage.${group}`)}</Badge>;
+}
 
-const groupBadges: Record<SessionGroup, React.ReactNode> = {
-  active: <Badge variant="default" className="bg-green-600">Active</Badge>,
-  expired: <Badge variant="secondary">Expired</Badge>,
-  closed: <Badge variant="secondary">Closed</Badge>,
-};
-
-function SessionRow({ s, loading, onClose, isCurrent, isVerified }: {
+function SessionRow({ s, loading, onClose, isCurrent, isVerified, t }: {
   s: SessionData;
   loading: boolean;
   isCurrent: boolean;
   onClose: (sid: string) => void;
   isVerified: boolean;
+  t: (k: string) => string;
 }) {
   const sid = s.session_id || s.id || '';
   const group = sessionGroup(s);
@@ -76,30 +74,31 @@ function SessionRow({ s, loading, onClose, isCurrent, isVerified }: {
     <div className="flex items-center justify-between py-4">
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{s.device || 'Unknown device'}</span>
-          {isCurrent && <Badge variant="outline" className="text-xs">Current</Badge>}
-          {groupBadges[group]}
+          <span className="text-sm font-medium">{s.device || t('sessionsPage.unknownDevice')}</span>
+          {isCurrent && <Badge variant="outline" className="text-xs">{t('sessionsPage.active')}</Badge>}
+          {groupBadge(group, t)}
         </div>
         <p className="text-muted-foreground text-xs">
           {s.ip ? `${s.ip} · ` : ''}{s.agent?.substring(0, 40) || ''}
           {s.agent && s.agent.length > 40 ? '...' : ''}
         </p>
         <p className="text-muted-foreground text-xs">
-          Created: {formatDate(s.created_at)}
-          {s.updated_at ? ` · Last active: ${formatDate(s.updated_at)}` : ''}
+          {t('sessionsPage.created')}: {formatDate(s.created_at)}
+          {s.updated_at ? ` · ${t('sessionsPage.lastActive')}: ${formatDate(s.updated_at)}` : ''}
         </p>
       </div>
       {group === 'active' && (
         <Button variant="ghost" size="sm" onClick={() => onClose(sid)} disabled={loading}>
-          {loading ? 'Closing...' : 'Close'}
+          {loading ? 'Closing...' : t('sessionsPage.closeSession')}
         </Button>
       )}
-      {!isVerified && <span className="text-muted-foreground text-xs">Verify email to manage</span>}
+      {!isVerified && <span className="text-muted-foreground text-xs">{t('sessionsPage.verifyToManage')}</span>}
     </div>
   );
 }
 
-export default function SessionsManager({ uid, initialSessions, currentSessionId, isVerified = true }: SessionsManagerProps) {
+export default function SessionsManager({ uid, initialSessions, currentSessionId, isVerified = true, lang = 'en' }: SessionsManagerProps) {
+  const t = useT(lang);
   const [sessions, setSessions] = useState<SessionData[]>(initialSessions || []);
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [refreshing, setRefreshing] = useState(false);
@@ -122,12 +121,12 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
       if (res.ok) {
         const json = await res.json();
         setSessions(json || []);
-        toast.success('Sessions refreshed');
+        toast.success(t('sessionsPage.sessionClosed'));
       } else {
-        toast.error('Failed to refresh sessions');
+        toast.error(t('sessionsPage.failedCloseSession'));
       }
     } catch {
-      toast.error('Failed to refresh sessions');
+      toast.error(t('sessionsPage.failedCloseSession'));
     }
     setRefreshing(false);
   };
@@ -150,13 +149,13 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
         setSessions((prev) => prev.map((s) =>
           (s.session_id || s.id) === confirmSid ? { ...s, status: 'CLOSED' } : s,
         ));
-        toast.success('Session closed');
+        toast.success(t('sessionsPage.sessionClosed'));
       } else {
         const j = await res.json();
-        toast.error(j.message || 'Failed to close session');
+        toast.error(j.message || t('sessionsPage.failedCloseSession'));
       }
     } catch {
-      toast.error('Failed to close session');
+      toast.error(t('sessionsPage.failedCloseSession'));
     }
     setLoading((prev) => ({ ...prev, [confirmSid]: false }));
   };
@@ -166,12 +165,12 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
       const res = await fetch('/api/sessions/expired', { method: 'DELETE' });
       if (res.ok) {
         setSessions((prev) => prev.filter((s) => !isExpired(s)));
-        toast.success('Expired sessions cleared');
+        toast.success(t('sessionsPage.expiredCleared'));
       } else {
-        toast.error('Failed to clear expired sessions');
+        toast.error(t('sessionsPage.failedClearExpired'));
       }
     } catch {
-      toast.error('Failed to clear expired sessions');
+      toast.error(t('sessionsPage.failedClearExpired'));
     }
   };
 
@@ -183,34 +182,34 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Sessions</CardTitle>
+          <CardTitle>{t('sessionsPage.title')}</CardTitle>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={refetchSessions} disabled={refreshing || !isVerified}>
-              {refreshing ? 'Refreshing...' : 'Refresh'}
+              {refreshing ? t('sessionsPage.refreshing') : t('sessionsPage.refresh')}
             </Button>
             {expiredCount > 0 && (
               <Button variant="outline" size="sm" onClick={clearExpired} disabled={!isVerified}>
-                Clear {expiredCount} expired
+                {t('sessionsPage.clearExpired')} {expiredCount}
               </Button>
             )}
           </div>
         </CardHeader>
         <CardContent>
           {visibleGroups.length === 0 ? (
-            <p className="text-muted-foreground py-8 text-center text-sm">No sessions found.</p>
+            <p className="text-muted-foreground py-8 text-center text-sm">{t('sessionsPage.noSessions')}</p>
           ) : (
             <div className="divide-y">
               {visibleGroups.map((group) => (
                 <div key={group}>
                   <div className="text-muted-foreground flex items-center gap-2 py-3 text-xs font-semibold uppercase tracking-wider">
-                    <span>{groupLabels[group]}</span>
+                    <span>{t(`sessionsPage.${group}`)}</span>
                     <span className="bg-muted rounded-full px-1.5 py-0.5 text-[10px]">{groups[group].length}</span>
                   </div>
                   <div className="divide-y">
                     {groups[group].map((s) => {
                       const sid = s.session_id || s.id || '';
                       return (
-                        <SessionRow key={sid} s={s} loading={loading[sid] || false} isCurrent={sid === currentSessionId} onClose={closeSession} isVerified={isVerified} />
+                        <SessionRow key={sid} s={s} loading={loading[sid] || false} isCurrent={sid === currentSessionId} onClose={closeSession} isVerified={isVerified} t={t} />
                       );
                     })}
                   </div>
@@ -224,14 +223,14 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
       <Dialog open={confirmSid !== null} onOpenChange={(open) => { if (!open) setConfirmSid(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Close Session</DialogTitle>
+            <DialogTitle>{t('sessionsPage.closeSession')}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to close this session? The device will be signed out immediately.
+              {t('sessionsPage.confirmCloseDesc')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmSid(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={confirmClose}>Close Session</Button>
+            <Button variant="outline" onClick={() => setConfirmSid(null)}>{t('common.cancel')}</Button>
+            <Button variant="destructive" onClick={confirmClose}>{t('sessionsPage.closeSession')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

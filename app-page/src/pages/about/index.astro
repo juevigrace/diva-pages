@@ -1,11 +1,13 @@
 ---
+export const prerender = true;
 import LandingLayout from '@layouts/LandingLayout.astro';
 import AboutContent from '@components/landing/AboutContent.astro';
+import { t } from '@lib/i18n/t';
 ---
 
 <LandingLayout
-  title="About — Diva"
-  description="Learn about Diva — our mission to make it easy for teams to build beautiful, performant web pages."
+  title={t('page.about.title', Astro.locals.lang)}
+  description={t('page.about.desc', Astro.locals.lang)}
 >
   <AboutContent />
 </LandingLayout>

@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from 'diva-ui/components/car
 import { Input } from 'diva-ui/components/input';
 import { Badge } from 'diva-ui/components/badge';
 import { toast } from 'diva-ui/components/sonner';
+import { useT } from '@lib/i18n/useT';
 
 interface ActionData {
   id?: string;
@@ -17,9 +18,11 @@ interface ActionData {
 
 interface AuditLogProps {
   isVerified?: boolean;
+  lang?: string;
 }
 
-export default function AuditLog({ isVerified = true }: AuditLogProps) {
+export default function AuditLog({ isVerified = true, lang = 'en' }: AuditLogProps) {
+  const t = useT(lang);
   const [actions, setActions] = useState<ActionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -39,7 +42,7 @@ export default function AuditLog({ isVerified = true }: AuditLogProps) {
         setTotalPages(json.data?.pagination_info?.total_pages || 1);
       }
     } catch {
-      toast.error('Failed to load audit log');
+      toast.error(t('common.error'));
     }
     setLoading(false);
   }, [page]);
@@ -64,9 +67,9 @@ export default function AuditLog({ isVerified = true }: AuditLogProps) {
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <CardTitle>Action History</CardTitle>
+          <CardTitle>{t('audit.title')}</CardTitle>
           <Input
-            placeholder="Filter by action or target..."
+            placeholder={t('common.search')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="max-w-xs"
@@ -80,7 +83,7 @@ export default function AuditLog({ isVerified = true }: AuditLogProps) {
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <p className="text-muted-foreground py-8 text-center text-sm">No actions found.</p>
+            <p className="text-muted-foreground py-8 text-center text-sm">{t('audit.noEntries')}</p>
           ) : (
             <div className="divide-y">
               {filtered.map((a) => {
@@ -112,14 +115,14 @@ export default function AuditLog({ isVerified = true }: AuditLogProps) {
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-between">
               <p className="text-muted-foreground text-sm">
-                Page {page} of {totalPages}
+                    {t('common.pagination', { page: String(page), total: String(totalPages) })}
               </p>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-                  Previous
+                  {t('docs.previous')}
                 </Button>
                 <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
-                  Next
+                  {t('docs.next')}
                 </Button>
               </div>
             </div>

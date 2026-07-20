@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from 'diva-ui/components/button';
+import { toast } from 'diva-ui/components/sonner';
 import { getUserInitials, buildPageArray } from '../../nav-items';
+import { useT } from '@lib/i18n/useT';
 
 interface UsersManagerProps {
   initialUsers: Record<string, any>[];
@@ -10,6 +12,7 @@ interface UsersManagerProps {
   loadError: boolean;
   isVerified?: boolean;
   currentUserRole?: string;
+  lang?: string;
 }
 
 export default function UsersManager({
@@ -20,7 +23,9 @@ export default function UsersManager({
   loadError: initialLoadError,
   isVerified = true,
   currentUserRole = '',
+  lang = 'en',
 }: UsersManagerProps) {
+  const t = useT(lang);
   const [users, setUsers] = useState(initialUsers);
   const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
@@ -33,16 +38,7 @@ export default function UsersManager({
   const [newPassword, setNewPassword] = useState('');
   const [createStatus, setCreateStatus] = useState('');
   const [createError, setCreateError] = useState(false);
-  const [tableStatus, setTableStatus] = useState('');
-  const [tableError, setTableError] = useState(false);
-
   const canManage = isVerified && (currentUserRole === 'ADMIN' || currentUserRole === 'MODERATOR');
-
-  const showTableStatus = (msg: string, isError: boolean) => {
-    setTableStatus(msg);
-    setTableError(isError);
-    setTimeout(() => { setTableStatus(''); }, 3000);
-  };
 
   const loadPage = async (p: number) => {
     const res = await fetch(`/api/user/?page=${p}&limit=10`, {
@@ -63,17 +59,17 @@ export default function UsersManager({
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmail) {
-      setCreateStatus('Email is required');
+      setCreateStatus(t('auth.email'));
       setCreateError(true);
       return;
     }
     if (!newUsername || newUsername.length < 3) {
-      setCreateStatus('Username must be at least 3 characters');
+      setCreateStatus(t('profile.usernameMin'));
       setCreateError(true);
       return;
     }
     if (!newPassword || newPassword.length < 4) {
-      setCreateStatus('Password must be at least 4 characters');
+      setCreateStatus(t('profile.passwordMin'));
       setCreateError(true);
       return;
     }
@@ -83,7 +79,7 @@ export default function UsersManager({
       body: JSON.stringify({ email: newEmail, username: newUsername, password: newPassword }),
     });
     if (res.ok) {
-      setCreateStatus('User created.');
+      setCreateStatus(t('users.createUser'));
       setCreateError(false);
       setTimeout(() => {
         setShowModal(false);
@@ -91,7 +87,7 @@ export default function UsersManager({
       }, 1000);
     } else {
       const json = await res.json();
-      setCreateStatus(json.message || 'Failed to create user');
+      setCreateStatus(json.message || t('users.failedDeleteUser'));
       setCreateError(true);
     }
   };
@@ -103,10 +99,10 @@ export default function UsersManager({
       body: JSON.stringify({ role }),
     });
     if (res.ok) {
-      showTableStatus('Role updated.', false);
+      toast.success('Role updated.');
     } else {
       const json = await res.json();
-      showTableStatus(json.message || 'Failed to update role', true);
+      toast.error(json.message || 'Failed to update role');
     }
   };
 
@@ -117,11 +113,11 @@ export default function UsersManager({
       body: JSON.stringify({ verified: true }),
     });
     if (res.ok) {
-      showTableStatus('User verified.', false);
+      toast.success('User verified.');
       setUsers((prev) => prev.map((u) => (u.id === uid ? { ...u, state: { ...u.state, verified: true } } : u)));
     } else {
       const json = await res.json();
-      showTableStatus(json.message || 'Failed to verify user', true);
+      toast.error(json.message || 'Failed to verify user');
     }
   };
 
@@ -129,22 +125,22 @@ export default function UsersManager({
     if (!confirm(`Delete user "${username}"? This can be undone.`)) return;
     const res = await fetch(`/api/user/${uid}`, { method: 'DELETE' });
     if (res.ok) {
-      showTableStatus('User deleted.', false);
+      toast.success('User deleted.');
       setTimeout(() => loadPage(page), 1000);
     } else {
       const json = await res.json();
-      showTableStatus(json.message || 'Failed to delete user', true);
+      toast.error(json.message || 'Failed to delete user');
     }
   };
 
   const handleRestore = async (uid: string) => {
     const res = await fetch(`/api/user/${uid}/restore`, { method: 'PATCH' });
     if (res.ok) {
-      showTableStatus('User restored.', false);
+      toast.success('User restored.');
       setTimeout(() => loadPage(page), 1000);
     } else {
       const json = await res.json();
-      showTableStatus(json.message || 'Failed to restore user', true);
+      toast.error(json.message || 'Failed to restore user');
     }
   };
 
@@ -162,7 +158,7 @@ export default function UsersManager({
     <div>
       <div className="border-border bg-card rounded-xl border shadow-sm">
         <div className="border-border flex items-center justify-between border-b px-6 py-4">
-          <h3 className="font-semibold">Users</h3>
+            <h3 className="font-semibold">{t('users.title')}</h3>
           <div className="flex items-center gap-3">
             <div className="relative">
               <svg
@@ -173,7 +169,7 @@ export default function UsersManager({
               </svg>
               <input
                 className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-60 rounded-md border bg-transparent pr-3 pl-10 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
-                placeholder="Search users..."
+                placeholder={t('users.searchUsers')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -182,7 +178,7 @@ export default function UsersManager({
               <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
-              Add user
+              {t('users.addUser')}
             </Button>
           </div>
         </div>
@@ -190,31 +186,31 @@ export default function UsersManager({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-border bg-muted/50 border-b">
-                <th className="text-muted-foreground px-6 py-3 text-left font-medium">User</th>
-                <th className="text-muted-foreground px-6 py-3 text-left font-medium">Email</th>
-                <th className="text-muted-foreground px-6 py-3 text-left font-medium">Role</th>
-                <th className="text-muted-foreground px-6 py-3 text-left font-medium">Status</th>
-                <th className="text-muted-foreground px-6 py-3 text-center font-medium">Verified</th>
-                <th className="text-muted-foreground px-6 py-3 text-right font-medium">Actions</th>
+                <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('users.user')}</th>
+                <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('users.email')}</th>
+                <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('users.role')}</th>
+                <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('users.status')}</th>
+                <th className="text-muted-foreground px-6 py-3 text-center font-medium">{t('users.verified')}</th>
+                <th className="text-muted-foreground px-6 py-3 text-right font-medium">{t('users.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {!canManage ? (
                 <tr>
                   <td colSpan={6} className="text-muted-foreground px-6 py-12 text-center text-sm">
-                    {isVerified ? 'You do not have permission to manage users.' : 'Verify your email to manage users.'}
+                    {isVerified ? t('users.noPermission') : t('users.verifyToManage')}
                   </td>
                 </tr>
               ) : loadError ? (
                 <tr>
                   <td colSpan={6} className="text-muted-foreground px-6 py-12 text-center text-sm">
-                    Could not load users. Check your permissions.
+                    {t('users.couldNotLoad')}
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-muted-foreground px-6 py-12 text-center text-sm">
-                    No users found.
+                    {t('users.noUsersFound')}
                   </td>
                 </tr>
               ) : (
@@ -226,7 +222,7 @@ export default function UsersManager({
                           {getUserInitials(user.username, user.email)}
                         </div>
                         <a href={`/users/${user.id}`} className="font-medium hover:underline">
-                          {user.username || 'Unknown'}
+                          {user.username || t('users.unknown')}
                         </a>
                       </div>
                     </td>
@@ -262,7 +258,7 @@ export default function UsersManager({
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       ) : (
-                        <button type="button" onClick={() => canManage && handleVerify(user.id)} title="Mark as verified">
+                        <button type="button" onClick={() => canManage && handleVerify(user.id)} title={t('users.markVerified')}>
                           <svg className="text-muted-foreground hover:text-primary mx-auto h-4 w-4 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
@@ -277,7 +273,7 @@ export default function UsersManager({
                           size="icon"
                           disabled={!canManage}
                           onClick={() => handleDelete(user.id, user.username)}
-                          title="Delete user"
+                          title={t('users.deleteUser')}
                         >
                           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -290,7 +286,7 @@ export default function UsersManager({
                             size="icon"
                             disabled={!canManage}
                             onClick={() => handleRestore(user.id)}
-                            title="Restore user"
+                            title={t('users.restoreUser')}
                           >
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -338,13 +334,11 @@ export default function UsersManager({
         </div>
       </div>
 
-      <span className={`text-xs ${tableError ? 'text-destructive' : 'text-muted-foreground'}`}>{tableStatus}</span>
-
       {showModal && (
         <div className="bg-background/80 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="border-border bg-card mx-4 w-full max-w-md rounded-xl border p-8 shadow-2xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Add User</h3>
+              <h3 className="text-lg font-semibold">{t('users.addUser')}</h3>
               <Button type="button" variant="ghost" size="icon" onClick={() => setShowModal(false)}>
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -353,7 +347,7 @@ export default function UsersManager({
             </div>
             <form onSubmit={handleCreate} className="mt-6 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm leading-none font-medium" htmlFor="new-email">Email</label>
+                <label className="text-sm leading-none font-medium" htmlFor="new-email">{t('users.email')}</label>
                 <input
                   id="new-email"
                   type="email"
@@ -364,7 +358,7 @@ export default function UsersManager({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm leading-none font-medium" htmlFor="new-username">Username</label>
+                <label className="text-sm leading-none font-medium" htmlFor="new-username">{t('auth.username')}</label>
                 <input
                   id="new-username"
                   required
@@ -374,7 +368,7 @@ export default function UsersManager({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm leading-none font-medium" htmlFor="new-password">Password</label>
+                <label className="text-sm leading-none font-medium" htmlFor="new-password">{t('auth.password')}</label>
                   <input
                     id="new-password"
                     type="password"
@@ -386,7 +380,7 @@ export default function UsersManager({
                 />
               </div>
               <p className={`text-xs ${createError ? 'text-destructive' : 'text-muted-foreground'}`}>{createStatus}</p>
-              <Button type="submit" className="w-full">Create user</Button>
+              <Button type="submit" className="w-full">{t('users.createUser')}</Button>
             </form>
           </div>
         </div>

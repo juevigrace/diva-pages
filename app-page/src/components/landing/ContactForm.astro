@@ -1,5 +1,7 @@
 ---
+import { t } from '@lib/i18n/t';
 import ContactFormWidget from './ContactFormWidget';
+const { lang = 'en' } = Astro.props;
 ---
 
 <section class="py-16 md:py-24">
@@ -7,10 +9,9 @@ import ContactFormWidget from './ContactFormWidget';
     <div class="mx-auto max-w-5xl">
       <div class="grid gap-12 md:grid-cols-2">
         <div>
-          <h1 class="text-4xl font-bold tracking-tight md:text-5xl">Get in touch</h1>
+          <h1 class="text-4xl font-bold tracking-tight md:text-5xl">{t('landing.contactTitle', lang)}</h1>
           <p class="text-muted-foreground mt-4 text-lg">
-            Have a question, feedback, or want to talk about your project? We'd love to hear from
-            you.
+            {t('landing.contactDesc', lang)}
           </p>
           <div class="mt-10 space-y-6">
             <div class="flex items-start gap-4">
@@ -32,7 +33,7 @@ import ContactFormWidget from './ContactFormWidget';
                 </svg>
               </div>
               <div>
-                <p class="text-sm font-semibold">Email</p>
+                <p class="text-sm font-semibold">{t('landing.emailLabel', lang)}</p>
                 <p class="text-muted-foreground text-sm">hello@diva.dev</p>
               </div>
             </div>
@@ -59,7 +60,7 @@ import ContactFormWidget from './ContactFormWidget';
                 </svg>
               </div>
               <div>
-                <p class="text-sm font-semibold">Office</p>
+                <p class="text-sm font-semibold">{t('landing.office', lang)}</p>
                 <p class="text-muted-foreground text-sm">
                   123 Market Street, San Francisco, CA 94105
                 </p>
@@ -68,7 +69,7 @@ import ContactFormWidget from './ContactFormWidget';
           </div>
         </div>
         <div class="border-border bg-card rounded-xl border p-8 shadow-sm">
-          <ContactFormWidget client:load />
+          <ContactFormWidget lang={lang} client:load />
         </div>
       </div>
     </div>

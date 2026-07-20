@@ -3,6 +3,7 @@ import AppLayout from '@layouts/AppLayout.astro';
 import PermissionsManager from '@components/app/PermissionsManager';
 import { apiFetch } from '@api/lib/fetch';
 import { fetchCurrentUser } from '@api/lib/user';
+import { t } from '@lib/i18n/t';
 
 const { session } = Astro.locals;
 const uid = session!.userId;
@@ -43,9 +44,9 @@ if (isVerified) {
 ---
 
 <AppLayout
-  title="Permissions — Diva"
+  title={t('page.permissions.title', Astro.locals.lang)}
   heading="Permissions"
-  description="Manage permission definitions."
+  description={t('page.permissions.desc', Astro.locals.lang)}
 >
   <PermissionsManager
     initialPermissions={permissionsData}
@@ -55,6 +56,7 @@ if (isVerified) {
     loadError={loadError}
     currentUserRole={currentUserRole}
     isVerified={isVerified}
+    lang={Astro.locals.lang}
     client:load
   />
 </AppLayout>

@@ -1,4 +1,6 @@
 ---
+import { t } from '@lib/i18n/t';
+const { lang = 'en' } = Astro.props;
 const team = [
   { name: 'Alex Chen', role: 'CEO & Co-founder', initials: 'AC' },
   { name: 'Sarah Kim', role: 'CTO & Co-founder', initials: 'SK' },
@@ -10,20 +12,17 @@ const team = [
 <section class="py-16 md:py-24">
   <div class="container mx-auto px-6">
     <div class="mx-auto max-w-3xl">
-      <h1 class="text-4xl font-bold tracking-tight md:text-5xl">About Diva</h1>
+      <h1 class="text-4xl font-bold tracking-tight md:text-5xl">{t('landing.aboutTitle', lang)}</h1>
       <p class="text-muted-foreground mt-6 text-lg leading-relaxed">
-        We started Diva in 2025 with a simple mission: make it easy for teams to build beautiful,
-        performant web pages without reinventing the wheel every time.
+        {t('landing.aboutP1', lang)}
       </p>
       <p class="text-muted-foreground mt-4 text-lg leading-relaxed">
-        Our component library combines the power of Astro with the elegance of shadcn/ui, giving you
-        a production-ready design system that scales from landing pages to full-featured
-        applications.
+        {t('landing.aboutP2', lang)}
       </p>
     </div>
 
     <div class="mx-auto mt-20 max-w-3xl">
-      <h2 class="text-2xl font-bold tracking-tight">Our Team</h2>
+      <h2 class="text-2xl font-bold tracking-tight">{t('landing.ourTeam', lang)}</h2>
       <div class="mt-8 grid gap-6 sm:grid-cols-2">
         {
           team.map((member) => (
@@ -42,30 +41,30 @@ const team = [
     </div>
 
     <div class="mx-auto mt-20 max-w-3xl">
-      <h2 class="text-2xl font-bold tracking-tight">Our Values</h2>
+      <h2 class="text-2xl font-bold tracking-tight">{t('landing.ourValues', lang)}</h2>
       <div class="mt-8 grid gap-6 sm:grid-cols-2">
         <div class="border-border bg-card rounded-xl border p-6 shadow-sm">
-          <h3 class="font-semibold">Simplicity</h3>
+          <h3 class="font-semibold">{t('landing.valueSimplicity', lang)}</h3>
           <p class="text-muted-foreground mt-2 text-sm">
-            We believe great design is invisible. Every component should feel natural.
+            {t('landing.valueSimplicityDesc', lang)}
           </p>
         </div>
         <div class="border-border bg-card rounded-xl border p-6 shadow-sm">
-          <h3 class="font-semibold">Performance</h3>
+          <h3 class="font-semibold">{t('landing.valuePerformance', lang)}</h3>
           <p class="text-muted-foreground mt-2 text-sm">
-            Zero JS by default. Your pages should load in milliseconds, not seconds.
+            {t('landing.valuePerformanceDesc', lang)}
           </p>
         </div>
         <div class="border-border bg-card rounded-xl border p-6 shadow-sm">
-          <h3 class="font-semibold">Accessibility</h3>
+          <h3 class="font-semibold">{t('landing.valueAccessibility', lang)}</h3>
           <p class="text-muted-foreground mt-2 text-sm">
-            Every component follows WAI-ARIA standards. The web should work for everyone.
+            {t('landing.valueAccessibilityDesc', lang)}
           </p>
         </div>
         <div class="border-border bg-card rounded-xl border p-6 shadow-sm">
-          <h3 class="font-semibold">Openness</h3>
+          <h3 class="font-semibold">{t('landing.valueOpenness', lang)}</h3>
           <p class="text-muted-foreground mt-2 text-sm">
-            Built with open source tools. No lock-in, no black boxes, full transparency.
+            {t('landing.valueOpennessDesc', lang)}
           </p>
         </div>
       </div>

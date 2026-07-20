@@ -1,42 +1,47 @@
 ---
+import Button from 'diva-ui/astro/Button.astro';
+import Badge from 'diva-ui/astro/Badge.astro';
+import Card from 'diva-ui/astro/Card.astro';
+import { t } from '@lib/i18n/t';
+const { lang = 'en' } = Astro.props;
 const plans = [
   {
-    name: 'Starter',
+    name: t('landing.planStarter', lang),
     price: '$0',
-    description: 'Perfect for getting started',
-    features: ['3 projects', 'Basic components', 'Community support', '1 team member'],
-    cta: 'Get started free',
+    description: t('landing.planStarterDesc', lang),
+    features: [t('landing.planStarterF1', lang), t('landing.planStarterF2', lang), t('landing.planStarterF3', lang), t('landing.planStarterF4', lang)],
+    cta: t('landing.planStarterCta', lang),
     ctaHref: '/signUp',
     highlighted: false,
   },
   {
-    name: 'Pro',
+    name: t('landing.planPro', lang),
     price: '$29',
-    description: 'For growing teams',
+    description: t('landing.planProDesc', lang),
     features: [
-      'Unlimited projects',
-      'All components',
-      'Priority support',
-      'Up to 10 team members',
-      'Custom themes',
+      t('landing.planProF1', lang),
+      t('landing.planProF2', lang),
+      t('landing.planProF3', lang),
+      t('landing.planProF4', lang),
+      t('landing.planProF5', lang),
     ],
-    cta: 'Start free trial',
+    cta: t('landing.planProCta', lang),
     ctaHref: '/signUp',
     highlighted: true,
   },
   {
-    name: 'Enterprise',
+    name: t('landing.planEnterprise', lang),
     price: '$99',
-    description: 'For large organizations',
+    description: t('landing.planEnterpriseDesc', lang),
     features: [
-      'Everything in Pro',
-      'Custom components',
-      'Dedicated support',
-      'Unlimited team members',
-      'SLA guarantee',
-      'On-premise deployment',
+      t('landing.planEnterpriseF1', lang),
+      t('landing.planEnterpriseF2', lang),
+      t('landing.planEnterpriseF3', lang),
+      t('landing.planEnterpriseF4', lang),
+      t('landing.planEnterpriseF5', lang),
+      t('landing.planEnterpriseF6', lang),
     ],
-    cta: 'Contact sales',
+    cta: t('landing.planEnterpriseCta', lang),
     ctaHref: '/contact',
     highlighted: false,
   },
@@ -46,25 +51,25 @@ const plans = [
 <section id="pricing" class="border-border border-t py-20 md:py-28">
   <div class="container mx-auto px-6">
     <div class="mx-auto max-w-3xl text-center">
-      <h2 class="text-3xl font-bold tracking-tight md:text-4xl">Simple, transparent pricing</h2>
-      <p class="text-muted-foreground mt-4 text-lg">No hidden fees. No surprise charges.</p>
+      <h2 class="text-3xl font-bold tracking-tight md:text-4xl">{t('landing.pricingTitle', lang)}</h2>
+      <p class="text-muted-foreground mt-4 text-lg">{t('landing.pricingSubtitle', lang)}</p>
     </div>
     <div class="mt-14 grid gap-8 md:grid-cols-3">
       {
         plans.map((plan) => (
-          <div
-            class={`rounded-xl border ${plan.highlighted ? 'border-primary bg-card ring-primary shadow-lg ring-1' : 'border-border bg-card shadow-sm'} p-8`}
+          <Card
+            class={`${plan.highlighted ? 'border-primary ring-primary shadow-lg ring-1' : 'border-border shadow-sm'} p-8`}
           >
             {plan.highlighted && (
-              <div class="bg-primary/10 text-primary mb-4 inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-                Most popular
-              </div>
+              <Badge variant="default" class="bg-primary/10 text-primary border-0">
+                {t('landing.mostPopular', lang)}
+              </Badge>
             )}
             <h3 class="text-lg font-semibold">{plan.name}</h3>
             <p class="text-muted-foreground mt-1 text-sm">{plan.description}</p>
             <div class="mt-6 flex items-baseline gap-1">
               <span class="text-4xl font-bold">{plan.price}</span>
-              {plan.price !== '$0' && <span class="text-muted-foreground text-sm">/month</span>}
+              {plan.price !== '$0' && <span class="text-muted-foreground text-sm">{t('landing.perMonth', lang)}</span>}
             </div>
             <ul class="mt-8 space-y-3">
               {plan.features.map((feature) => (
@@ -82,13 +87,10 @@ const plans = [
                 </li>
               ))}
             </ul>
-            <a
-              href={plan.ctaHref}
-              class={`mt-8 inline-flex h-10 w-full items-center justify-center rounded-md text-sm font-medium shadow transition-colors ${plan.highlighted ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'border-input bg-background hover:bg-accent hover:text-accent-foreground border'}`}
-            >
+            <Button href={plan.ctaHref} variant={plan.highlighted ? 'default' : 'outline'} class="w-full">
               {plan.cta}
-            </a>
-          </div>
+            </Button>
+          </Card>
         ))
       }
     </div>

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Badge } from 'diva-ui/components/badge';
+import { useT } from '@lib/i18n/useT';
 
 interface ActivityFeedProps {
   uid: string;
   isVerified?: boolean;
+  lang?: string;
 }
 
 interface ActionItem {
@@ -16,7 +18,8 @@ interface ActionItem {
   metadata?: Record<string, unknown>;
 }
 
-export default function ActivityFeed({ uid, isVerified = true }: ActivityFeedProps) {
+export default function ActivityFeed({ uid, isVerified = true, lang = 'en' }: ActivityFeedProps) {
+  const t = useT(lang);
   const [actions, setActions] = useState<ActionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,10 +36,10 @@ export default function ActivityFeed({ uid, isVerified = true }: ActivityFeedPro
           const data = await res.json();
           setActions(data || []);
         } else {
-          setError('Failed to load activity');
+          setError(t('common.error'));
         }
       } catch {
-        setError('Failed to load activity');
+        setError(t('common.error'));
       }
       setLoading(false);
     })();
@@ -45,7 +48,7 @@ export default function ActivityFeed({ uid, isVerified = true }: ActivityFeedPro
   if (loading) {
     return (
       <div className="border-border bg-card rounded-xl border p-6 shadow-sm">
-        <h3 className="font-semibold">Recent Activity</h3>
+        <h3 className="font-semibold">{t('users.activity')}</h3>
         <div className="mt-4 space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="bg-muted h-12 animate-pulse rounded-md" />
@@ -58,7 +61,7 @@ export default function ActivityFeed({ uid, isVerified = true }: ActivityFeedPro
   if (error) {
     return (
       <div className="border-border bg-card rounded-xl border p-6 shadow-sm">
-        <h3 className="font-semibold">Recent Activity</h3>
+        <h3 className="font-semibold">{t('users.activity')}</h3>
         <p className="text-muted-foreground mt-4 text-center text-sm">{error}</p>
       </div>
     );
@@ -67,15 +70,15 @@ export default function ActivityFeed({ uid, isVerified = true }: ActivityFeedPro
   if (actions.length === 0) {
     return (
       <div className="border-border bg-card rounded-xl border p-6 shadow-sm">
-        <h3 className="font-semibold">Recent Activity</h3>
-        <p className="text-muted-foreground mt-4 text-center text-sm">No recent activity.</p>
+        <h3 className="font-semibold">{t('users.activity')}</h3>
+        <p className="text-muted-foreground mt-4 text-center text-sm">{t('users.noActivity')}</p>
       </div>
     );
   }
 
   return (
     <div className="border-border bg-card rounded-xl border p-6 shadow-sm">
-      <h3 className="font-semibold">Recent Activity</h3>
+      <h3 className="font-semibold">{t('users.activity')}</h3>
       <div className="mt-4 space-y-3">
         {actions.slice(0, 5).map((a) => {
           const aid = a.id || a.action_id || '';
@@ -86,7 +89,7 @@ export default function ActivityFeed({ uid, isVerified = true }: ActivityFeedPro
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-xs">{a.action_name || 'Unknown'}</Badge>
+                  <Badge variant="secondary" className="text-xs">{a.action_name || t('users.unknown')}</Badge>
                 </div>
                 {a.created_at && (
                   <p className="text-muted-foreground text-xs">

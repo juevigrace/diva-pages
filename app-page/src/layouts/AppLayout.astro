@@ -3,7 +3,7 @@ import '@styles/global.css';
 import Layout from '@layouts/Layout.astro';
 import AppSidebar from '@components/app/AppSidebar.astro';
 import AppHeader from '@components/app/AppHeader.astro';
-import VerifyBanner from '@components/auth/VerifyBanner';
+import VerifyBanner from '@components/auth/VerifyBanner.astro';
 
 export interface Props {
   title?: string;
@@ -20,7 +20,7 @@ const { title = 'App — Diva', description, heading = '' } = Astro.props;
     <AppHeader>
       <Fragment slot="title">{heading}</Fragment>
     </AppHeader>
-    <VerifyBanner client:load />
+    <VerifyBanner />
     <main class="p-6" transition:animate="slide">
       <slot />
     </main>

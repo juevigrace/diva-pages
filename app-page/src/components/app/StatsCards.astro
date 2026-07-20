@@ -1,5 +1,6 @@
 ---
 import { apiFetch } from '@api/lib/fetch';
+import { t } from '@lib/i18n/t';
 
 const { session } = Astro.locals;
 const token = session?.accessToken;
@@ -30,10 +31,10 @@ try {
 } catch (_) {}
 
 const stats = [
-  { label: 'Total Users', value: totalUsers, href: '/users' },
-  { label: 'Users per Page', value: String(totalPages), href: '/users' },
-  { label: 'Active Sessions', value: totalSessions, href: '/sessions' },
-  { label: 'System Status', value: 'Online', href: '/admin/api' },
+  { label: t('dashboard.totalUsers', Astro.locals.lang), value: totalUsers, href: '/users' },
+  { label: t('dashboard.usersPerPage', Astro.locals.lang), value: String(totalPages), href: '/users' },
+  { label: t('dashboard.activeSessions', Astro.locals.lang), value: totalSessions, href: '/sessions' },
+  { label: t('dashboard.systemStatus', Astro.locals.lang), value: t('dashboard.online', Astro.locals.lang), href: '/admin/api' },
 ];
 ---
 

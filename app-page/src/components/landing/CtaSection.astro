@@ -1,5 +1,7 @@
 ---
-
+import Button from 'diva-ui/astro/Button.astro';
+import { t } from '@lib/i18n/t';
+const { lang = 'en' } = Astro.props;
 ---
 
 <section class="border-border border-t py-20 md:py-28">
@@ -7,21 +9,13 @@
     <div
       class="bg-primary/5 border-border mx-auto max-w-4xl rounded-2xl border p-12 text-center md:p-16"
     >
-      <h2 class="text-3xl font-bold tracking-tight md:text-4xl">Ready to build something great?</h2>
+      <h2 class="text-3xl font-bold tracking-tight md:text-4xl">{t('landing.ctaHeadline', lang)}</h2>
       <p class="text-muted-foreground mx-auto mt-4 max-w-2xl text-lg">
-        Join thousands of teams using Diva Pages to ship beautiful products faster.
+        {t('landing.ctaSubtitle', lang)}
       </p>
       <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-        <a
-          href="/signUp"
-          class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-11 items-center justify-center rounded-md px-8 py-2 text-sm font-medium shadow transition-colors"
-          >Get started free</a
-        >
-        <a
-          href="/contact"
-          class="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-11 items-center justify-center rounded-md border px-8 py-2 text-sm font-medium shadow-sm transition-colors"
-          >Schedule a demo</a
-        >
+        <Button href="/signUp" variant="default" size="lg" class="h-11">{t('landing.getStartedFree', lang)}</Button>
+        <Button href="/contact" variant="outline" size="lg" class="h-11">{t('landing.scheduleDemo', lang)}</Button>
       </div>
     </div>
   </div>

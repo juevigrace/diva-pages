@@ -4,10 +4,11 @@ import VerificationFlow from '@components/auth/VerificationFlow';
 
 const action = Astro.url.searchParams.get('action') || 'USER_VERIFICATION';
 const email = Astro.url.searchParams.get('email') || '';
+import { t } from '@lib/i18n/t';
 ---
 
-<Layout title="Verify — Diva" description="Email verification">
+<Layout title={t('page.verify.title', Astro.locals.lang)} description={t('page.verify.desc', Astro.locals.lang)}>
   <div class="flex min-h-screen items-center justify-center px-4">
-    <VerificationFlow action={action} email={email} client:load />
+    <VerificationFlow action={action} email={email} lang={Astro.locals.lang} client:load />
   </div>
 </Layout>

@@ -2,6 +2,7 @@
 import AppLayout from '@layouts/AppLayout.astro';
 import SessionsManager from '@components/app/SessionsManager';
 import { apiFetch } from '@api/lib/fetch';
+import { t } from '@lib/i18n/t';
 
 const { session } = Astro.locals;
 const uid = session!.userId;
@@ -19,6 +20,6 @@ if (isVerified) {
 }
 ---
 
-<AppLayout title="Sessions — Diva" heading="Sessions" description="Manage your active sessions across devices.">
-  <SessionsManager uid={uid} initialSessions={sessions} currentSessionId={session!.sessionId} isVerified={isVerified} client:load />
+<AppLayout title={t('page.sessions.title', Astro.locals.lang)} heading="Sessions" description={t('page.sessions.desc', Astro.locals.lang)}>
+  <SessionsManager uid={uid} initialSessions={sessions} currentSessionId={session!.sessionId} isVerified={isVerified} lang={Astro.locals.lang} client:load />
 </AppLayout>

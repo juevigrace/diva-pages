@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { z } from 'zod';
 import { Button } from 'diva-ui/components/button';
 import { getUserInitials, showStatus } from '../../nav-items';
+import InlineVerification from '../auth/InlineVerification';
+import { useT } from '@lib/i18n/useT';
 
 const profileSchema = z.object({
   first_name: z.string().min(1, 'First name is required').max(255),
@@ -32,9 +34,11 @@ interface ProfileFormsProps {
   user: Record<string, any> | null;
   profile: Record<string, any> | null;
   isVerified?: boolean;
+  lang?: string;
 }
 
-export default function ProfileForms({ uid, user, profile, isVerified = true }: ProfileFormsProps) {
+export default function ProfileForms({ uid, user, profile, isVerified = true, lang = 'en' }: ProfileFormsProps) {
+  const t = useT(lang);
   const displayName = profile
     ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || user?.username || 'User'
     : user?.username || 'User';
@@ -72,6 +76,8 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
   const [passwordStatus, setPasswordStatus] = useState('');
   const [passwordError, setPasswordError] = useState(false);
 
+  const [verifyingField, setVerifyingField] = useState<'email' | 'phone' | 'username' | 'password' | null>(null);
+
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -101,99 +107,111 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
       body: JSON.stringify(body),
     });
     if (res.ok) {
-      showStatus(setProfileStatus, setProfileError, profile ? 'Profile updated.' : 'Profile created.', false);
+      showStatus(setProfileStatus, setProfileError, profile ? t('profile.profileUpdated') : t('profile.profileCreated'), false);
     } else {
       const json = await res.json();
-      showStatus(setProfileStatus, setProfileError, json.message || 'Failed to update profile', true);
+      showStatus(setProfileStatus, setProfileError, json.message || t('profile.failedUpdateProfile'), true);
     }
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const parsed = emailSchema.safeParse({ email });
     if (!parsed.success) {
       showStatus(setEmailStatus, setEmailError, parsed.error.issues[0].message, true);
       return;
     }
+    setVerifyingField('email');
+  };
 
+  const handleEmailVerified = async () => {
+    setVerifyingField(null);
     const res = await fetch(`/api/user/${uid}/email`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     });
     if (res.ok) {
-      showStatus(setEmailStatus, setEmailError, 'Email updated.', false);
+      showStatus(setEmailStatus, setEmailError, t('profile.emailUpdated'), false);
     } else {
       const json = await res.json();
-      showStatus(setEmailStatus, setEmailError, json.message || 'Failed to update email', true);
+      showStatus(setEmailStatus, setEmailError, json.message || t('profile.failedUpdateEmail'), true);
     }
   };
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const parsed = phoneSchema.safeParse({ phone_number: phone });
     if (!parsed.success) {
       showStatus(setPhoneStatus, setPhoneError, parsed.error.issues[0].message, true);
       return;
     }
+    setVerifyingField('phone');
+  };
 
+  const handlePhoneVerified = async () => {
+    setVerifyingField(null);
     const res = await fetch(`/api/user/${uid}/phone`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone_number: phone }),
     });
     if (res.ok) {
-      showStatus(setPhoneStatus, setPhoneError, 'Phone updated.', false);
+      showStatus(setPhoneStatus, setPhoneError, t('profile.phoneUpdated'), false);
     } else {
       const json = await res.json();
-      showStatus(setPhoneStatus, setPhoneError, json.message || 'Failed to update phone', true);
+      showStatus(setPhoneStatus, setPhoneError, json.message || t('profile.failedUpdatePhone'), true);
     }
   };
 
   const handleUsernameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const parsed = usernameSchema.safeParse({ username });
     if (!parsed.success) {
       showStatus(setUsernameStatus, setUsernameError, parsed.error.issues[0].message, true);
       return;
     }
+    setVerifyingField('username');
+  };
 
+  const handleUsernameVerified = async () => {
+    setVerifyingField(null);
     const res = await fetch(`/api/user/${uid}/username`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username }),
     });
     if (res.ok) {
-      showStatus(setUsernameStatus, setUsernameError, 'Username updated.', false);
+      showStatus(setUsernameStatus, setUsernameError, t('profile.usernameUpdated'), false);
     } else {
       const json = await res.json();
-      showStatus(setUsernameStatus, setUsernameError, json.message || 'Failed to update username', true);
+      showStatus(setUsernameStatus, setUsernameError, json.message || t('profile.failedUpdateUsername'), true);
     }
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const parsed = passwordSchema.safeParse({ new_password: newPassword });
     if (!parsed.success) {
       showStatus(setPasswordStatus, setPasswordError, parsed.error.issues[0].message, true);
       return;
     }
+    setVerifyingField('password');
+  };
 
+  const handlePasswordVerified = async () => {
+    setVerifyingField(null);
     const res = await fetch(`/api/user/${uid}/password`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ new_password: newPassword }),
     });
     if (res.ok) {
-      showStatus(setPasswordStatus, setPasswordError, 'Password changed.', false);
+      showStatus(setPasswordStatus, setPasswordError, t('profile.passwordChanged'), false);
       setNewPassword('');
     } else {
       const json = await res.json();
-      showStatus(setPasswordStatus, setPasswordError, json.message || 'Failed to change password', true);
+      showStatus(setPasswordStatus, setPasswordError, json.message || t('profile.failedChangePassword'), true);
     }
   };
 
@@ -207,10 +225,10 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
       body: formData,
     });
     if (res.ok) {
-      showStatus(setProfileStatus, setProfileError, 'Photo updated. Refresh to see changes.', false);
+      showStatus(setProfileStatus, setProfileError, t('profile.photoUpdated'), false);
     } else {
       const json = await res.json();
-      showStatus(setProfileStatus, setProfileError, json.message || 'Failed to update photo', true);
+      showStatus(setProfileStatus, setProfileError, json.message || t('profile.failedUpdatePhoto'), true);
     }
   };
 
@@ -218,7 +236,7 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
     <div className="mx-auto max-w-3xl space-y-8">
       {!isVerified && (
         <div className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 rounded-xl border p-4 text-center text-sm text-amber-800 dark:text-amber-200">
-          Verify your email to edit your profile. <a href="/verify" class="underline font-medium">Verify now</a>
+          {t('profile.verifyToEdit')} <a href="/verify" class="underline font-medium">{t('nav.verifyNow')}</a>
         </div>
       )}
 
@@ -242,18 +260,18 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
               const input = document.querySelector<HTMLInputElement>('input[accept="image/*"]');
               input?.click();
             }}>
-              Change photo
+              {t('profile.changePhoto')}
             </Button>
           </label>
         </div>
       </div>
 
       <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
-        <h3 className="text-lg font-semibold">Personal Information</h3>
+        <h3 className="text-lg font-semibold">{t('profile.personalInfo')}</h3>
         <form onSubmit={handleProfileSubmit} className="mt-6 space-y-5">
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm leading-none font-medium" htmlFor="first-name">First name</label>
+              <label className="text-sm leading-none font-medium" htmlFor="first-name">{t('profile.firstName')}</label>
               <input
                 id="first-name"
                 readOnly={!isVerified}
@@ -264,7 +282,7 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
               {fieldErrors.first_name && <p className="text-destructive text-xs">{fieldErrors.first_name}</p>}
             </div>
             <div className="space-y-2">
-              <label className="text-sm leading-none font-medium" htmlFor="last-name">Last name</label>
+              <label className="text-sm leading-none font-medium" htmlFor="last-name">{t('profile.lastName')}</label>
               <input
                 id="last-name"
                 readOnly={!isVerified}
@@ -276,7 +294,7 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-sm leading-none font-medium" htmlFor="alias">Display alias</label>
+            <label className="text-sm leading-none font-medium" htmlFor="alias">{t('profile.displayAlias')}</label>
               <input
                 id="alias"
                 readOnly={!isVerified}
@@ -287,7 +305,7 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
               {fieldErrors.alias && <p className="text-destructive text-xs">{fieldErrors.alias}</p>}
           </div>
           <div className="space-y-2">
-            <label className="text-sm leading-none font-medium" htmlFor="bio">Bio</label>
+            <label className="text-sm leading-none font-medium" htmlFor="bio">{t('profile.bio')}</label>
             <textarea
               id="bio"
               rows={3}
@@ -299,7 +317,7 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
             {fieldErrors.bio && <p className="text-destructive text-xs">{fieldErrors.bio}</p>}
           </div>
           <div className="space-y-2">
-            <label className="text-sm leading-none font-medium" htmlFor="birth-date">Birth date</label>
+            <label className="text-sm leading-none font-medium" htmlFor="birth-date">{t('profile.birthDate')}</label>
               <input
                 id="birth-date"
                 type="date"
@@ -311,7 +329,7 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
               {fieldErrors.birth_date && <p className="text-destructive text-xs">{fieldErrors.birth_date}</p>}
           </div>
           <div className="flex items-center gap-3">
-            <Button type="submit" disabled={!isVerified}>{profile ? 'Save changes' : 'Create profile'}</Button>
+            <Button type="submit" disabled={!isVerified}>{profile ? t('profile.saveChanges') : t('profile.createProfile')}</Button>
             <span className={`text-xs ${profileError ? 'text-destructive' : 'text-muted-foreground'}`}>
               {profileStatus}
             </span>
@@ -320,73 +338,121 @@ export default function ProfileForms({ uid, user, profile, isVerified = true }: 
       </div>
 
       <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
-        <h3 className="text-lg font-semibold">Contact Information</h3>
+        <h3 className="text-lg font-semibold">{t('profile.contactInfo')}</h3>
         <div className="mt-6 space-y-5">
           <form onSubmit={handleEmailSubmit} className="space-y-2">
-            <label className="text-sm leading-none font-medium" htmlFor="email">Email</label>
+            <label className="text-sm leading-none font-medium" htmlFor="email">{t('profile.email')}</label>
             <div className="flex gap-3">
               <input
                 id="email"
                 type="email"
-                readOnly={!isVerified}
+                readOnly={!isVerified || verifyingField !== null}
                 className="border-input bg-background focus-visible:ring-ring flex h-10 flex-1 rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-              <Button type="submit" size="sm" disabled={!isVerified}>Update</Button>
+              {verifyingField !== 'email' && (
+                <Button type="submit" size="sm" disabled={!isVerified || verifyingField !== null}>{t('common.update')}</Button>
+              )}
             </div>
-            <span className={`text-xs ${emailError ? 'text-destructive' : 'text-muted-foreground'}`}>{emailStatus}</span>
+            {verifyingField === 'email' ? (
+              <InlineVerification
+                action="EMAIL_UPDATE"
+                email={user?.email || ''}
+                onVerified={handleEmailVerified}
+                onCancel={() => setVerifyingField(null)}
+                lang={lang}
+              />
+            ) : (
+              <span className={`text-xs ${emailError ? 'text-destructive' : 'text-muted-foreground'}`}>{emailStatus}</span>
+            )}
           </form>
           <form onSubmit={handlePhoneSubmit} className="space-y-2">
-            <label className="text-sm leading-none font-medium" htmlFor="phone">Phone number</label>
+            <label className="text-sm leading-none font-medium" htmlFor="phone">{t('profile.phoneNumber')}</label>
             <div className="flex gap-3">
               <input
                 id="phone"
                 type="tel"
-                readOnly={!isVerified}
+                readOnly={!isVerified || verifyingField !== null}
                 className="border-input bg-background focus-visible:ring-ring flex h-10 flex-1 rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
-              <Button type="submit" size="sm" disabled={!isVerified}>Update</Button>
+              {verifyingField !== 'phone' && (
+                <Button type="submit" size="sm" disabled={!isVerified || verifyingField !== null}>{t('common.update')}</Button>
+              )}
             </div>
-            <span className={`text-xs ${phoneError ? 'text-destructive' : 'text-muted-foreground'}`}>{phoneStatus}</span>
+            {verifyingField === 'phone' ? (
+              <InlineVerification
+                action="PHONE_UPDATE"
+                email={user?.email || ''}
+                onVerified={handlePhoneVerified}
+                onCancel={() => setVerifyingField(null)}
+                lang={lang}
+              />
+            ) : (
+              <span className={`text-xs ${phoneError ? 'text-destructive' : 'text-muted-foreground'}`}>{phoneStatus}</span>
+            )}
           </form>
         </div>
       </div>
 
       <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
-        <h3 className="text-lg font-semibold">Account</h3>
+        <h3 className="text-lg font-semibold">{t('profile.account')}</h3>
         <div className="mt-6 space-y-5">
           <form onSubmit={handleUsernameSubmit} className="space-y-2">
-            <label className="text-sm leading-none font-medium" htmlFor="username">Username</label>
+            <label className="text-sm leading-none font-medium" htmlFor="username">{t('profile.username')}</label>
             <div className="flex gap-3">
               <input
                 id="username"
-                readOnly={!isVerified}
+                readOnly={!isVerified || verifyingField !== null}
                 className="border-input bg-background focus-visible:ring-ring flex h-10 flex-1 rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
-              <Button type="submit" size="sm" disabled={!isVerified}>Update</Button>
+              {verifyingField !== 'username' && (
+                <Button type="submit" size="sm" disabled={!isVerified || verifyingField !== null}>{t('common.update')}</Button>
+              )}
             </div>
-            <span className={`text-xs ${usernameError ? 'text-destructive' : 'text-muted-foreground'}`}>{usernameStatus}</span>
+            {verifyingField === 'username' ? (
+              <InlineVerification
+                action="USERNAME_UPDATE"
+                email={user?.email || ''}
+                onVerified={handleUsernameVerified}
+                onCancel={() => setVerifyingField(null)}
+                lang={lang}
+              />
+            ) : (
+              <span className={`text-xs ${usernameError ? 'text-destructive' : 'text-muted-foreground'}`}>{usernameStatus}</span>
+            )}
           </form>
           <form onSubmit={handlePasswordSubmit} className="space-y-2">
-            <label className="text-sm leading-none font-medium" htmlFor="new-password">New password</label>
+            <label className="text-sm leading-none font-medium" htmlFor="new-password">{t('profile.newPassword')}</label>
             <div className="flex gap-3">
               <input
                 id="new-password"
                 type="password"
                 placeholder="New password"
-                readOnly={!isVerified}
+                readOnly={!isVerified || verifyingField !== null}
                 className="border-input bg-background focus-visible:ring-ring flex h-10 flex-1 rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
-              <Button type="submit" size="sm" disabled={!isVerified}>Change</Button>
+              {verifyingField !== 'password' && (
+                <Button type="submit" size="sm" disabled={!isVerified || verifyingField !== null}>{t('common.change')}</Button>
+              )}
             </div>
-            <span className={`text-xs ${passwordError ? 'text-destructive' : 'text-muted-foreground'}`}>{passwordStatus}</span>
+            {verifyingField === 'password' ? (
+              <InlineVerification
+                action="PASSWORD_RESET"
+                email={user?.email || ''}
+                onVerified={handlePasswordVerified}
+                onCancel={() => setVerifyingField(null)}
+                lang={lang}
+              />
+            ) : (
+              <span className={`text-xs ${passwordError ? 'text-destructive' : 'text-muted-foreground'}`}>{passwordStatus}</span>
+            )}
           </form>
         </div>
       </div>

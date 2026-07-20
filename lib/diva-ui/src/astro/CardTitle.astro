@@ -1,0 +1,8 @@
+---
+const { class: className, ...attrs } = Astro.props;
+const cls = ['leading-none font-semibold tracking-tight', className].filter(Boolean).join(' ');
+---
+
+<div class={cls} {...attrs}>
+  <slot />
+</div>

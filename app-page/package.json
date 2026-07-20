@@ -22,9 +22,11 @@
     "astro": "catalog:",
     "diva-types": "workspace:*",
     "diva-ui": "workspace:*",
+    "i18next": "^26.3.6",
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-i18next": "^17.0.10",
     "zod": "catalog:"
   },
   "devDependencies": {

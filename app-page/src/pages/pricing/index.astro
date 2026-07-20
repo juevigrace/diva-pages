@@ -1,12 +1,14 @@
 ---
+export const prerender = true;
 import LandingLayout from '@layouts/LandingLayout.astro';
 import PricingCards from '@components/landing/PricingCards.astro';
 import CtaSection from '@components/landing/CtaSection.astro';
+import { t } from '@lib/i18n/t';
 ---
 
 <LandingLayout
-  title="Pricing — Diva"
-  description="Simple, transparent pricing for Diva Pages. No hidden fees. No surprise charges."
+  title={t('page.pricing.title', Astro.locals.lang)}
+  description={t('page.pricing.desc', Astro.locals.lang)}
 >
   <div class="pt-16">
     <PricingCards />

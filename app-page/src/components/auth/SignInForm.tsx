@@ -3,8 +3,14 @@ import { Button } from 'diva-ui/components/button';
 import { toast } from 'diva-ui/components/sonner';
 import { Input } from 'diva-ui/components/input';
 import { signInInputSchema } from '@lib/schemas/auth';
+import { useT } from '@lib/i18n/useT';
 
-export default function SignInForm() {
+interface SignInFormProps {
+  lang?: string;
+}
+
+export default function SignInForm({ lang = 'en' }: SignInFormProps) {
+  const t = useT(lang);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -58,9 +64,9 @@ export default function SignInForm() {
         return;
       }
 
-      toast.error(json.message || 'An error occurred');
+      toast.error(json.message || t('auth.anErrorOccurred'));
     } catch {
-      toast.error('Network error. Please try again.');
+      toast.error(t('auth.networkError'));
     } finally {
       setLoading(false);
     }
@@ -72,18 +78,18 @@ export default function SignInForm() {
         <div className="bg-primary mx-auto flex h-12 w-12 items-center justify-center rounded-xl">
           <span className="text-primary-foreground text-xl font-bold">D</span>
         </div>
-        <h1 className="mt-4 text-2xl font-bold tracking-tight">Welcome back</h1>
-        <p className="text-muted-foreground mt-2 text-sm">Sign in to your account to continue</p>
+        <h1 className="mt-4 text-2xl font-bold tracking-tight">{t('auth.welcomeBack')}</h1>
+        <p className="text-muted-foreground mt-2 text-sm">{t('auth.signInToContinue')}</p>
       </div>
 
       <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label className="text-sm leading-none font-medium" htmlFor="username">Email or username</label>
+            <label className="text-sm leading-none font-medium" htmlFor="username">{t('auth.emailOrUsername')}</label>
             <Input
               id="username"
               type="text"
-              placeholder="you@example.com"
+              placeholder={t('auth.emailPlaceholder')}
               value={username}
               onChange={(e) => { setUsername(e.target.value); clearFieldError('username'); }}
             />
@@ -93,13 +99,13 @@ export default function SignInForm() {
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm leading-none font-medium" htmlFor="password">Password</label>
-              <a href="/forgot-password" className="text-primary text-xs hover:underline">Forgot password?</a>
+              <label className="text-sm leading-none font-medium" htmlFor="password">{t('auth.password')}</label>
+              <a href="/forgot-password" className="text-primary text-xs hover:underline">{t('auth.forgotPassword')}</a>
             </div>
             <Input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder={t('auth.passwordPlaceholder')}
               value={password}
               onChange={(e) => { setPassword(e.target.value); clearFieldError('password'); }}
             />
@@ -108,14 +114,14 @@ export default function SignInForm() {
             )}
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign in'}
+            {loading ? t('auth.signingIn') : t('auth.signIn')}
           </Button>
         </form>
       </div>
 
       <p className="text-muted-foreground text-center text-sm">
-        Don't have an account?{' '}
-        <a href="/signUp" className="text-primary hover:underline">Sign up</a>
+        {t('auth.noAccount')}{' '}
+        <a href="/signUp" className="text-primary hover:underline">{t('auth.signUp')}</a>
       </p>
     </div>
   );

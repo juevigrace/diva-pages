@@ -1,22 +1,24 @@
 ---
+export const prerender = true;
 import DocsLayout from '@layouts/DocsLayout.astro';
 import CodeBlock from '@components/docs/CodeBlock.astro';
+import { t } from '@lib/i18n/t';
 ---
 
 <DocsLayout
-  title="Docs — Diva"
-  description="Diva Pages documentation — everything you need to build with Diva Pages."
+  title={t('page.docs.title', Astro.locals.lang)}
+  description={t('page.docs.desc', Astro.locals.lang)}
 >
   <div class="mx-auto max-w-3xl">
-    <h1 class="text-4xl font-bold tracking-tight">Documentation</h1>
-    <p class="text-muted-foreground mt-4 text-lg">Everything you need to build with Diva Pages.</p>
+    <h1 class="text-4xl font-bold tracking-tight">{t('docs.title', Astro.locals.lang)}</h1>
+    <p class="text-muted-foreground mt-4 text-lg">{t('docs.subtitle', Astro.locals.lang) || 'Everything you need to build with Diva Pages.'}</p>
 
     <div class="mt-12 grid gap-6 sm:grid-cols-2">
       <a
         href="/docs/getting-started"
         class="group border-border bg-card hover:border-primary/50 rounded-xl border p-6 shadow-sm transition-colors"
       >
-        <h2 class="group-hover:text-primary font-semibold">Getting Started</h2>
+        <h2 class="group-hover:text-primary font-semibold">{t('docs.gettingStarted', Astro.locals.lang)}</h2>
         <p class="text-muted-foreground mt-2 text-sm">
           Set up your project and start building in minutes.
         </p>
@@ -25,7 +27,7 @@ import CodeBlock from '@components/docs/CodeBlock.astro';
         href="/docs/components"
         class="group border-border bg-card hover:border-primary/50 rounded-xl border p-6 shadow-sm transition-colors"
       >
-        <h2 class="group-hover:text-primary font-semibold">Components</h2>
+        <h2 class="group-hover:text-primary font-semibold">{t('docs.components', Astro.locals.lang)}</h2>
         <p class="text-muted-foreground mt-2 text-sm">
           Explore our library of 20+ shadcn/ui components.
         </p>
@@ -34,7 +36,7 @@ import CodeBlock from '@components/docs/CodeBlock.astro';
         href="/docs/api"
         class="group border-border bg-card hover:border-primary/50 rounded-xl border p-6 shadow-sm transition-colors"
       >
-        <h2 class="group-hover:text-primary font-semibold">API Reference</h2>
+        <h2 class="group-hover:text-primary font-semibold">{t('docs.api', Astro.locals.lang)}</h2>
         <p class="text-muted-foreground mt-2 text-sm">Detailed prop and type documentation.</p>
       </a>
       <div class="border-border bg-card rounded-xl border p-6 shadow-sm">

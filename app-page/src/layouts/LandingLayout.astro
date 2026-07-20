@@ -10,12 +10,13 @@ export interface Props {
 }
 
 const { title = 'Diva Pages', description } = Astro.props;
+const lang = Astro.locals.lang || 'en';
 ---
 
 <Layout title={title} description={description}>
-  <Header />
+  <Header lang={lang} />
   <main transition:animate="slide">
     <slot />
   </main>
-  <Footer />
+  <Footer lang={lang} />
 </Layout>

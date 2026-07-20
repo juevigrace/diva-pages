@@ -1,8 +1,10 @@
 ---
+export const prerender = true;
 import AuthLayout from '@layouts/AuthLayout.astro';
 import SignInForm from '@components/auth/SignInForm';
+import { t } from '@lib/i18n/t';
 ---
 
-<AuthLayout title="Sign In — Diva" description="Sign in to your Diva Pages account to continue.">
-  <SignInForm client:load />
+<AuthLayout title={t('page.signIn.title', Astro.locals.lang)} description={t('page.signIn.desc', Astro.locals.lang)}>
+  <SignInForm lang={Astro.locals.lang} client:load />
 </AuthLayout>

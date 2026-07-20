@@ -3,6 +3,7 @@ import { Button } from 'diva-ui/components/button';
 import { Card, CardHeader, CardTitle, CardContent } from 'diva-ui/components/card';
 import { Badge } from 'diva-ui/components/badge';
 import { toast } from 'diva-ui/components/sonner';
+import { useT } from '@lib/i18n/useT';
 
 interface DatabaseHealth {
   is_connected: boolean;
@@ -65,9 +66,11 @@ function PingDuration({ ns }: { ns: number }) {
 
 interface HealthViewProps {
   isVerified?: boolean;
+  lang?: string;
 }
 
-export default function HealthView({ isVerified = true }: HealthViewProps) {
+export default function HealthView({ isVerified = true, lang = 'en' }: HealthViewProps) {
+  const t = useT(lang);
   const [health, setHealth] = useState<HealthData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -80,10 +83,10 @@ export default function HealthView({ isVerified = true }: HealthViewProps) {
         setHealth(json);
       } else {
         const j = await res.json();
-        toast.error(j.message || 'Failed to fetch health data');
+        toast.error(j.message || t('common.error'));
       }
     } catch {
-      toast.error('Failed to fetch health data');
+      toast.error(t('common.error'));
     }
     setLoading(false);
   }, []);
@@ -99,8 +102,8 @@ export default function HealthView({ isVerified = true }: HealthViewProps) {
   if (!isVerified) {
     return (
       <div className="border-border bg-card rounded-xl border p-8 text-center shadow-sm">
-        <p className="text-muted-foreground text-sm">Verify your email to view system health.</p>
-        <a href="/verify" class="mt-4 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90">Verify now</a>
+        <p className="text-muted-foreground text-sm">{t('admin.verifyToViewHealth')}</p>
+        <a href="/verify" class="mt-4 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90">{t('nav.verifyNow')}</a>
       </div>
     );
   }
@@ -123,9 +126,9 @@ export default function HealthView({ isVerified = true }: HealthViewProps) {
   if (!health) {
     return (
       <div className="border-border bg-card rounded-xl border p-8 text-center shadow-sm">
-        <p className="text-muted-foreground text-sm">Unable to load health data.</p>
+        <p className="text-muted-foreground text-sm">{t('common.error')}</p>
         <Button type="button" variant="outline" size="sm" className="mt-4" onClick={fetchHealth}>
-          Retry
+          {t('common.retry')}
         </Button>
       </div>
     );

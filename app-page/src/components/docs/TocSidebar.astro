@@ -1,15 +1,18 @@
 ---
+import { t } from '@lib/i18n/t';
+
 export interface Props {
   headings: { id: string; label: string; level: number }[];
+  lang?: string;
 }
 
-const { headings } = Astro.props;
+const { headings, lang = 'en' } = Astro.props;
 ---
 
 <aside class="hidden w-56 shrink-0 xl:block">
   <nav class="sticky top-16 p-6">
     <h4 class="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
-      On this page
+      {t('docs.onThisPage', lang)}
     </h4>
     <ul class="space-y-2">
       {
