@@ -35,7 +35,7 @@ interface SessionsManagerProps {
 }
 
 function formatDate(ts?: number) {
-  if (!ts) return '—';
+  if (!ts) return '\u2014';
   return new Date(ts * 1000).toLocaleString();
 }
 
@@ -59,33 +59,45 @@ function groupBadge(group: SessionGroup, t: (k: string) => string) {
   return <Badge variant="secondary">{t(`sessionsPage.${group}`)}</Badge>;
 }
 
-function SessionRow({ s, loading, onClose, isCurrent, isVerified, t }: {
+function SessionRow({ s, loading, onClose, isCurrent, isVerified, t, selected, onToggle }: {
   s: SessionData;
   loading: boolean;
   isCurrent: boolean;
   onClose: (sid: string) => void;
   isVerified: boolean;
   t: (k: string) => string;
+  selected: boolean;
+  onToggle: (sid: string) => void;
 }) {
   const sid = s.session_id || s.id || '';
   const group = sessionGroup(s);
+  const canSelect = group !== 'closed';
 
   return (
     <div className="flex items-center justify-between py-4">
-      <div className="min-w-0 flex-1 space-y-1">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{s.device || t('sessionsPage.unknownDevice')}</span>
-          {isCurrent && <Badge variant="outline" className="text-xs">{t('sessionsPage.active')}</Badge>}
-          {groupBadge(group, t)}
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <input
+          type="checkbox"
+          checked={selected}
+          disabled={!canSelect}
+          onChange={() => onToggle(sid)}
+          className="h-4 w-4 shrink-0"
+        />
+        <div className="min-w-0 flex-1 space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">{s.device || t('sessionsPage.unknownDevice')}</span>
+            {isCurrent && <Badge variant="outline" className="text-xs">{t('sessionsPage.active')}</Badge>}
+            {groupBadge(group, t)}
+          </div>
+          <p className="text-muted-foreground text-xs">
+            {s.ip ? `${s.ip} \u00b7 ` : ''}{s.agent?.substring(0, 40) || ''}
+            {s.agent && s.agent.length > 40 ? '...' : ''}
+          </p>
+          <p className="text-muted-foreground text-xs">
+            {t('sessionsPage.created')}: {formatDate(s.created_at)}
+            {s.updated_at ? ` \u00b7 ${t('sessionsPage.lastActive')}: ${formatDate(s.updated_at)}` : ''}
+          </p>
         </div>
-        <p className="text-muted-foreground text-xs">
-          {s.ip ? `${s.ip} · ` : ''}{s.agent?.substring(0, 40) || ''}
-          {s.agent && s.agent.length > 40 ? '...' : ''}
-        </p>
-        <p className="text-muted-foreground text-xs">
-          {t('sessionsPage.created')}: {formatDate(s.created_at)}
-          {s.updated_at ? ` · ${t('sessionsPage.lastActive')}: ${formatDate(s.updated_at)}` : ''}
-        </p>
       </div>
       {group === 'active' && (
         <Button variant="ghost" size="sm" onClick={() => onClose(sid)} disabled={loading}>
@@ -103,6 +115,7 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [refreshing, setRefreshing] = useState(false);
   const [confirmSid, setConfirmSid] = useState<string | null>(null);
+  const [selectedSids, setSelectedSids] = useState<Set<string>>(new Set());
 
   const groups = useMemo(() => {
     const grouped: Record<SessionGroup, SessionData[]> = { active: [], expired: [], closed: [] };
@@ -114,6 +127,28 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
 
   const expiredCount = groups.expired.length;
 
+  const toggleSelect = (sid: string) => {
+    setSelectedSids((prev) => {
+      const next = new Set(prev);
+      if (next.has(sid)) next.delete(sid);
+      else next.add(sid);
+      return next;
+    });
+  };
+
+  const toggleSelectGroup = (group: SessionGroup) => {
+    const groupSids = groups[group].map((s) => s.session_id || s.id || '');
+    const allSelected = groupSids.every((sid) => selectedSids.has(sid));
+    setSelectedSids((prev) => {
+      const next = new Set(prev);
+      for (const sid of groupSids) {
+        if (allSelected) next.delete(sid);
+        else next.add(sid);
+      }
+      return next;
+    });
+  };
+
   const refetchSessions = async () => {
     setRefreshing(true);
     try {
@@ -121,7 +156,7 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
       if (res.ok) {
         const json = await res.json();
         setSessions(json || []);
-        toast.success(t('sessionsPage.sessionClosed'));
+        setSelectedSids(new Set());
       } else {
         toast.error(t('sessionsPage.failedCloseSession'));
       }
@@ -174,6 +209,37 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
     }
   };
 
+  const batchClose = async () => {
+    const ids = Array.from(selectedSids);
+    if (ids.length === 0) return;
+
+    try {
+      const res = await fetch('/api/sessions/batch/close', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_ids: ids }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        setSessions((prev) => prev.map((s) => {
+          const sid = s.session_id || s.id || '';
+          return result.data.succeeded.includes(sid) ? { ...s, status: 'CLOSED' } : s;
+        }));
+        setSelectedSids(new Set());
+
+        const succ = result.data.succeeded?.length || 0;
+        const fail = result.data.failed?.length || 0;
+        if (succ > 0) toast.success(`${succ} session${succ > 1 ? 's' : ''} closed`);
+        if (fail > 0) toast.error(`${fail} session${fail > 1 ? 's' : ''} failed`);
+      } else {
+        const j = await res.json();
+        toast.error(j.message || t('sessionsPage.failedCloseSession'));
+      }
+    } catch {
+      toast.error(t('sessionsPage.failedCloseSession'));
+    }
+  };
+
   const visibleGroups = (['active', 'expired', 'closed'] as SessionGroup[]).filter(
     (g) => groups[g].length > 0,
   );
@@ -184,6 +250,11 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{t('sessionsPage.title')}</CardTitle>
           <div className="flex items-center gap-2">
+            {selectedSids.size > 0 && (
+              <Button variant="destructive" size="sm" onClick={batchClose} disabled={!isVerified}>
+                {t('sessionsPage.closeSession')} ({selectedSids.size})
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={refetchSessions} disabled={refreshing || !isVerified}>
               {refreshing ? t('sessionsPage.refreshing') : t('sessionsPage.refresh')}
             </Button>
@@ -202,6 +273,16 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
               {visibleGroups.map((group) => (
                 <div key={group}>
                   <div className="text-muted-foreground flex items-center gap-2 py-3 text-xs font-semibold uppercase tracking-wider">
+                    <input
+                      type="checkbox"
+                      checked={groups[group].every((s) => {
+                        const sid = s.session_id || s.id || '';
+                        return group === 'closed' || selectedSids.has(sid);
+                      })}
+                      disabled={group === 'closed'}
+                      onChange={() => toggleSelectGroup(group)}
+                      className="h-4 w-4"
+                    />
                     <span>{t(`sessionsPage.${group}`)}</span>
                     <span className="bg-muted rounded-full px-1.5 py-0.5 text-[10px]">{groups[group].length}</span>
                   </div>
@@ -209,7 +290,17 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
                     {groups[group].map((s) => {
                       const sid = s.session_id || s.id || '';
                       return (
-                        <SessionRow key={sid} s={s} loading={loading[sid] || false} isCurrent={sid === currentSessionId} onClose={closeSession} isVerified={isVerified} t={t} />
+                        <SessionRow
+                          key={sid}
+                          s={s}
+                          loading={loading[sid] || false}
+                          isCurrent={sid === currentSessionId}
+                          onClose={closeSession}
+                          isVerified={isVerified}
+                          t={t}
+                          selected={selectedSids.has(sid)}
+                          onToggle={toggleSelect}
+                        />
                       );
                     })}
                   </div>

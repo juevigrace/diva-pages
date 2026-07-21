@@ -9,7 +9,7 @@ export const GET = apiRoute(async (ctx, session) => {
 export const DELETE = apiRoute(async (ctx, session) => {
   const res = await apiFetch(`/api/sessions/${ctx.params.sid}`, { method: 'DELETE', token: session.access_token });
   if (res.ok && ctx.params.sid === session.session_id) {
-    await ctx.callAction(actions.session.deleteSession, {});
+    await ctx.callAction(actions.server.session.deleteSession, {});
   }
   return nullResponse(res);
 });

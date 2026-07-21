@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Button } from 'diva-ui/components/button';
 import { toast } from 'diva-ui/components/sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from 'diva-ui/components/dialog';
 import { getUserInitials, buildPageArray } from '../../nav-items';
 import { useT } from '@lib/i18n/useT';
 
@@ -38,7 +46,23 @@ export default function UsersManager({
   const [newPassword, setNewPassword] = useState('');
   const [createStatus, setCreateStatus] = useState('');
   const [createError, setCreateError] = useState(false);
+  const [selectedUids, setSelectedUids] = useState<Set<string>>(new Set());
+  const [batchRole, setBatchRole] = useState('USER');
+  const [batchLoading, setBatchLoading] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const canManage = isVerified && (currentUserRole === 'ADMIN' || currentUserRole === 'MODERATOR');
+
+  const filteredUsers = search
+    ? users.filter(
+        (u) =>
+          (u.username || '').toLowerCase().includes(search.toLowerCase()) ||
+          (u.email || '').toLowerCase().includes(search.toLowerCase())
+      )
+    : users;
+
+  const selectableUsers = filteredUsers;
+
+  const allSelected = selectableUsers.length > 0 && selectableUsers.every((u) => selectedUids.has(u.id));
 
   const loadPage = async (p: number) => {
     const res = await fetch(`/api/user/?page=${p}&limit=10`, {
@@ -51,9 +75,74 @@ export default function UsersManager({
       setTotalPages(json.pagination_info?.total_pages || 1);
       setTotalItems(json.pagination_info?.total_items || 0);
       setLoadError(false);
+      setSelectedUids(new Set());
     } else {
       setLoadError(true);
     }
+  };
+
+  const toggleSelect = (uid: string) => {
+    setSelectedUids((prev) => {
+      const next = new Set(prev);
+      if (next.has(uid)) next.delete(uid);
+      else next.add(uid);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedUids(new Set());
+    } else {
+      setSelectedUids(new Set(selectableUsers.map((u) => u.id)));
+    }
+  };
+
+  const handleBatch = async (endpoint: string, body: Record<string, any>) => {
+    setBatchLoading(true);
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        const succ = result.data.succeeded?.length || 0;
+        const fail = result.data.failed?.length || 0;
+        if (succ > 0) toast.success(`${succ} user${succ > 1 ? 's' : ''} updated`);
+        if (fail > 0) toast.error(`${fail} user${fail > 1 ? 's' : ''} failed`);
+        setSelectedUids(new Set());
+        if (succ > 0) loadPage(page);
+      } else {
+        const j = await res.json();
+        toast.error(j.message || 'Batch operation failed');
+      }
+    } catch {
+      toast.error('Batch operation failed');
+    }
+    setBatchLoading(false);
+  };
+
+  const handleBatchVerify = () => {
+    handleBatch('/api/user/batch/verify', { user_ids: Array.from(selectedUids), verified: true });
+  };
+
+  const handleBatchRole = () => {
+    handleBatch('/api/user/batch/role', { user_ids: Array.from(selectedUids), role: batchRole });
+  };
+
+  const handleBatchDelete = () => {
+    setConfirmDelete(true);
+  };
+
+  const confirmBatchDelete = () => {
+    setConfirmDelete(false);
+    handleBatch('/api/user/batch/delete', { user_ids: Array.from(selectedUids) });
+  };
+
+  const handleBatchRestore = () => {
+    handleBatch('/api/user/batch/restore', { user_ids: Array.from(selectedUids) });
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -144,14 +233,6 @@ export default function UsersManager({
     }
   };
 
-  const filteredUsers = search
-    ? users.filter(
-        (u) =>
-          (u.username || '').toLowerCase().includes(search.toLowerCase()) ||
-          (u.email || '').toLowerCase().includes(search.toLowerCase())
-      )
-    : users;
-
   const paginationPages = buildPageArray(page, totalPages);
 
   return (
@@ -182,10 +263,50 @@ export default function UsersManager({
             </Button>
           </div>
         </div>
+
+        {selectedUids.size > 0 && canManage && (
+          <div className="border-border flex items-center gap-3 border-b px-6 py-3">
+            <span className="text-sm font-medium">{selectedUids.size} selected</span>
+            <Button variant="default" size="sm" onClick={handleBatchVerify} disabled={batchLoading}>
+              Verify
+            </Button>
+            <div className="flex items-center gap-1">
+              <select
+                className="border-input bg-background rounded-md border px-2 py-1 text-sm"
+                value={batchRole}
+                onChange={(e) => setBatchRole(e.target.value)}
+              >
+                <option value="USER">User</option>
+                <option value="MODERATOR">Moderator</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+              <Button variant="outline" size="sm" onClick={handleBatchRole} disabled={batchLoading}>
+                Set role
+              </Button>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleBatchRestore} disabled={batchLoading}>
+              Restore
+            </Button>
+            <Button variant="destructive" size="sm" onClick={handleBatchDelete} disabled={batchLoading}>
+              Delete
+            </Button>
+          </div>
+        )}
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-border bg-muted/50 border-b">
+                <th className="px-6 py-3 text-left">
+                  {canManage && selectableUsers.length > 0 && (
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
+                      className="h-4 w-4"
+                    />
+                  )}
+                </th>
                 <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('users.user')}</th>
                 <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('users.email')}</th>
                 <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('users.role')}</th>
@@ -197,25 +318,33 @@ export default function UsersManager({
             <tbody>
               {!canManage ? (
                 <tr>
-                  <td colSpan={6} className="text-muted-foreground px-6 py-12 text-center text-sm">
+                  <td colSpan={7} className="text-muted-foreground px-6 py-12 text-center text-sm">
                     {isVerified ? t('users.noPermission') : t('users.verifyToManage')}
                   </td>
                 </tr>
               ) : loadError ? (
                 <tr>
-                  <td colSpan={6} className="text-muted-foreground px-6 py-12 text-center text-sm">
+                  <td colSpan={7} className="text-muted-foreground px-6 py-12 text-center text-sm">
                     {t('users.couldNotLoad')}
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-muted-foreground px-6 py-12 text-center text-sm">
+                  <td colSpan={7} className="text-muted-foreground px-6 py-12 text-center text-sm">
                     {t('users.noUsersFound')}
                   </td>
                 </tr>
               ) : (
                 filteredUsers.map((user: any) => (
                   <tr key={user.id} className="border-border hover:bg-muted/50 border-b">
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedUids.has(user.id)}
+                        onChange={() => toggleSelect(user.id)}
+                        className="h-4 w-4"
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold">
@@ -226,7 +355,7 @@ export default function UsersManager({
                         </a>
                       </div>
                     </td>
-                    <td className="text-muted-foreground px-6 py-4">{user.email || '—'}</td>
+                    <td className="text-muted-foreground px-6 py-4">{user.email || '\u2014'}</td>
                     <td className="px-6 py-4">
                       <select
                         className="border-border bg-background rounded-md border px-2 py-1 text-xs font-medium shadow-sm"
@@ -308,7 +437,7 @@ export default function UsersManager({
           {totalPages > 1 && (
             <div className="flex items-center gap-2">
               {page > 1 && (
-                <Button type="button" variant="outline" size="icon" onClick={() => loadPage(page - 1)}>←</Button>
+                <Button type="button" variant="outline" size="icon" onClick={() => loadPage(page - 1)}>&larr;</Button>
               )}
               {paginationPages.map((p, i) =>
                 p === 'ellipsis' ? (
@@ -327,12 +456,27 @@ export default function UsersManager({
                 )
               )}
               {page < totalPages && (
-                <Button type="button" variant="outline" size="icon" onClick={() => loadPage(page + 1)}>→</Button>
+                <Button type="button" variant="outline" size="icon" onClick={() => loadPage(page + 1)}>&rarr;</Button>
               )}
             </div>
           )}
         </div>
       </div>
+
+      <Dialog open={confirmDelete} onOpenChange={(open) => { if (!open) setConfirmDelete(false); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete users</DialogTitle>
+            <DialogDescription>
+              Delete {selectedUids.size} user{selectedUids.size > 1 ? 's' : ''}? This can be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDelete(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmBatchDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {showModal && (
         <div className="bg-background/80 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">

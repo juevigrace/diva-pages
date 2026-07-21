@@ -20,9 +20,24 @@ export async function POST({ request, callAction }: import('astro').APIContext):
       },
     });
 
-    if (!res.ok) return json(res.json, res.status);
+    if (!res.ok) {
+      const isHtmx = request.headers.get('HX-Request') === 'true';
+      if (isHtmx) {
+        return new Response(null, {
+          status: 200,
+          headers: { 'HX-Trigger': JSON.stringify({ showToast: { type: 'error', message: res.json.message || 'An error occurred' } }) },
+        });
+      }
+      return json(res.json, res.status);
+    }
 
-    await callAction(actions.session.saveSession, res.json.data);
+    await callAction(actions.server.session.saveSession, res.json.data);
+
+    const isHtmx = request.headers.get('HX-Request') === 'true';
+    if (isHtmx) {
+      return new Response(null, { status: 200, headers: { 'HX-Redirect': '/' } });
+    }
+
     return json(res.json.data, res.status);
   } catch (e) {
     if (e instanceof Response) return e;

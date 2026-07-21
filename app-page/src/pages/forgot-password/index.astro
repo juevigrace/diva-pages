@@ -1,10 +1,9 @@
 ---
-export const prerender = true;
 import AuthLayout from '@layouts/AuthLayout.astro';
 import VerificationFlow from '@components/auth/VerificationFlow';
 import { t } from '@lib/i18n/t';
 ---
 
-<AuthLayout title={t('page.forgotPassword.title', Astro.locals.lang)} description={t('page.forgotPassword.desc', Astro.locals.lang)}>
+<AuthLayout title={t('page.forgotPassword.title')} description={t('page.forgotPassword.desc')}>
   <VerificationFlow action="PASSWORD_RESET" lang={Astro.locals.lang} client:load />
 </AuthLayout>
