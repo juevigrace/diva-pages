@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { Button } from 'diva-ui/components/button';
-import { Card, CardHeader, CardTitle, CardContent } from 'diva-ui/components/card';
 import { Badge } from 'diva-ui/components/badge';
 import { toast } from 'diva-ui/components/sonner';
 import {
@@ -12,6 +11,8 @@ import {
   DialogFooter,
 } from 'diva-ui/components/dialog';
 import { useT } from '@lib/i18n/useT';
+import DataList from './DataList';
+import type { Column } from './DataList';
 
 interface SessionData {
   session_id?: string;
@@ -36,12 +37,12 @@ interface SessionsManagerProps {
 
 function formatDate(ts?: number) {
   if (!ts) return '\u2014';
-  return new Date(ts * 1000).toLocaleString();
+  return new Date(ts).toLocaleString();
 }
 
 function isExpired(s: SessionData): boolean {
   if (!s.access_expires_at) return false;
-  return Date.now() > s.access_expires_at * 1000;
+  return Date.now() > s.access_expires_at;
 }
 
 type SessionGroup = 'active' | 'expired' | 'closed';
@@ -50,63 +51,6 @@ function sessionGroup(s: SessionData): SessionGroup {
   if (s.status?.toUpperCase() === 'CLOSED') return 'closed';
   if (isExpired(s)) return 'expired';
   return 'active';
-}
-
-function groupBadge(group: SessionGroup, t: (k: string) => string) {
-  if (group === 'active') {
-    return <Badge variant="default" className="bg-green-600">{t('sessionsPage.active')}</Badge>;
-  }
-  return <Badge variant="secondary">{t(`sessionsPage.${group}`)}</Badge>;
-}
-
-function SessionRow({ s, loading, onClose, isCurrent, isVerified, t, selected, onToggle }: {
-  s: SessionData;
-  loading: boolean;
-  isCurrent: boolean;
-  onClose: (sid: string) => void;
-  isVerified: boolean;
-  t: (k: string) => string;
-  selected: boolean;
-  onToggle: (sid: string) => void;
-}) {
-  const sid = s.session_id || s.id || '';
-  const group = sessionGroup(s);
-  const canSelect = group !== 'closed';
-
-  return (
-    <div className="flex items-center justify-between py-4">
-      <div className="flex items-center gap-3 min-w-0 flex-1">
-        <input
-          type="checkbox"
-          checked={selected}
-          disabled={!canSelect}
-          onChange={() => onToggle(sid)}
-          className="h-4 w-4 shrink-0"
-        />
-        <div className="min-w-0 flex-1 space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{s.device || t('sessionsPage.unknownDevice')}</span>
-            {isCurrent && <Badge variant="outline" className="text-xs">{t('sessionsPage.active')}</Badge>}
-            {groupBadge(group, t)}
-          </div>
-          <p className="text-muted-foreground text-xs">
-            {s.ip ? `${s.ip} \u00b7 ` : ''}{s.agent?.substring(0, 40) || ''}
-            {s.agent && s.agent.length > 40 ? '...' : ''}
-          </p>
-          <p className="text-muted-foreground text-xs">
-            {t('sessionsPage.created')}: {formatDate(s.created_at)}
-            {s.updated_at ? ` \u00b7 ${t('sessionsPage.lastActive')}: ${formatDate(s.updated_at)}` : ''}
-          </p>
-        </div>
-      </div>
-      {group === 'active' && (
-        <Button variant="ghost" size="sm" onClick={() => onClose(sid)} disabled={loading}>
-          {loading ? 'Closing...' : t('sessionsPage.closeSession')}
-        </Button>
-      )}
-      {!isVerified && <span className="text-muted-foreground text-xs">{t('sessionsPage.verifyToManage')}</span>}
-    </div>
-  );
 }
 
 export default function SessionsManager({ uid, initialSessions, currentSessionId, isVerified = true, lang = 'en' }: SessionsManagerProps) {
@@ -127,6 +71,11 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
 
   const expiredCount = groups.expired.length;
 
+  const allSessions = useMemo(() => {
+    const order: SessionGroup[] = ['active', 'expired', 'closed'];
+    return order.flatMap((g) => groups[g]);
+  }, [groups]);
+
   const toggleSelect = (sid: string) => {
     setSelectedSids((prev) => {
       const next = new Set(prev);
@@ -136,12 +85,13 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
     });
   };
 
-  const toggleSelectGroup = (group: SessionGroup) => {
-    const groupSids = groups[group].map((s) => s.session_id || s.id || '');
-    const allSelected = groupSids.every((sid) => selectedSids.has(sid));
+  const toggleSelectAll = () => {
+    const selectable = allSessions.filter((s) => sessionGroup(s) !== 'closed');
+    const allSelected = selectable.every((s) => selectedSids.has(s.session_id || s.id || ''));
     setSelectedSids((prev) => {
       const next = new Set(prev);
-      for (const sid of groupSids) {
+      for (const s of selectable) {
+        const sid = s.session_id || s.id || '';
         if (allSelected) next.delete(sid);
         else next.add(sid);
       }
@@ -240,76 +190,117 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
     }
   };
 
-  const visibleGroups = (['active', 'expired', 'closed'] as SessionGroup[]).filter(
-    (g) => groups[g].length > 0,
-  );
+  const selectableCount = allSessions.filter((s) => sessionGroup(s) !== 'closed').length;
+  const selectableSelected = allSessions.filter((s) => sessionGroup(s) !== 'closed' && selectedSids.has(s.session_id || s.id || ''));
+  const allSelectableSelected = selectableCount > 0 && selectableSelected.length === selectableCount;
+
+  const sessionColumns: Column<SessionData>[] = [
+    {
+      key: 'device',
+      header: t('sessionsPage.device') || 'Device',
+      render: (s: SessionData) => {
+        const sid = s.session_id || s.id || '';
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">{s.device || t('sessionsPage.unknownDevice')}</span>
+            {sid === currentSessionId && <Badge variant="outline" className="text-xs">{t('sessionsPage.current') || 'Current'}</Badge>}
+          </div>
+        );
+      },
+    },
+    {
+      key: 'info',
+      header: t('sessionsPage.info') || 'Info',
+      render: (s: SessionData) => (
+        <div className="text-muted-foreground text-xs whitespace-nowrap">
+          {s.ip || '\u2014'}
+        </div>
+      ),
+    },
+    {
+      key: 'created',
+      header: t('sessionsPage.created'),
+      render: (s: SessionData) => (
+        <div className="text-muted-foreground text-xs whitespace-nowrap">
+          {formatDate(s.created_at)}
+        </div>
+      ),
+    },
+    {
+      key: 'lastActive',
+      header: t('sessionsPage.lastActive'),
+      render: (s: SessionData) => (
+        <div className="text-muted-foreground text-xs whitespace-nowrap">
+          {formatDate(s.updated_at)}
+        </div>
+      ),
+    },
+    {
+      key: 'expires',
+      header: t('sessionsPage.expires'),
+      render: (s: SessionData) => (
+        <div className="text-muted-foreground text-xs whitespace-nowrap">
+          {formatDate(s.access_expires_at)}
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: t('sessionsPage.status') || 'Status',
+      render: (s: SessionData) => {
+        const group = sessionGroup(s);
+        if (group === 'active') {
+          return <Badge variant="default" className="bg-green-600">{t('sessionsPage.active')}</Badge>;
+        }
+        return <Badge variant="secondary">{t(`sessionsPage.${group}`)}</Badge>;
+      },
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>{t('sessionsPage.title')}</CardTitle>
-          <div className="flex items-center gap-2">
-            {selectedSids.size > 0 && (
-              <Button variant="destructive" size="sm" onClick={batchClose} disabled={!isVerified}>
-                {t('sessionsPage.closeSession')} ({selectedSids.size})
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={refetchSessions} disabled={refreshing || !isVerified}>
-              {refreshing ? t('sessionsPage.refreshing') : t('sessionsPage.refresh')}
+      <DataList
+        columns={sessionColumns}
+        data={allSessions}
+        getId={(s: SessionData) => s.session_id || s.id || ''}
+        selectable={isVerified}
+        selectedIds={selectedSids}
+        onToggleSelect={toggleSelect}
+        onToggleSelectAll={toggleSelectAll}
+        allSelected={allSelectableSelected}
+        hasPermission={true}
+        emptyMessage={t('sessionsPage.noSessions')}
+        actions={(s: SessionData) => {
+          const sid = s.session_id || s.id || '';
+          const group = sessionGroup(s);
+          return group === 'active' ? (
+            <Button variant="ghost" size="sm" onClick={() => closeSession(sid)} disabled={loading[sid] || false}>
+              {loading[sid] ? 'Closing...' : t('sessionsPage.closeSession')}
             </Button>
-            {expiredCount > 0 && (
-              <Button variant="outline" size="sm" onClick={clearExpired} disabled={!isVerified}>
-                {t('sessionsPage.clearExpired')} {expiredCount}
+          ) : null;
+        }}
+        actionHeader={t('users.actions')}
+        toolbar={
+          <div className="flex items-center justify-between px-6 py-4">
+            <h3 className="font-semibold">{t('sessionsPage.title')}</h3>
+            <div className="flex items-center gap-2">
+              {selectedSids.size > 0 && (
+                <Button variant="destructive" size="sm" onClick={batchClose} disabled={!isVerified}>
+                  {t('sessionsPage.closeSession')} ({selectedSids.size})
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={refetchSessions} disabled={refreshing || !isVerified}>
+                {refreshing ? t('sessionsPage.refreshing') : t('sessionsPage.refresh')}
               </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {visibleGroups.length === 0 ? (
-            <p className="text-muted-foreground py-8 text-center text-sm">{t('sessionsPage.noSessions')}</p>
-          ) : (
-            <div className="divide-y">
-              {visibleGroups.map((group) => (
-                <div key={group}>
-                  <div className="text-muted-foreground flex items-center gap-2 py-3 text-xs font-semibold uppercase tracking-wider">
-                    <input
-                      type="checkbox"
-                      checked={groups[group].every((s) => {
-                        const sid = s.session_id || s.id || '';
-                        return group === 'closed' || selectedSids.has(sid);
-                      })}
-                      disabled={group === 'closed'}
-                      onChange={() => toggleSelectGroup(group)}
-                      className="h-4 w-4"
-                    />
-                    <span>{t(`sessionsPage.${group}`)}</span>
-                    <span className="bg-muted rounded-full px-1.5 py-0.5 text-[10px]">{groups[group].length}</span>
-                  </div>
-                  <div className="divide-y">
-                    {groups[group].map((s) => {
-                      const sid = s.session_id || s.id || '';
-                      return (
-                        <SessionRow
-                          key={sid}
-                          s={s}
-                          loading={loading[sid] || false}
-                          isCurrent={sid === currentSessionId}
-                          onClose={closeSession}
-                          isVerified={isVerified}
-                          t={t}
-                          selected={selectedSids.has(sid)}
-                          onToggle={toggleSelect}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+              {expiredCount > 0 && (
+                <Button variant="outline" size="sm" onClick={clearExpired} disabled={!isVerified}>
+                  {t('sessionsPage.clearExpired')} {expiredCount}
+                </Button>
+              )}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        }
+      />
 
       <Dialog open={confirmSid !== null} onOpenChange={(open) => { if (!open) setConfirmSid(null); }}>
         <DialogContent>

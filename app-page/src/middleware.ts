@@ -50,20 +50,16 @@ function isAdminRoute(pathname: string): boolean {
 }
 
 async function fetchUserRole(userId: string, token: string): Promise<{ role: string; isVerified: boolean }> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/user/${userId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (res.ok) {
-      const json = await res.json();
-      const data = json?.data;
-      return {
-        role: data?.role || 'USER',
-        isVerified: data?.state?.verified ?? false,
-      };
-    }
-  } catch {}
-  return { role: 'USER', isVerified: false };
+  const res = await fetch(`${API_BASE_URL}/api/user/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Unauthorized');
+  const json = await res.json();
+  const data = json?.data;
+  return {
+    role: data?.role || 'USER',
+    isVerified: data?.state?.verified ?? false,
+  };
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
@@ -71,32 +67,38 @@ export const onRequest = defineMiddleware(async (context, next) => {
     let auth = await context.session.get<SessionResponse | null>('auth');
 
 	if (auth) {
-	  const now = Date.now();
-	  const buffer = 60_000;
-
-	  if (auth.access_expires_at <= now + buffer) {
-	    try {
-	      const refreshed = await context.callAction(actions.server.auth.refresh, {});
-	      auth = refreshed;
-	    } catch {
-	      await context.session?.set('auth', undefined);
-	      auth = null;
+	  try {
+	    const pingResult = await context.callAction(actions.auth.ping, {});
+	    if (!pingResult.data?.ok) {
+	      try {
+	        const { data: refreshed } = await context.callAction(actions.auth.refresh, {});
+	        auth = refreshed;
+	      } catch {
+	        await context.session?.set('auth', undefined);
+	        auth = null;
+	      }
 	    }
+	  } catch {
+	    await context.session?.set('auth', undefined);
+	    auth = null;
 	  }
 	}
 
     if (auth) {
-      const { role, isVerified } = await fetchUserRole(auth.user_id, auth.access_token);
-
-      context.locals.session = {
-        userId: auth.user_id,
-        sessionId: auth.session_id,
-        accessToken: auth.access_token,
-        status: auth.status,
-        type: auth.type,
-        role,
-        isVerified,
-      };
+      try {
+        const { role, isVerified } = await fetchUserRole(auth.user_id, auth.access_token);
+        context.locals.session = {
+          userId: auth.user_id,
+          sessionId: auth.session_id,
+          accessToken: auth.access_token,
+          status: auth.status,
+          type: auth.type,
+          role,
+          isVerified,
+        };
+      } catch {
+        await context.session?.set('auth', undefined);
+      }
     }
   }
 

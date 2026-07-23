@@ -230,6 +230,9 @@
     "failedCloseSession": "Error al cerrar la sesi\u00f3n",
     "failedClearExpired": "Error al limpiar sesiones expiradas",
     "device": "Dispositivo",
+    "current": "Actual",
+    "info": "Información",
+    "status": "Estado",
     "ip": "IP",
     "created": "Creada",
     "expires": "Expira",
@@ -381,7 +384,7 @@
     "dismiss": "Descartar"
   },
   "dashboard": {
-    "totalUsers": "Usuarios Totales",
+    "activeUsers": "Usuarios Activos",
     "usersPerPage": "Usuarios por P\u00e1gina",
     "activeSessions": "Sesiones Activas",
     "systemStatus": "Estado del Sistema",

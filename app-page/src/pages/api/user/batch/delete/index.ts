@@ -28,5 +28,5 @@ export const POST = apiRoute(async (ctx, session) => {
     }
   }
 
-  return json({ succeeded, failed });
+  return json({ data: { succeeded, failed } });
 });

@@ -49,7 +49,7 @@ export default function ProfileForms({ uid, user, profile, isVerified = true, la
   const [alias, setAlias] = useState(profile?.alias || '');
   const [bio, setBio] = useState(profile?.bio || '');
   const [birthDate, setBirthDate] = useState(
-    profile?.birth_date ? new Date(profile.birth_date * 1000).toISOString().split('T')[0] : ''
+    profile?.birth_date ? new Date(profile.birth_date).toISOString().split('T')[0] : ''
   );
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone_number || '');

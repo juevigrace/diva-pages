@@ -31,7 +31,7 @@ export async function POST({ request, callAction }: import('astro').APIContext):
       return json(res.json, res.status);
     }
 
-    await callAction(actions.server.session.saveSession, res.json.data);
+    await callAction(actions.session.saveSession, res.json.data);
 
     const isHtmx = request.headers.get('HX-Request') === 'true';
     if (isHtmx) {

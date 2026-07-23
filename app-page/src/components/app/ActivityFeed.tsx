@@ -93,7 +93,7 @@ export default function ActivityFeed({ uid, isVerified = true, lang = 'en' }: Ac
                 </div>
                 {a.created_at && (
                   <p className="text-muted-foreground text-xs">
-                    {new Date(a.created_at * 1000).toLocaleString()}
+                    {new Date(a.created_at).toLocaleString()}
                   </p>
                 )}
               </div>

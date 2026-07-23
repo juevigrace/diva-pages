@@ -7,16 +7,15 @@ const token = session?.accessToken;
 
 let totalUsers = '—';
 let totalPages = 1;
-let activeUsers = '—';
 let totalSessions = '—';
 
 try {
   if (token) {
-    const usersRes = await apiFetch('/api/user/?page=1&limit=1', { token });
+    const usersRes = await apiFetch('/api/user/?page=1&limit=100', { token });
     if (usersRes.ok) {
-      totalUsers = String(usersRes.json.data?.pagination_info?.total_items ?? '—');
+      const items = (usersRes.json.data?.items || []).filter((u: any) => !u.deleted_at);
+      totalUsers = String(items.length);
       totalPages = usersRes.json.data?.pagination_info?.total_pages ?? 1;
-      activeUsers = String(usersRes.json.data?.items?.length ?? '—');
     }
   }
 } catch (_) {}
@@ -25,13 +24,18 @@ try {
   if (token && session?.userId) {
     const sessRes = await apiFetch(`/api/user/${session.userId}/sessions`, { token });
     if (sessRes.ok) {
-      totalSessions = String((sessRes.json.data as any[])?.length ?? '—');
+      const allSessions = (sessRes.json.data as any[]) || [];
+      const now = Date.now();
+      totalSessions = String(allSessions.filter((s) =>
+        s.status?.toUpperCase() !== 'CLOSED' &&
+        (!s.access_expires_at || now <= s.access_expires_at)
+      ).length || '—');
     }
   }
 } catch (_) {}
 
 const stats = [
-  { label: t('dashboard.totalUsers', Astro.locals.lang), value: totalUsers, href: '/users' },
+  { label: t('dashboard.activeUsers', Astro.locals.lang), value: totalUsers, href: '/users' },
   { label: t('dashboard.usersPerPage', Astro.locals.lang), value: String(totalPages), href: '/users' },
   { label: t('dashboard.activeSessions', Astro.locals.lang), value: totalSessions, href: '/sessions' },
   { label: t('dashboard.systemStatus', Astro.locals.lang), value: t('dashboard.online', Astro.locals.lang), href: '/admin/api' },

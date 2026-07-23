@@ -134,7 +134,7 @@ export default function UserDetailContent({ uid, user, profile, permissions: ini
                 <div>
                   <p className="text-muted-foreground text-xs uppercase tracking-wider">{t('users.created')}</p>
                   <p className="text-sm font-medium">
-                    {user.created_at ? new Date(user.created_at * 1000).toLocaleDateString() : '—'}
+                    {user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}
                   </p>
                 </div>
               </div>
@@ -186,7 +186,7 @@ export default function UserDetailContent({ uid, user, profile, permissions: ini
                           <p className="text-sm font-medium">{permDef.name || p.permission_id}</p>
                           <p className="text-muted-foreground text-xs">
                             {permDef.action ? `${permDef.action}` : p.permission_id}
-                            {p.expires_at ? ` · Expires: ${new Date(p.expires_at * 1000).toLocaleDateString()}` : ''}
+                            {p.expires_at ? ` · Expires: ${new Date(p.expires_at).toLocaleDateString()}` : ''}
                           </p>
                         </div>
                         {canManage && (
@@ -214,7 +214,7 @@ export default function UserDetailContent({ uid, user, profile, permissions: ini
                         <p className="text-sm font-medium">{s.device || 'Unknown device'}</p>
                         <p className="text-muted-foreground text-xs">
                           {s.ip || 'Unknown IP'}
-                          {s.created_at ? ` · ${new Date(s.created_at * 1000).toLocaleDateString()}` : ''}
+                          {s.created_at ? ` · ${new Date(s.created_at).toLocaleDateString()}` : ''}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">

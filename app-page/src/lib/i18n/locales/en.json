@@ -230,6 +230,9 @@
     "failedCloseSession": "Failed to close session",
     "failedClearExpired": "Failed to clear expired sessions",
     "device": "Device",
+    "current": "Current",
+    "info": "Info",
+    "status": "Status",
     "ip": "IP",
     "created": "Created",
     "expires": "Expires",
@@ -381,7 +384,7 @@
     "dismiss": "Dismiss"
   },
   "dashboard": {
-    "totalUsers": "Total Users",
+    "activeUsers": "Active Users",
     "usersPerPage": "Users per Page",
     "activeSessions": "Active Sessions",
     "systemStatus": "System Status",

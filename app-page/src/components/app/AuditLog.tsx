@@ -103,7 +103,7 @@ export default function AuditLog({ isVerified = true, lang = 'en' }: AuditLogPro
                       </div>
                       {a.created_at && (
                         <p className="text-muted-foreground text-xs">
-                          {new Date(a.created_at * 1000).toLocaleString()}
+                          {new Date(a.created_at).toLocaleString()}
                         </p>
                       )}
                     </div>

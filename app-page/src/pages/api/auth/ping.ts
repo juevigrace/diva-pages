@@ -7,7 +7,7 @@ export async function POST(context: import('astro').APIContext): Promise<Respons
     const session = await requireSession(context);
     const res = await apiFetch('/api/auth/ping', { method: 'POST', token: session.access_token });
     if (!res.ok) {
-      await context.callAction(actions.server.session.deleteSession, {});
+      await context.callAction(actions.session.deleteSession, {});
       return json(res.json, res.status);
     }
     return new Response(null, { status: res.status });

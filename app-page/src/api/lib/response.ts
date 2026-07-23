@@ -11,7 +11,7 @@ export function json(data: unknown, status = 200) {
 }
 
 export async function requireSession(context: APIContext): Promise<SessionResponse> {
-  const { data: session, error } = await context.callAction(actions.server.session.getSession, {});
+  const { data: session, error } = await context.callAction(actions.session.getSession, {});
   if (error || !session) {
     throw new Response(JSON.stringify({ message: 'Unauthorized' }), {
       status: 401,
