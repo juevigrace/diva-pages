@@ -1,5 +1,4 @@
 import type { Role } from '../../common/enums/role_enum';
-import type { PermissionAction } from '../../permission/enums/permission_action_enum';
 import type { UserDevice } from '../../device/models/user_device';
 import type { UserAction } from './user_action';
 import type { UserPermission } from './user_permission';
@@ -20,6 +19,6 @@ export type User = {
   profile?: UserProfile | null;
   devices?: UserDevice[];
   actions?: UserAction[];
-  permissions?: Partial<Record<PermissionAction, UserPermission>>;
+  permissions?: Record<string, UserPermission>;
   preferences?: UserPreferences | null;
 };

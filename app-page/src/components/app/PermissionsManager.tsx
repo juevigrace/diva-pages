@@ -82,6 +82,21 @@ export default function PermissionsManager({
     loadPage(page);
   };
 
+  const handleDefaultToggle = async (pid: string, isDefault: boolean) => {
+    const res = await fetch(`/api/permissions/${pid}/default`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_default: isDefault }),
+    });
+    if (res.ok) {
+      showStatus(t('admin.permissionUpdated'), false);
+      loadPage(page);
+    } else {
+      const json = await res.json();
+      showStatus(json.message || t('admin.failedUpdatePermission'), true);
+    }
+  };
+
   const paginationPages = buildPageArray(page, totalPages);
 
   return (
@@ -95,9 +110,9 @@ export default function PermissionsManager({
             <thead>
               <tr className="border-border bg-muted/50 border-b">
                 <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('admin.permissionName')}</th>
-                <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('admin.endpoint')}</th>
+                <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('admin.default')}</th>
                 <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('admin.permissionDescription')}</th>
-                <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('admin.permissionDescription')}</th>
+                <th className="text-muted-foreground px-6 py-3 text-left font-medium">{t('users.role')}</th>
                 <th className="text-muted-foreground px-6 py-3 text-right font-medium">{t('users.actions')}</th>
               </tr>
             </thead>
@@ -118,7 +133,13 @@ export default function PermissionsManager({
                         <span className="font-medium">{p.name}</span>
                       )}
                     </td>
-                    <td className="text-muted-foreground px-6 py-4 font-mono text-xs">{p.action}</td>
+                    <td className="px-6 py-4">
+                      {p.is_default ? (
+                        <span className="bg-primary/10 text-primary inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium">{t('admin.default')}</span>
+                      ) : (
+                        <span className="text-muted-foreground font-mono text-xs">—</span>
+                      )}
+                    </td>
                     <td className="text-muted-foreground px-6 py-4">{p.description}</td>
                     <td className="px-6 py-4">
                       {isAdmin ? (
@@ -133,6 +154,11 @@ export default function PermissionsManager({
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
+                        {isAdmin && (
+                          <Button type="button" variant="ghost" size="sm" disabled={!isVerified} onClick={() => handleDefaultToggle(p.id, !p.is_default)}>
+                            {p.is_default ? t('admin.removeDefault') : t('admin.makeDefault')}
+                          </Button>
+                        )}
                         {editPid === p.id ? (
                           <>
                             <Button type="button" variant="default" size="sm" onClick={() => handleUpdate(p.id)}>{t('common.save')}</Button>

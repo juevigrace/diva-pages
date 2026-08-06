@@ -199,7 +199,7 @@ export default function UserDetailContent({ uid, user, profile, permissions: ini
                         <div>
                           <p className="text-sm font-medium">{permDef.name || p.permission_id}</p>
                           <p className="text-muted-foreground text-xs">
-                            {permDef.action ? `${permDef.action}` : p.permission_id}
+                            {permDef.is_default ? 'Default permission' : p.permission_id}
                             {p.expires_at ? ` · Expires: ${new Date(p.expires_at).toLocaleDateString()}` : ''}
                           </p>
                         </div>

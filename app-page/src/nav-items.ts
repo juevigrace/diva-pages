@@ -32,6 +32,7 @@ export const navItems: NavSection[] = [
     section: 'Administration',
     items: [
       { href: '/admin/permissions', label: 'Permissions', icon: 'settings', adminOnly: true },
+      { href: '/admin/endpoint-permissions', label: 'Endpoint Permissions', icon: 'api', adminOnly: true },
       { href: '/admin/sessions', label: 'Session Admin', icon: 'sessions', adminOnly: true },
       { href: '/admin/health', label: 'Health', icon: 'health', adminOnly: true },
       { href: '/admin/api', label: 'API Explorer', icon: 'api', adminOnly: true },

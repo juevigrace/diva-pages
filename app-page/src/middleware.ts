@@ -51,7 +51,7 @@ function isPublicRoute(pathname: string): boolean {
   return publicRoutes.some((route) => pathname === route || pathname.startsWith(route + '/'));
 }
 
-const adminRoutes = ['/admin/permissions', '/admin/sessions', '/admin/health', '/admin/api', '/devices'];
+const adminRoutes = ['/admin/permissions', '/admin/endpoint-permissions', '/admin/sessions', '/admin/health', '/admin/api', '/devices'];
 
 function isAdminRoute(pathname: string): boolean {
   return adminRoutes.some((route) => pathname === route || pathname.startsWith(route + '/'));

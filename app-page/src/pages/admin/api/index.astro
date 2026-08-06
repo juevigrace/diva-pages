@@ -81,7 +81,19 @@ const modules: { name: string; icon: string; endpoints: Endpoint[] }[] = [
       { method: 'PUT', path: '/api/permissions/{pid}', description: 'Update permission', ui: '/admin/permissions' },
       { method: 'DELETE', path: '/api/permissions/{pid}', description: 'Soft-delete permission', ui: '/admin/permissions' },
       { method: 'PATCH', path: '/api/permissions/{pid}/restore', description: 'Restore permission', ui: '/admin/permissions' },
+      { method: 'PATCH', path: '/api/permissions/{pid}/default', description: 'Toggle permission as default for new users', ui: '/admin/permissions' },
       { method: 'DELETE', path: '/api/permissions/{pid}/forever', description: 'Permanently delete permission', ui: '/admin/permissions' },
+    ],
+  },
+  {
+    name: 'Endpoint Permissions',
+    icon: '🔗',
+    endpoints: [
+      { method: 'GET', path: '/api/endpoint-permissions', description: 'List endpoint-permission mappings', ui: '/admin/endpoint-permissions' },
+      { method: 'POST', path: '/api/endpoint-permissions', description: 'Create endpoint-permission mapping', ui: '/admin/endpoint-permissions' },
+      { method: 'GET', path: '/api/endpoint-permissions/{eid}', description: 'Get endpoint-permission mapping by ID', ui: '/admin/endpoint-permissions' },
+      { method: 'PUT', path: '/api/endpoint-permissions/{eid}', description: 'Update endpoint-permission mapping', ui: '/admin/endpoint-permissions' },
+      { method: 'DELETE', path: '/api/endpoint-permissions/{eid}', description: 'Delete endpoint-permission mapping', ui: '/admin/endpoint-permissions' },
     ],
   },
   {

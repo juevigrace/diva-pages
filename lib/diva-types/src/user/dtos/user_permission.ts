@@ -1,5 +1,5 @@
 export type CreateUserPermissionDto = {
-  permission_action: string;
+  permission_id: string;
   granted: boolean;
   expires_at?: number | null;
 };
