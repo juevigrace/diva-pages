@@ -495,7 +495,10 @@
     "profile": "Profile",
     "settings": "Settings",
     "signOut": "Sign out",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "switchAccount": "Switch account",
+    "addAccount": "Add another account",
+    "switchFailed": "Failed to switch account"
   },
   "onboarding": {
     "stepVerify": "Verify",

@@ -6,7 +6,7 @@ import { t } from '@lib/i18n/t';
 import { pathKey } from '@lib/i18n/nav-keys';
 
 const currentPath = Astro.url.pathname;
-const { user } = Astro.locals;
+const { user, accounts } = Astro.locals;
 const lang = Astro.locals.lang;
 
 function getBreadcrumbs(path: string): { label: string; href: string }[] {
@@ -56,7 +56,7 @@ const crumbs = getBreadcrumbs(currentPath);
         <slot name="actions" />
       </div>
       <ThemeToggle client:idle />
-      <UserMenuContent signedIn={!!user} lang={lang} client:idle />
+      <UserMenuContent signedIn={!!user} accounts={accounts ?? []} activeAccountId={user?.id} lang={lang} client:idle />
     </div>
   </div>
 </header>

@@ -495,7 +495,10 @@
     "profile": "Perfil",
     "settings": "Ajustes",
     "signOut": "Cerrar sesi\u00f3n",
-    "signIn": "Iniciar sesi\u00f3n"
+    "signIn": "Iniciar sesi\u00f3n",
+    "switchAccount": "Cambiar de cuenta",
+    "addAccount": "A\u00f1adir otra cuenta",
+    "switchFailed": "No se pudo cambiar de cuenta"
   },
   "onboarding": {
     "stepVerify": "Verificar",

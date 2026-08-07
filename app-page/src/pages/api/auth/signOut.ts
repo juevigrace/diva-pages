@@ -1,5 +1,5 @@
 import { actions } from 'astro:actions';
-import { apiRoute, nullResponse } from '@api/lib/response';
+import { apiRoute, json } from '@api/lib/response';
 import { apiFetch } from '@api/lib/fetch';
 import { getDeviceLabel } from '@lib/device';
 
@@ -14,6 +14,8 @@ export const POST = apiRoute(async (ctx, session) => {
     },
     token: session.access_token,
   });
-  await ctx.callAction(actions.session.deleteSession, {});
-  return nullResponse(res);
+  const { data } = await ctx.callAction(actions.session.deleteSession, {});
+  const remaining = data?.remaining ?? 0;
+  if (!res.ok) return json({ ...(res.json as object), remaining }, res.status);
+  return json({ remaining }, res.status);
 });
