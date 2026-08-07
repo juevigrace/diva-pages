@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'diva-ui/components/sonner';
 import { useT } from '@lib/i18n/useT';
 import DataList from './DataList';
@@ -6,15 +6,15 @@ import type { Column } from './DataList';
 
 interface DeviceData {
   device_id: string;
-  device_name: string;
+  device_name?: string;
   user_id?: string;
-  created_at: number;
-  updated_at: number;
+  created_at?: number;
+  updated_at?: number;
 }
 
 interface DevicesManagerProps {
   uid?: string;
-  initialDevices: DeviceData[] | null;
+  initialDevices: Record<string, unknown>[] | null;
   isVerified?: boolean;
   lang?: string;
 }
@@ -26,10 +26,18 @@ function formatDate(ts?: number) {
 
 export default function DevicesManager({ uid, initialDevices, isVerified = true, lang = 'en' }: DevicesManagerProps) {
   const t = useT(lang);
-  const [devices, setDevices] = useState<DeviceData[]>(initialDevices || []);
+  const [devices, setDevices] = useState<DeviceData[]>(initialDevices as DeviceData[] | null || []);
   const [refreshing, setRefreshing] = useState(false);
+  const needsLoad = initialDevices === null;
 
   const basePath = uid ? `/api/user/${uid}/devices` : '/api/devices';
+
+  useEffect(() => {
+    if (needsLoad) {
+      refetchDevices();
+    }
+    // run once on mount to load server-fetched data lazily
+  }, []);
 
   const refetchDevices = async () => {
     setRefreshing(true);
@@ -68,6 +76,8 @@ export default function DevicesManager({ uid, initialDevices, isVerified = true,
     {
       key: 'name',
       header: t('devicesPage.name') || 'Name',
+      sortValue: (d: DeviceData) => d.device_name || '',
+      csvValue: (d: DeviceData) => d.device_name || '',
       render: (d: DeviceData) => (
         <span className="text-sm font-medium">{d.device_name || t('devicesPage.unknownDevice')}</span>
       ),
@@ -75,6 +85,8 @@ export default function DevicesManager({ uid, initialDevices, isVerified = true,
     {
       key: 'created',
       header: t('devicesPage.created'),
+      sortValue: (d: DeviceData) => d.created_at ?? 0,
+      csvValue: (d: DeviceData) => (d.created_at ? new Date(d.created_at).toISOString() : ''),
       render: (d: DeviceData) => (
         <div className="text-muted-foreground text-xs whitespace-nowrap">
           {formatDate(d.created_at)}
@@ -84,6 +96,8 @@ export default function DevicesManager({ uid, initialDevices, isVerified = true,
     {
       key: 'lastSeen',
       header: t('devicesPage.lastSeen'),
+      sortValue: (d: DeviceData) => d.updated_at ?? 0,
+      csvValue: (d: DeviceData) => (d.updated_at ? new Date(d.updated_at).toISOString() : ''),
       render: (d: DeviceData) => (
         <div className="text-muted-foreground text-xs whitespace-nowrap">
           {formatDate(d.updated_at)}
@@ -110,7 +124,19 @@ export default function DevicesManager({ uid, initialDevices, isVerified = true,
       data={devices}
       getId={(d: DeviceData) => d.device_id}
       selectable={false}
+      searchable
+      searchPlaceholder={t('table.searchDevices')}
+      searchText={(d: DeviceData) => `${d.device_name || ''} ${d.device_id || ''}`}
+      sortable
+      defaultSortKey="created"
+      paginated
+      pageSize={10}
+      exportable
+      exportFilename="devices"
+      exportLabel={t('table.export')}
+      loading={refreshing || needsLoad}
       emptyMessage={t('devicesPage.noDevices')}
+      emptyDescription={t('devicesPage.noDevicesDesc')}
       hasPermission={isVerified}
       toolbar={
         <div className="flex items-center justify-between px-6 py-4">

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { z } from 'zod';
 import { Button } from 'diva-ui/components/button';
+import { Avatar, AvatarFallback, AvatarImage } from 'diva-ui/components/avatar';
 import { getUserInitials, showStatus } from '@lib/ui';
 import InlineVerification from '../auth/InlineVerification';
 import { useT } from '@lib/i18n/useT';
@@ -33,11 +34,12 @@ interface ProfileFormsProps {
   uid: string;
   user: Record<string, any> | null;
   profile: Record<string, any> | null;
+  avatarUrl?: string;
   isVerified?: boolean;
   lang?: string;
 }
 
-export default function ProfileForms({ uid, user, profile, isVerified = true, lang = 'en' }: ProfileFormsProps) {
+export default function ProfileForms({ uid, user, profile, avatarUrl, isVerified = true, lang = 'en' }: ProfileFormsProps) {
   const t = useT(lang);
   const displayName = profile
     ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || user?.username || 'User'
@@ -243,7 +245,12 @@ export default function ProfileForms({ uid, user, profile, isVerified = true, la
       <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
         <div className="flex items-start gap-6">
           <div className="bg-primary/10 text-primary flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold">
-            {initials}
+            <Avatar className="h-20 w-20">
+              <AvatarImage src={avatarUrl} alt={displayName} />
+              <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
           </div>
           <div className="flex-1">
             <h3 className="text-xl font-semibold">{displayName}</h3>

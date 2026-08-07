@@ -307,7 +307,7 @@ export default function OnboardingFlow({
       )}
 
       <p className="mt-6 text-center">
-        <a href="/" className="text-muted-foreground hover:text-foreground text-xs underline underline-offset-2">
+        <a href="/?ob_skip=1" className="text-muted-foreground hover:text-foreground text-xs underline underline-offset-2">
           {t('onboarding.skipForNow')}
         </a>
       </p>

@@ -67,7 +67,12 @@
     "usernameTaken": "El usuario ya est\u00e1 en uso",
     "emailTaken": "El correo ya est\u00e1 en uso",
     "signOut": "Cerrar sesi\u00f3n",
-    "signedIn": "Sesi\u00f3n iniciada"
+    "signedIn": "Sesi\u00f3n iniciada",
+    "signedInAccounts": "Cuentas con sesi\u00f3n iniciada",
+    "continueAsAccount": "Elige una cuenta para continuar al instante",
+    "continue": "Continuar",
+    "active": "Activa",
+    "orSignIn": "o inicia sesi\u00f3n con otra cuenta"
   },
   "verification": {
     "resetPassword": "Restablecer tu contrase\u00f1a",
@@ -176,7 +181,12 @@
     "deleteAccountDesc": "Elimina permanentemente tu cuenta y todos los datos asociados",
     "deleteAccountConfirm": "\u00bfEst\u00e1s seguro de eliminar tu cuenta? Esta acci\u00f3n no se puede deshacer.",
     "accountDeleted": "Cuenta eliminada. Redirigiendo...",
-    "failedDeleteAccount": "Error al eliminar la cuenta"
+    "failedDeleteAccount": "Error al eliminar la cuenta",
+    "security": "Seguridad",
+    "securityDesc": "Gestiona tus sesiones activas, dispositivos y contrase\u00f1a.",
+    "lastSignIn": "\u00daltima sesi\u00f3n",
+    "changePassword": "Cambiar contrase\u00f1a",
+    "deleteAccountTypeConfirm": "Escribe {{username}} para confirmar. Esta acci\u00f3n no se puede deshacer."
   },
   "users": {
     "title": "Usuarios",
@@ -184,6 +194,7 @@
     "createUser": "Crear usuario",
     "searchUsers": "Buscar usuarios...",
     "noUsersFound": "No se encontraron usuarios.",
+    "noUsersFoundDesc": "Ajusta tu b\u00fasqueda o filtros, o agrega un nuevo usuario para comenzar.",
     "noPermission": "No tienes permiso para gestionar usuarios.",
     "verifyToManage": "Verifica tu correo para gestionar usuarios.",
     "couldNotLoad": "No se pudieron cargar los usuarios. Verifica tus permisos.",
@@ -241,6 +252,7 @@
     "clearHistory": "Limpiar historial",
     "refreshing": "Refrescando...",
     "noSessions": "No se encontraron sesiones.",
+    "noSessionsDesc": "Las sesiones aparecen aqu\u00ed cuando inicias sesi\u00f3n en un dispositivo o navegador.",
     "sessionClosed": "Sesi\u00f3n cerrada.",
     "historyCleared": "Historial limpiado.",
     "failedCloseSession": "Error al cerrar la sesi\u00f3n",
@@ -269,11 +281,23 @@
     "refresh": "Refrescar",
     "refreshing": "Refrescando...",
     "noDevices": "No se encontraron dispositivos.",
+    "noDevicesDesc": "Los dispositivos aparecen la primera vez que inicias sesi\u00f3n desde un navegador o equipo nuevo.",
     "unknownDevice": "Dispositivo desconocido",
     "delete": "Eliminar",
     "deleted": "Dispositivo eliminado.",
     "failedDelete": "Error al eliminar el dispositivo",
-    "failedFetch": "Error al obtener dispositivos"
+    "failedFetch": "Error al obtener los dispositivos"
+  },
+  "table": {
+    "searchSessions": "Buscar sesiones...",
+    "searchDevices": "Buscar dispositivos...",
+    "export": "Exportar CSV"
+  },
+  "commandPalette": {
+    "search": "Buscar",
+    "placeholder": "Escribe un comando o busca...",
+    "noResults": "No se encontraron resultados.",
+    "actions": "Acciones"
   },
   "landing": {
     "beta": "✨ Ahora en beta pública",
@@ -483,6 +507,8 @@
     "systemStatus": "Estado del Sistema",
     "online": "En L\u00ednea",
     "quickActions": "Acciones R\u00e1pidas",
+    "setupProgress": "Configuraci\u00f3n de cuenta",
+    "setupProgressDesc": "Completa estos pasos para aprovechar al m\u00e1ximo tu cuenta.",
     "inviteTeam": "Invitar miembros del equipo",
     "inviteTeamDesc": "A\u00f1ade nuevos usuarios a tu espacio de trabajo",
     "configureSettings": "Configurar ajustes",
@@ -497,8 +523,12 @@
     "signOut": "Cerrar sesi\u00f3n",
     "signIn": "Iniciar sesi\u00f3n",
     "switchAccount": "Cambiar de cuenta",
+    "switchAccountDesc": "Elige qu\u00e9 cuenta usar.",
     "addAccount": "A\u00f1adir otra cuenta",
-    "switchFailed": "No se pudo cambiar de cuenta"
+    "switchFailed": "No se pudo cambiar de cuenta",
+    "signOutEverywhere": "Cerrar sesi\u00f3n en todos los dispositivos",
+    "signedOutEverywhere": "Sesi\u00f3n cerrada en todas las cuentas",
+    "signOutFailed": "No se pudo cerrar la sesi\u00f3n"
   },
   "onboarding": {
     "stepVerify": "Verificar",

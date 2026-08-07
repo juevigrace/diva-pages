@@ -93,6 +93,22 @@ export const server = {
       },
     }),
 
+    signOutAll: defineAction({
+      accept: 'json',
+      handler: async (_, ctx) => {
+        const accounts = await getAccounts(ctx);
+        const results = await Promise.all(
+          Object.values(accounts).map((s) =>
+            apiFetch(`/api/sessions/${s.session_id}/close`, { method: 'DELETE', token: s.access_token }),
+          ),
+        );
+        await ctx.session?.set('auth', undefined);
+        await ctx.session?.set('accounts', undefined);
+        await ctx.session?.set('activeUserId', undefined);
+        return { closed: results.filter((r) => r.ok).length };
+      },
+    }),
+
     switchAccount: defineAction({
       accept: 'json',
       input: z.object({ user_id: z.string() }),

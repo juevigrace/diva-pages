@@ -2,8 +2,13 @@
 import AuthLayout from '@layouts/AuthLayout.astro';
 import SignInForm from '@components/auth/SignInForm';
 import { t } from '@lib/i18n/t';
+import type { SessionResponse } from 'diva-types/auth/responses/session';
+
+const accounts = Astro.locals.accounts ?? [];
+const auth = await Astro.session?.get<SessionResponse>('auth');
+const activeAccountId = auth?.user_id;
 ---
 
 <AuthLayout title={t('page.signIn.title', Astro.locals.lang)} description={t('page.signIn.desc', Astro.locals.lang)}>
-  <SignInForm lang={Astro.locals.lang} client:load />
+  <SignInForm lang={Astro.locals.lang} accounts={accounts} activeAccountId={activeAccountId} client:load />
 </AuthLayout>

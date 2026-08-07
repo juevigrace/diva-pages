@@ -6,15 +6,31 @@ import { t } from '@lib/i18n/t';
 import type { SessionResponse } from 'diva-types/auth/responses/session';
 
 const { user, state, profile } = Astro.locals;
-const auth = await Astro.session.get<SessionResponse>('auth');
+const auth = await Astro.session?.get<SessionResponse>('auth');
 
 let preferencesList: Record<string, any>[] | null = null;
+let sessions: Record<string, any>[] | null = null;
+let devices: Record<string, any>[] | null = null;
 
-if (state?.verified && user) {
+if (state?.verified && user && auth) {
   try {
-    const prefRes = await apiFetch(`/api/user/${user.id}/preferences`, { token: auth!.access_token });
+    const prefRes = await apiFetch(`/api/user/${user.id}/preferences`, { token: auth.access_token });
     if (prefRes.ok) {
-      preferencesList = prefRes.json.data;
+      preferencesList = prefRes.json.data as Record<string, any>[];
+    }
+  } catch (_) {}
+
+  try {
+    const sessRes = await apiFetch(`/api/user/${user.id}/sessions`, { token: auth.access_token });
+    if (sessRes.ok) {
+      sessions = sessRes.json.data as Record<string, any>[];
+    }
+  } catch (_) {}
+
+  try {
+    const devRes = await apiFetch(`/api/user/${user.id}/devices`, { token: auth.access_token });
+    if (devRes.ok) {
+      devices = devRes.json.data as Record<string, any>[];
     }
   } catch (_) {}
 }
@@ -30,5 +46,19 @@ const hasProfile = !!profile;
   heading={t('nav.settings', Astro.locals.lang)}
   description={t('page.settings.desc', Astro.locals.lang)}
 >
-  {user && <SettingsContent uid={user.id} initialPreferences={preferences} hasProfile={hasProfile} isVerified={isVerified} lang={Astro.locals.lang} client:load />}
+  {user && (
+    <SettingsContent
+      uid={user.id}
+      username={user.username}
+      initialPreferences={preferences}
+      initialSessions={sessions}
+      initialDevices={devices}
+      currentSessionId={auth?.session_id}
+      lastActiveAt={state?.lastActiveAt}
+      hasProfile={hasProfile}
+      isVerified={isVerified}
+      lang={Astro.locals.lang}
+      client:load
+    />
+  )}
 </AppLayout>

@@ -1,13 +1,17 @@
 ---
 import ThemeToggle from '@components/app/ThemeToggle';
 import UserMenuContent from '@components/app/UserMenuContent';
+import CommandPalette from '@components/app/CommandPalette';
 import MobileNav from '@components/app/MobileNav';
 import { t } from '@lib/i18n/t';
 import { pathKey } from '@lib/i18n/nav-keys';
+import { API_BASE_URL } from 'astro:env/server';
 
 const currentPath = Astro.url.pathname;
-const { user, accounts } = Astro.locals;
+const { user, accounts, profile } = Astro.locals;
 const lang = Astro.locals.lang;
+
+const avatarUrl = profile?.avatar ? `${API_BASE_URL}${profile.avatar}` : undefined;
 
 function getBreadcrumbs(path: string): { label: string; href: string }[] {
   const crumbs: { label: string; href: string }[] = [];
@@ -55,8 +59,9 @@ const crumbs = getBreadcrumbs(currentPath);
       <div class="hidden items-center gap-2 md:flex">
         <slot name="actions" />
       </div>
+      <CommandPalette isAdmin={user?.role === 'ADMIN' || user?.role === 'MODERATOR'} signedIn={!!user} lang={lang} client:idle />
       <ThemeToggle client:idle />
-      <UserMenuContent signedIn={!!user} accounts={accounts ?? []} activeAccountId={user?.id} lang={lang} client:idle />
+      <UserMenuContent signedIn={!!user} accounts={accounts ?? []} activeAccountId={user?.id} avatarUrl={avatarUrl} lang={lang} client:idle />
     </div>
   </div>
 </header>

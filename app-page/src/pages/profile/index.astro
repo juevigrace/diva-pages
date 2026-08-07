@@ -3,6 +3,7 @@ import AppLayout from '@layouts/AppLayout.astro';
 import ProfileForms from '@components/app/ProfileForms';
 import { apiFetch } from '@api/lib/fetch';
 import { t } from '@lib/i18n/t';
+import { API_BASE_URL } from 'astro:env/server';
 import type { SessionResponse } from 'diva-types/auth/responses/session';
 
 const { user, state, profile: cachedProfile } = Astro.locals;
@@ -20,6 +21,7 @@ if (state?.verified && user) {
 }
 
 const isVerified = !!state?.verified;
+const avatarUrl = profile?.avatar ? `${API_BASE_URL}${profile.avatar}` : undefined;
 ---
 
 <AppLayout
@@ -27,5 +29,5 @@ const isVerified = !!state?.verified;
   heading={t('nav.profile', Astro.locals.lang)}
   description={t('page.profile.desc', Astro.locals.lang)}
 >
-  {user && <ProfileForms uid={user.id} user={user} profile={profile} isVerified={isVerified} lang={Astro.locals.lang} client:load />}
+  {user && <ProfileForms uid={user.id} user={user} profile={profile} avatarUrl={avatarUrl} isVerified={isVerified} lang={Astro.locals.lang} client:load />}
 </AppLayout>

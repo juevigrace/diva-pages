@@ -67,7 +67,12 @@
     "usernameTaken": "Username is taken",
     "emailTaken": "Email is taken",
     "signOut": "Sign out",
-    "signedIn": "Signed in"
+    "signedIn": "Signed in",
+    "signedInAccounts": "Signed in accounts",
+    "continueAsAccount": "Choose an account to continue instantly",
+    "continue": "Continue",
+    "active": "Active",
+    "orSignIn": "or sign in with a different account"
   },
   "verification": {
     "resetPassword": "Reset your password",
@@ -176,7 +181,12 @@
     "deleteAccountDesc": "Permanently delete your account and all associated data",
     "deleteAccountConfirm": "Are you sure you want to delete your account? This action cannot be undone.",
     "accountDeleted": "Account deleted. Redirecting...",
-    "failedDeleteAccount": "Failed to delete account"
+    "failedDeleteAccount": "Failed to delete account",
+    "security": "Security",
+    "securityDesc": "Manage your active sessions, devices, and password.",
+    "lastSignIn": "Last sign in",
+    "changePassword": "Change password",
+    "deleteAccountTypeConfirm": "Type {{username}} to confirm. This action cannot be undone."
   },
   "users": {
     "title": "Users",
@@ -184,6 +194,7 @@
     "createUser": "Create user",
     "searchUsers": "Search users...",
     "noUsersFound": "No users found.",
+    "noUsersFoundDesc": "Try adjusting your search or filters, or add a new user to get started.",
     "noPermission": "You do not have permission to manage users.",
     "verifyToManage": "Verify your email to manage users.",
     "couldNotLoad": "Could not load users. Check your permissions.",
@@ -241,6 +252,7 @@
     "clearHistory": "Clear history",
     "refreshing": "Refreshing...",
     "noSessions": "No sessions found.",
+    "noSessionsDesc": "Sessions appear here when you sign in on a device or browser.",
     "sessionClosed": "Session closed.",
     "historyCleared": "History cleared.",
     "failedCloseSession": "Failed to close session",
@@ -269,11 +281,23 @@
     "refresh": "Refresh",
     "refreshing": "Refreshing...",
     "noDevices": "No devices found.",
+    "noDevicesDesc": "Devices appear here the first time you sign in from a new browser or machine.",
     "unknownDevice": "Unknown device",
     "delete": "Remove",
     "deleted": "Device deleted.",
     "failedDelete": "Failed to delete device",
     "failedFetch": "Failed to fetch devices"
+  },
+  "table": {
+    "searchSessions": "Search sessions...",
+    "searchDevices": "Search devices...",
+    "export": "Export CSV"
+  },
+  "commandPalette": {
+    "search": "Search",
+    "placeholder": "Type a command or search...",
+    "noResults": "No results found.",
+    "actions": "Actions"
   },
   "landing": {
     "beta": "✨ Now in public beta",
@@ -483,6 +507,8 @@
     "systemStatus": "System Status",
     "online": "Online",
     "quickActions": "Quick Actions",
+    "setupProgress": "Account setup",
+    "setupProgressDesc": "Finish these steps to get the most out of your account.",
     "inviteTeam": "Invite team members",
     "inviteTeamDesc": "Add new users to your workspace",
     "configureSettings": "Configure settings",
@@ -497,8 +523,12 @@
     "signOut": "Sign out",
     "signIn": "Sign in",
     "switchAccount": "Switch account",
+    "switchAccountDesc": "Choose which account to use.",
     "addAccount": "Add another account",
-    "switchFailed": "Failed to switch account"
+    "switchFailed": "Failed to switch account",
+    "signOutEverywhere": "Sign out everywhere",
+    "signedOutEverywhere": "Signed out of all accounts",
+    "signOutFailed": "Failed to sign out"
   },
   "onboarding": {
     "stepVerify": "Verify",

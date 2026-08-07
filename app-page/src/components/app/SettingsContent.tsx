@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { z } from 'zod';
 import { Button } from 'diva-ui/components/button';
+import { Input } from 'diva-ui/components/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from 'diva-ui/components/dialog';
 import { toast } from 'diva-ui/components/sonner';
 import { useT } from '@lib/i18n/useT';
+import SessionsManager from './SessionsManager';
+import DevicesManager from './DevicesManager';
 
 const preferencesSchema = z.object({
   theme: z.enum(['LIGHT', 'DARK', 'SYSTEM']),
@@ -12,13 +15,34 @@ const preferencesSchema = z.object({
 
 interface SettingsContentProps {
   uid: string;
+  username?: string;
   initialPreferences: Record<string, any> | null;
+  initialSessions?: Record<string, any>[] | null;
+  initialDevices?: Record<string, any>[] | null;
+  currentSessionId?: string;
+  lastActiveAt?: number;
   hasProfile?: boolean;
   isVerified?: boolean;
   lang?: string;
 }
 
-export default function SettingsContent({ uid, initialPreferences, hasProfile = true, isVerified = true, lang = 'en' }: SettingsContentProps) {
+function formatDate(ts?: number) {
+  if (!ts) return '—';
+  return new Date(ts).toLocaleString();
+}
+
+export default function SettingsContent({
+  uid,
+  username = '',
+  initialPreferences,
+  initialSessions = null,
+  initialDevices = null,
+  currentSessionId,
+  lastActiveAt,
+  hasProfile = true,
+  isVerified = true,
+  lang = 'en',
+}: SettingsContentProps) {
   const t = useT(lang);
 
   const [preferences, setPreferences] = useState(initialPreferences);
@@ -60,6 +84,7 @@ export default function SettingsContent({ uid, initialPreferences, hasProfile = 
   };
 
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
 
   const handleDeleteAccount = async () => {
     const res = await fetch(`/api/user/${uid}/forever`, { method: 'DELETE' });
@@ -73,11 +98,13 @@ export default function SettingsContent({ uid, initialPreferences, hasProfile = 
     }
   };
 
+  const deleteMatch = username ? confirmText === username : confirmText === 'DELETE';
+
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       {!isVerified && (
         <div className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 rounded-xl border p-4 text-center text-sm text-amber-800 dark:text-amber-200">
-          {t('nav.verifyToManage')} <a href="/onboarding" class="underline font-medium">{t('nav.verifyNow')}</a>
+          {t('nav.verifyToManage')} <a href="/onboarding" className="underline font-medium">{t('nav.verifyNow')}</a>
         </div>
       )}
 
@@ -133,6 +160,43 @@ export default function SettingsContent({ uid, initialPreferences, hasProfile = 
         )}
       </div>
 
+      {isVerified && (
+        <div className="space-y-8">
+          <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold">{t('settings.security')}</h3>
+                <p className="text-muted-foreground mt-1 text-sm">{t('settings.securityDesc')}</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="text-muted-foreground text-xs">{t('settings.lastSignIn')}</p>
+                  <p className="text-sm font-medium">{formatDate(lastActiveAt)}</p>
+                </div>
+                <a href="/profile#password">
+                  <Button type="button" variant="outline" size="sm">{t('settings.changePassword')}</Button>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <SessionsManager
+            uid={uid}
+            initialSessions={initialSessions}
+            currentSessionId={currentSessionId}
+            isVerified={isVerified}
+            lang={lang}
+          />
+
+          <DevicesManager
+            uid={uid}
+            initialDevices={initialDevices}
+            isVerified={isVerified}
+            lang={lang}
+          />
+        </div>
+      )}
+
       <div className="border-destructive/20 bg-card rounded-xl border p-8 shadow-sm">
         <h3 className="text-destructive text-lg font-semibold">{t('settings.dangerZone')}</h3>
         <p className="text-muted-foreground mt-1 text-sm">{t('settings.irreversibleActions')}</p>
@@ -141,7 +205,7 @@ export default function SettingsContent({ uid, initialPreferences, hasProfile = 
             <p className="text-sm font-medium">{t('settings.deleteAccount')}</p>
             <p className="text-muted-foreground text-xs">{t('settings.deleteAccountDesc')}</p>
           </div>
-          <Button type="button" variant="destructive" size="sm" onClick={() => setConfirmDelete(true)} disabled={!isVerified}>{t('common.delete')}</Button>
+          <Button type="button" variant="destructive" size="sm" onClick={() => { setConfirmText(''); setConfirmDelete(true); }} disabled={!isVerified}>{t('common.delete')}</Button>
         </div>
       </div>
 
@@ -150,12 +214,18 @@ export default function SettingsContent({ uid, initialPreferences, hasProfile = 
           <DialogHeader>
             <DialogTitle>{t('settings.deleteAccount')}</DialogTitle>
             <DialogDescription>
-              {t('settings.deleteAccountConfirm')}
+              {t('settings.deleteAccountTypeConfirm', { username })}
             </DialogDescription>
           </DialogHeader>
+          <Input
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder={username || 'DELETE'}
+            className="mt-2"
+          />
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmDelete(false)}>{t('common.cancel')}</Button>
-            <Button variant="destructive" onClick={handleDeleteAccount}>{t('common.delete')}</Button>
+            <Button variant="destructive" disabled={!deleteMatch} onClick={handleDeleteAccount}>{t('common.delete')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

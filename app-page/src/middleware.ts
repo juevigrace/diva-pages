@@ -22,6 +22,7 @@ declare global {
       activeUserId?: string;
       restoreEmail?: string;
       userLang?: string;
+      onboardingSkipped?: boolean;
     }
     interface Locals {
       user: User | null;
@@ -222,6 +223,22 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const acceptLang = context.request.headers.get('accept-language') || '';
   const preferredLang = acceptLang.split(',')[0]?.split('-')[0] || 'en';
   context.locals.lang = preferredLang === 'es' ? 'es' : 'en';
+
+  if (
+    context.locals.user &&
+    pathname === '/' &&
+    context.request.method === 'GET' &&
+    context.locals.preferences?.onboardingCompleted !== true
+  ) {
+    if (context.url.searchParams.has('ob_skip')) {
+      await context.session.set('onboardingSkipped', true);
+      return context.redirect('/');
+    }
+    const skipped = await context.session.get('onboardingSkipped');
+    if (!skipped) {
+      return context.redirect('/onboarding');
+    }
+  }
 
   return next();
 });

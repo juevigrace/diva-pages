@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from 'diva-ui/components/button';
 import { Badge } from 'diva-ui/components/badge';
 import { toast } from 'diva-ui/components/sonner';
@@ -52,6 +52,7 @@ function sessionGroup(s: SessionData): SessionGroup {
 export default function SessionsManager({ uid, initialSessions, currentSessionId, isVerified = true, lang = 'en' }: SessionsManagerProps) {
   const t = useT(lang);
   const [sessions, setSessions] = useState<SessionData[]>(initialSessions || []);
+  const needsLoad = initialSessions === null;
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [refreshing, setRefreshing] = useState(false);
   const [confirmSid, setConfirmSid] = useState<string | null>(null);
@@ -109,6 +110,13 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
     }
     setRefreshing(false);
   };
+
+  useEffect(() => {
+    if (needsLoad) {
+      refetchSessions();
+    }
+    // run once on mount to load server-fetched data lazily
+  }, []);
 
   const closeSession = (sid: string) => {
     setConfirmSid(sid);
@@ -192,6 +200,8 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
     {
       key: 'device',
       header: t('sessionsPage.device') || 'Device',
+      sortValue: (s: SessionData) => s.device_id || '',
+      csvValue: (s: SessionData) => s.device_id || '',
       render: (s: SessionData) => {
         const sid = s.session_id || s.id || '';
         return (
@@ -205,6 +215,8 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
     {
       key: 'info',
       header: t('sessionsPage.info') || 'Info',
+      sortValue: (s: SessionData) => s.ip || '',
+      csvValue: (s: SessionData) => s.ip || '',
       render: (s: SessionData) => (
         <div className="text-muted-foreground text-xs whitespace-nowrap">
           {s.ip || '\u2014'}
@@ -214,6 +226,8 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
     {
       key: 'created',
       header: t('sessionsPage.created'),
+      sortValue: (s: SessionData) => s.created_at ?? 0,
+      csvValue: (s: SessionData) => (s.created_at ? new Date(s.created_at).toISOString() : ''),
       render: (s: SessionData) => (
         <div className="text-muted-foreground text-xs whitespace-nowrap">
           {formatDate(s.created_at)}
@@ -223,6 +237,8 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
     {
       key: 'lastActive',
       header: t('sessionsPage.lastActive'),
+      sortValue: (s: SessionData) => s.updated_at ?? 0,
+      csvValue: (s: SessionData) => (s.updated_at ? new Date(s.updated_at).toISOString() : ''),
       render: (s: SessionData) => (
         <div className="text-muted-foreground text-xs whitespace-nowrap">
           {formatDate(s.updated_at)}
@@ -232,6 +248,8 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
     {
       key: 'expires',
       header: t('sessionsPage.expires'),
+      sortValue: (s: SessionData) => s.access_expires_at ?? 0,
+      csvValue: (s: SessionData) => (s.access_expires_at ? new Date(s.access_expires_at).toISOString() : ''),
       render: (s: SessionData) => (
         <div className="text-muted-foreground text-xs whitespace-nowrap">
           {formatDate(s.access_expires_at)}
@@ -241,6 +259,8 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
     {
       key: 'status',
       header: t('sessionsPage.status') || 'Status',
+      sortValue: (s: SessionData) => sessionGroup(s),
+      csvValue: (s: SessionData) => sessionGroup(s),
       render: (s: SessionData) => {
         const group = sessionGroup(s);
         if (group === 'active') {
@@ -263,7 +283,21 @@ export default function SessionsManager({ uid, initialSessions, currentSessionId
         onToggleSelectAll={toggleSelectAll}
         allSelected={allSelectableSelected}
         hasPermission={true}
+        searchable
+        searchPlaceholder={t('table.searchSessions')}
+        searchText={(s: SessionData) =>
+          `${s.device_id || ''} ${s.ip || ''} ${s.status || ''} ${sessionGroup(s)}`
+        }
+        sortable
+        defaultSortKey="created"
+        paginated
+        pageSize={10}
+        exportable
+        exportFilename="sessions"
+        exportLabel={t('table.export')}
+        loading={refreshing || needsLoad}
         emptyMessage={t('sessionsPage.noSessions')}
+        emptyDescription={t('sessionsPage.noSessionsDesc')}
         actions={(s: SessionData) => {
           const sid = s.session_id || s.id || '';
           const group = sessionGroup(s);

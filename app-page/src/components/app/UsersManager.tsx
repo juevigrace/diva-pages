@@ -249,6 +249,8 @@ export default function UsersManager({
     {
       key: 'user',
       header: t('users.user'),
+      sortValue: (user: any) => user.username || '',
+      csvValue: (user: any) => user.username || '',
       render: (user: any) => (
         <div className="flex items-center gap-3">
           <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold">
@@ -263,6 +265,8 @@ export default function UsersManager({
     {
       key: 'email',
       header: t('users.email'),
+      sortValue: (user: any) => user.email || '',
+      csvValue: (user: any) => user.email || '',
       render: (user: any) => (
         <span className="text-muted-foreground">{user.email || '\u2014'}</span>
       ),
@@ -270,6 +274,8 @@ export default function UsersManager({
     {
       key: 'role',
       header: t('users.role'),
+      sortValue: (user: any) => user.role || '',
+      csvValue: (user: any) => user.role || '',
       render: (user: any) => (
         <select
           className="border-border bg-background rounded-md border px-2 py-1 text-xs font-medium shadow-sm"
@@ -286,6 +292,8 @@ export default function UsersManager({
     {
       key: 'status',
       header: t('users.status'),
+      sortValue: (user: any) => user.state?.status || '',
+      csvValue: (user: any) => user.state?.status || '',
       render: (user: any) => (
         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
           user.state?.status === 'ACTIVE' || user.state?.status === 'active'
@@ -334,8 +342,13 @@ export default function UsersManager({
           hasPermission={canManage}
           hasError={loadError}
           emptyMessage={t('users.noUsersFound')}
+          emptyDescription={t('users.noUsersFoundDesc')}
           noPermissionMessage={isVerified ? t('users.noPermission') : t('users.verifyToManage')}
           errorMessage={t('users.couldNotLoad')}
+          sortable
+          exportable
+          exportFilename="users"
+          exportLabel={t('table.export')}
           actionHeader={t('users.actions')}
           actions={(user: any) => (
             <div className="flex items-center justify-end gap-2">

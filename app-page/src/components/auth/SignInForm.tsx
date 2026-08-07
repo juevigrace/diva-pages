@@ -6,12 +6,16 @@ import { signInInputSchema } from '@lib/schemas/auth';
 import { useT } from '@lib/i18n/useT';
 import { useFieldErrors } from '@lib/hooks/useFieldErrors';
 import { getDeviceLabel } from '@lib/device';
+import type { AccountInfo } from 'diva-types/auth/models/account';
+import AccountPicker from './AccountPicker';
 
 interface SignInFormProps {
   lang?: string;
+  accounts?: AccountInfo[];
+  activeAccountId?: string;
 }
 
-export default function SignInForm({ lang = 'en' }: SignInFormProps) {
+export default function SignInForm({ lang = 'en', accounts = [], activeAccountId }: SignInFormProps) {
   const t = useT(lang);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -76,6 +80,17 @@ export default function SignInForm({ lang = 'en' }: SignInFormProps) {
         <h1 className="mt-4 text-2xl font-bold tracking-tight">{t('auth.welcomeBack')}</h1>
         <p className="text-muted-foreground mt-2 text-sm">{t('auth.signInToContinue')}</p>
       </div>
+
+      {accounts.length > 0 && (
+        <div className="space-y-6">
+          <AccountPicker accounts={accounts} activeAccountId={activeAccountId} lang={lang} />
+          <div className="flex items-center gap-3">
+            <span className="bg-border h-px flex-1" />
+            <span className="text-muted-foreground text-xs uppercase">{t('auth.orSignIn')}</span>
+            <span className="bg-border h-px flex-1" />
+          </div>
+        </div>
+      )}
 
       <div className="border-border bg-card rounded-xl border p-8 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-5">
